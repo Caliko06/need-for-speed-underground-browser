@@ -26,6 +26,7 @@ from recomp_kit.re.callgraph import (
     get_callgraph,
 )
 from recomp_kit.re.inspect import get_function_detail, tag_function
+from recomp_kit.re.ondemand import find_xrefs_to_va, lift_one_function, scan_anchors
 from recomp_kit.re.queue import build_queue
 from recomp_kit.re.tools import detect_toolchain, run_ghidra_headless, run_rea_inspect
 
@@ -737,6 +738,22 @@ def serve_ui(project_dir: str, host: str = "127.0.0.1", port: int = 5190) -> int
                     q = qs.get("q", [""])[0]
                     limit = int(qs.get("limit", ["80"])[0])
                     self._json(extract_strings(cfg, q=q, limit=limit))
+                elif parsed.path == "/api/ondemand/anchors":
+                    cat = qs.get("cat", ["all"])[0]
+                    q = qs.get("q", [""])[0]
+                    limit = int(qs.get("limit", ["50"])[0])
+                    self._json(scan_anchors(cfg, category=cat, query=q, limit=limit))
+                elif parsed.path == "/api/ondemand/xrefs":
+                    va = int(qs["va"][0], 16)
+                    limit = int(qs.get("limit", ["40"])[0])
+                    res = find_xrefs_to_va(cfg, va, limit=limit)
+                    hub.emit("fn", "ondemand", f"Xrefs to {res['label']}: {res['count']} hits in {res['unique_funcs']} funcs ({res['elapsed_ms']}ms)", project=cfg.name, extra={"tool": "capstone"})
+                    self._json(res)
+                elif parsed.path == "/api/ondemand/inspect":
+                    addr = int(qs["addr"][0], 16)
+                    res = lift_one_function(cfg, addr)
+                    hub.emit("fn", "ondemand", f"On-demand lift {res['addr']} ({res['elapsed_ms']}ms, {len(res['traps'])} traps)", addr=res["addr"], project=cfg.name, extra={"tool": "lifter"})
+                    self._json(res)
                 else:
                     self._json({"error": "not found"}, 404)
             except Exception as exc:

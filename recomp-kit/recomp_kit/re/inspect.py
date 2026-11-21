@@ -94,6 +94,18 @@ def get_function_detail(cfg: ProjectConfig, addr: int) -> dict[str, Any]:
                     continue
 
     lifted = read_lifted_c(cfg, addr)
+    if lifted is None:
+        # On-demand single-function lift (~20ms) so Compare & Lab work without bulk lift!
+        try:
+            from recomp_kit.re.ondemand import lift_one_function
+
+            od = lift_one_function(cfg, addr)
+            if od.get("ok") and od.get("lifted_c"):
+                lifted = od["lifted_c"]
+                if not traps and od.get("traps"):
+                    traps = list(od["traps"])
+        except Exception:
+            pass
     disasm = disassemble_function(cfg, addr)
     ghidra = read_ghidra_pseudocode(cfg, addr)
     hopper = read_hopper_pseudocode(cfg, addr)

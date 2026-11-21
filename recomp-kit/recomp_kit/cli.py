@@ -13,6 +13,7 @@ from recomp_kit.pipeline.builder import lift_project
 from recomp_kit.pipeline.compile import build_project, run_native
 from recomp_kit.pipeline.imports import inspect_pe, preflight_pe
 from recomp_kit.re.ledger import merge_names
+from recomp_kit.re.ondemand import find_xrefs_to_va, lift_one_function, scan_anchors
 from recomp_kit.re.queue import build_queue
 from recomp_kit.re.tools import detect_toolchain, run_ghidra_headless, run_rea_inspect
 
@@ -372,6 +373,50 @@ def cmd_rea(args: argparse.Namespace) -> int:
     return 0 if res.get("ok") else 1
 
 
+def cmd_anchors(args: argparse.Namespace) -> int:
+    cfg = load_project(args.project)
+    res = scan_anchors(cfg, category=args.cat, query=args.q, limit=args.limit)
+    c = res["counts"]
+    print(
+        f"[{cfg.name}] anchors in {res['elapsed_ms']}ms · entry={res['entry_point']} · "
+        f"graphics={c['graphics']} audio={c['audio']} input={c['input']} window={c['window']} files={c['files']} net={c['net']}"
+    )
+    for it in res["items"]:
+        tag = f"[{it['category']:8s}]"
+        print(f"  {it['va']}  {tag}  {it['dll']}!{it['name']}")
+    return 0
+
+
+def cmd_xrefs(args: argparse.Namespace) -> int:
+    cfg = load_project(args.project)
+    va = int(args.va, 16)
+    res = find_xrefs_to_va(cfg, va, limit=args.limit)
+    print(f"[{cfg.name}] xrefs to {res['label']} ({res['target_va']}): {res['count']} hits in {res['unique_funcs']} funcs ({res['elapsed_ms']}ms)")
+    for h in res["hits"]:
+        print(f"  site={h['hit_va']}  func={h['func_va']}  ({h['section']})  {h['insn']}")
+    return 0
+
+
+def cmd_inspect(args: argparse.Namespace) -> int:
+    cfg = load_project(args.project)
+    addr = int(args.addr, 16)
+    bus = LiveEmitter(cfg.root, cfg.name, _cli_cmd_str())
+    try:
+        res = lift_one_function(cfg, addr)
+        print(f"[{cfg.name}] on-demand lift {res['addr']} in {res['elapsed_ms']}ms · ok={res['ok']} · traps={len(res['traps'])} · callees={len(res['callees'])}")
+        for cal in res["callees"][:15]:
+            print(f"  calls -> {cal['va']} ({cal['label']})")
+        if res["traps"]:
+            print(f"  traps: {', '.join(res['traps'])}")
+        if res["lifted_c"]:
+            print("\n--- Lifted C99 ---")
+            print(res["lifted_c"][:2400])
+        bus.emit("fn", "ondemand", f"On-demand lift {res['addr']} ({res['elapsed_ms']}ms, {len(res['traps'])} traps)", addr=res["addr"], running=False, tool="lifter")
+    finally:
+        bus.close()
+    return 0 if res["ok"] else 1
+
+
 def cmd_ui(args: argparse.Namespace) -> int:
     from recomp_kit.ui.server import serve_ui
     return serve_ui(args.project, host=args.host, port=args.port)
@@ -465,6 +510,24 @@ def main(argv: list[str] | None = None) -> int:
     p_rea = sub.add_parser("rea", help="Run real REA (reverse-engineer-anything) CLI check/inspect")
     p_rea.add_argument("project", help="Path to project directory")
     p_rea.set_defaults(func=cmd_rea)
+
+    p_anc = sub.add_parser("anchors", help="Fast (<0.3s) On-Demand REA anchors: Graphics/Audio/Input/Window/Files/Strings")
+    p_anc.add_argument("project", help="Path to project directory")
+    p_anc.add_argument("--cat", default="all", choices=("all", "graphics", "audio", "input", "window", "files", "net", "strings", "os"))
+    p_anc.add_argument("--q", default="", help="Substring filter")
+    p_anc.add_argument("--limit", type=int, default=40)
+    p_anc.set_defaults(func=cmd_anchors)
+
+    p_xr = sub.add_parser("xrefs", help="C-speed (~15ms) .text xref scan to an IAT or string VA")
+    p_xr.add_argument("project", help="Path to project directory")
+    p_xr.add_argument("va", help="Target hex VA (e.g. 0x01a84120)")
+    p_xr.add_argument("--limit", type=int, default=30)
+    p_xr.set_defaults(func=cmd_xrefs)
+
+    p_ins = sub.add_parser("inspect", help="Instant (~20ms) On-Demand single-function x86 -> C99 lift")
+    p_ins.add_argument("project", help="Path to project directory")
+    p_ins.add_argument("addr", help="Function hex VA (e.g. 0x00401000)")
+    p_ins.set_defaults(func=cmd_inspect)
 
     p_mcp = sub.add_parser("mcp", help="Run stdio JSON-RPC 2.0 MCP server for coding agents")
     p_mcp.add_argument("project", help="Path to project directory")

@@ -6,6 +6,7 @@
     eli5: true,
     tab: "overview",
     filter: "all",
+    anchorCat: "all",
     streamFilter: "all",
     streamEvents: [],
     streamSource: null,
@@ -1052,6 +1053,7 @@
         state.selectedAddr = null;
         state.compareAddr = null;
         await loadStatus();
+        await loadAnchors();
         await loadBinaryMap();
         await loadCompareDeck();
         await loadStrings();
@@ -1241,10 +1243,96 @@
     });
   }
 
+  async function loadAnchors() {
+    const tbody = $("anchorsBody");
+    if (!tbody) return;
+    const q = ($("anchorsSearch") && $("anchorsSearch").value) || "";
+    try {
+      const data = await api(
+        `/api/ondemand/anchors?cat=${encodeURIComponent(state.anchorCat)}&q=${encodeURIComponent(q)}&limit=50`
+      );
+      const c = data.counts || {};
+      $("anchorsMeta").textContent = `${data.items.length} anchors (${data.elapsed_ms}ms) · Graphics ${c.graphics || 0}, Audio ${c.audio || 0}, Input ${c.input || 0}, Window ${c.window || 0}, Files ${c.files || 0}`;
+      if (!data.items.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="panel-sub">No matching anchors.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.items
+        .map(
+          (it) => `
+          <tr>
+            <td class="mono">${esc(it.va)}</td>
+            <td><span class="badge ${it.implemented ? "badge-v" : "badge-i"}">${esc(it.category)}</span></td>
+            <td class="mono">${esc(it.dll)}!${esc(it.name)}</td>
+            <td><button type="button" class="btn-sm" data-xref-va="${esc(it.va)}" data-xref-label="${esc(it.dll + "!" + it.name)}">Xrefs</button></td>
+          </tr>`
+        )
+        .join("");
+      tbody.querySelectorAll("[data-xref-va]").forEach((btn) => {
+        btn.addEventListener("click", () => loadAnchorXrefs(btn.dataset.xrefVa, btn.dataset.xrefLabel));
+      });
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="4" class="panel-sub">${esc(err.message)}</td></tr>`;
+    }
+  }
+
+  async function loadAnchorXrefs(va, label) {
+    const xbody = $("anchorXrefsBody");
+    if (!xbody) return;
+    xbody.innerHTML = `<tr><td colspan="3" class="panel-sub">Scanning .text for ${esc(label || va)}...</td></tr>`;
+    try {
+      const res = await api(`/api/ondemand/xrefs?va=${encodeURIComponent(va)}&limit=35`);
+      if (!res.hits.length) {
+        xbody.innerHTML = `<tr><td colspan="3" class="panel-sub">0 direct xrefs in .text (${res.elapsed_ms}ms) for ${esc(res.label)}.</td></tr>`;
+        return;
+      }
+      xbody.innerHTML = res.hits
+        .map(
+          (h) => `
+          <tr>
+            <td class="mono">${esc(h.func_va)}</td>
+            <td class="mono panel-sub">${esc(h.insn)}</td>
+            <td><button type="button" class="btn-sm btn-ok" data-od-lift="${esc(h.func_va)}">Lift 1 func</button></td>
+          </tr>`
+        )
+        .join("");
+      xbody.querySelectorAll("[data-od-lift]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const addr = btn.dataset.odLift;
+          btn.textContent = "Lifting...";
+          try {
+            await loadCompareDeck(addr);
+            notify(`On-demand lifted ${addr} in Compare Deck.`);
+          } finally {
+            btn.textContent = "Lift 1 func";
+          }
+        });
+      });
+    } catch (err) {
+      xbody.innerHTML = `<tr><td colspan="3" class="panel-sub">${esc(err.message)}</td></tr>`;
+    }
+  }
+
   async function init() {
     applyTranslations();
     bindEvents();
     connectLiveStream();
+    if ($("anchorCatRow")) {
+      document.querySelectorAll(".anchor-cat-chip").forEach((b) => {
+        b.addEventListener("click", () => {
+          state.anchorCat = b.dataset.acat;
+          document.querySelectorAll(".anchor-cat-chip").forEach((c) => c.classList.toggle("is-active", c === b));
+          loadAnchors();
+        });
+      });
+    }
+    if ($("anchorsSearch")) {
+      let aTimer = null;
+      $("anchorsSearch").addEventListener("input", () => {
+        clearTimeout(aTimer);
+        aTimer = setTimeout(loadAnchors, 180);
+      });
+    }
     const initialTab = window.location.hash.replace("#", "");
     if (["overview", "lab", "wasm", "apis"].includes(initialTab)) {
       state.tab = initialTab;
@@ -1252,6 +1340,7 @@
     try {
       await loadStatus();
       setTab(state.tab);
+      await loadAnchors();
       await loadCompareDeck();
       await loadStrings();
     } catch (err) {

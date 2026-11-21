@@ -161,6 +161,55 @@
               </div>
             </div>
 
+            <!-- REA On-Demand Anchors: Instant Imports/Strings -> Xrefs -> 20ms Single-Function Lift -->
+            <div class="glass-panel">
+              <div class="panel-head">
+                <div>
+                  <h2>REA On-Demand: Anclas reales (sin bulk lift)</h2>
+                  <p class="panel-sub" id="anchorsMeta">Clic en una API o string para buscar xrefs en .text (~15ms) y levantar 1 sola función (~20ms)</p>
+                </div>
+                <input type="search" id="anchorsSearch" placeholder="Filtrar Direct3D, CreateWindow, Fox..." aria-label="Filter RE anchors">
+              </div>
+              <div class="filter-row" id="anchorCatRow" style="margin-bottom:var(--space-3);">
+                <button type="button" class="filter-chip anchor-cat-chip is-active" data-acat="all">Key APIs</button>
+                <button type="button" class="filter-chip anchor-cat-chip" data-acat="graphics">Graphics</button>
+                <button type="button" class="filter-chip anchor-cat-chip" data-acat="audio">Audio</button>
+                <button type="button" class="filter-chip anchor-cat-chip" data-acat="input">Input</button>
+                <button type="button" class="filter-chip anchor-cat-chip" data-acat="window">Window</button>
+                <button type="button" class="filter-chip anchor-cat-chip" data-acat="files">Files</button>
+                <button type="button" class="filter-chip anchor-cat-chip" data-acat="strings">Strings</button>
+              </div>
+              <div class="split-2">
+                <div class="table-scroll">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>VA</th>
+                        <th>Subsystem</th>
+                        <th>API / String</th>
+                        <th>Xrefs</th>
+                      </tr>
+                    </thead>
+                    <tbody id="anchorsBody"></tbody>
+                  </table>
+                </div>
+                <div class="table-scroll">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Func VA</th>
+                        <th>Call site / Insn</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="anchorXrefsBody">
+                      <tr><td colspan="3" class="panel-sub">Selecciona un ancla a la izquierda para buscar xrefs en .text al instante.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
             <!-- Live Side-by-Side Binary Compare Deck (x86-32 vs Lifted C) -->
             <div class="glass-panel">
               <div class="panel-head">
@@ -548,7 +597,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="/static/canvas.js?v=3"></script>
-  <script src="/static/app.js?v=3"></script>
+  <script src="/static/canvas.js?v=4"></script>
+  <script src="/static/app.js?v=4"></script>
 </body>
 </html>
