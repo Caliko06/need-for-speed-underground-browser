@@ -10,7 +10,7 @@
 // opponent then reaches host/rivals.c rival_ride, which hands it to free_rival: one of the career's own rivals (name and
 // preset of their last event, census/career_oracle.json), dressed by the game's preset code 0x4b26f0 (eax = preset hash,
 // the career path at 0x4b4155). 0x4b4380, which 0x4b4040 runs in Quick Race, then matches every opponent's rating to the
-// player's (0x57f700). RN_FREE=0: Free Run as shipped.
+// player's (0x57f700). Off by default since 2026-11-21 (OWNER: Free Run as shipped in both modes); RN_FREE=1 turns it on.
 #include "host.h"
 #include <math.h>
 #include <string.h>
@@ -125,7 +125,7 @@ uint32_t free_rival(Ctx *c, uint32_t *a) {
 
 // In place of Free Run's call to AddTrafficCars 0x4b3ac0 (no arguments).
 static uint32_t free_setup(Ctx *c) {
-    if (!on) { const char *e = getenv("RN_FREE"); on = e && e[0] == '0' ? -1 : 1; }
+    if (!on) { const char *e = getenv("RN_FREE"); on = e && e[0] == '1' ? 1 : -1; }   // OWNER 2026-11-21: off by default
     if (on > 0 && ld(c, 0x777cc8, 4) == 3 && !c->mem[0x78a347]) {
         if (!names) names = guest_alloc(16 * NRIV_MAX);
         const char *fr = getenv("RN_FREERIV");

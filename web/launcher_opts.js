@@ -65,8 +65,6 @@
     { id: 'vol', group: 'controles', label: 'Volumen', simple: true, slider: true, help: 'Volumen de todo el juego. Los sonidos de este menú ya suenan a ese nivel. Música y efectos por separado, en el menú del juego.',
       key: 'vol', type: 'choice', values: ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'].map(v => T(v, v === '0' ? 'Sin sonido' : v + ' %')), def: '100', modes: BOTH, src: 'web/audio.js' },
 
-    { id: 'traffic', group: 'jugabilidad', label: 'Tráfico', help: 'Cuántos coches civiles circulan en Free Run.',
-      key: 'traffic', type: 'choice', values: [T('0', 'Sin tráfico'), T('6', 'Poco'), T('13', 'Normal'), T('15', 'Mucho')], def: '13', modes: REM, src: 'host/free.c:20,166' },
     { id: 'trafyield', group: 'jugabilidad', label: 'El tráfico se hace a un lado', help: 'Los civiles te ven venir por detrás y abren paso.',
       key: 'trafyield', type: 'toggle', values: OFF_ON, def: '1', modes: REM, src: 'host/rivals.c:789' },
     { id: 'handling', group: 'jugabilidad', label: 'Agarre trasero', help: 'Original: como salió el juego. Suelto: la cola derrapa más fácil.',

@@ -11,7 +11,7 @@
   const root = document.documentElement, body = document.body;
   // Display copy: noun phrases, neutral Mexican Spanish. The catalog (launcher_opts.js) keeps its own strings; these win when present.
   const COPY = {
-    label: { blur: 'Blur de velocidad', fxaa: 'Suavizado FXAA', msaa: 'Suavizado MSAA', chasecam: 'Cámara inclinada', nitrocam: 'Cámara con nitro', speedfov: 'Visión con velocidad', fps: 'Fotogramas', remaster: 'Texturas remaster', skinhd: 'Pinturas en HD', bloom: 'Brillo de luces', roadrefl: 'Reflejo del camino', fx: 'Efectos remaster', trafyield: 'Tráfico se aparta', traffic: 'Tráfico', career: 'Progreso', touch: 'Táctil', steer: 'Giro del teclado', carlook: 'Pintura del coche' },
+    label: { blur: 'Blur de velocidad', fxaa: 'Suavizado FXAA', msaa: 'Suavizado MSAA', chasecam: 'Cámara inclinada', nitrocam: 'Cámara con nitro', speedfov: 'Visión con velocidad', fps: 'Fotogramas', remaster: 'Texturas remaster', skinhd: 'Pinturas en HD', bloom: 'Brillo de luces', roadrefl: 'Reflejo del camino', fx: 'Efectos remaster', trafyield: 'Tráfico se aparta', career: 'Progreso', touch: 'Táctil', steer: 'Giro del teclado', carlook: 'Pintura del coche' },
     group: { camara: 'Cámara' },
   };
   const t = window.RN_TR || (s => s);      // web/i18n.js: Spanish source, English for every non-Spanish browser

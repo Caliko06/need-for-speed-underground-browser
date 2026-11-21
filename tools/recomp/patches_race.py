@@ -168,7 +168,7 @@ PATCHES.append(dict(addr=0x4539db, old="8b511c85d20f95c0", new="e8" + _rel(0x453
 # every behind case. RN_TRAFYIELD=0 (original mode): the original call only. Replaces traffic_tick's host-side "yield" case.
 PATCHES.append(dict(addr=0x45399f, old="e8ccbaffff", new="e8" + _rel(0x45399f, 0x44dd21), when=lambda: True))
 PATCHES.append(dict(addr=0x44dd21, old="90" * 6, new="ff2598300100", entry=True, when=lambda: True))
-# PATCH: 0x45553b/0x45557b/0x4555bb/0x4555f8, AI slot pools (ctor 0x455530) 26/27/27/640 -> 48/49/49/1280: each AI car (racer or traffic) takes 1 goal, 1 action, 1 FuturePoints and ~24 future points, so the shipped pools cap AI cars at 26; WORLD runs 8 rivals + 21 traffic (host/free.c world_ai). Capacity only: a race with fewer cars allocates the same slots as before.
+# PATCH: 0x45553b/0x45557b/0x4555bb/0x4555f8, AI slot pools (ctor 0x455530) 26/27/27/640 -> 64/64/64/1536 (the bytes below): each AI car (racer or traffic) takes 1 goal, 1 action, 1 FuturePoints and ~24 future points, so the shipped pools cap AI cars at 26; WORLD runs 8 rivals + 21 traffic (host/free.c world_ai). Capacity only: a race with fewer cars allocates the same slots as before.
 PATCHES.append(dict(addr=0x45553b, old="bf1a000000", new="bf40000000", when=lambda: True))  # AIGoalSlotPool 26 -> 64
 PATCHES.append(dict(addr=0x45557b, old="bf1b000000", new="bf40000000", when=lambda: True))  # AIActionSlotPool 27 -> 64
 PATCHES.append(dict(addr=0x4555bb, old="bf1b000000", new="bf40000000", when=lambda: True))  # FuturePointsSlotPool 27 -> 64

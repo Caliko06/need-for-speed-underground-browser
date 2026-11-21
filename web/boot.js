@@ -116,10 +116,6 @@ async function download(url, what) {
   const exeP = download('pc/Speed.exe', 'Descargando').then(r => r.arrayBuffer()).then(b => new Uint8Array(b));
   exeP.catch(() => {});
   // Game files are read on demand by the game thread (host/files.c), not loaded here.
-  // F-Max (archived lane, off by default since 2026-11-11): ?max=1 in Remaster makes the pedestrian Max Payne when the local Max
-  // build answers on /mp/ (tools/serve.py). It boots a second game in the page; with the UG2 city loaded it ended in
-  // "[F-Max] gpu: out of memory (12582400 bytes)" at 46 s of the OWNER's WORLD session (build/web.log 2026-11-11 05:31Z).
-  const maxChar = RN_MODE === 'remaster' && RN_Q.get('max') === '1' && (await fetch('/mp/out/maxpayne.js').catch(() => null))?.ok === true;
   status.textContent = 'corriendo'; status.className = 'run';
   const M = await Speed({
     arguments: ['/pc/Speed.exe', '/game'],
@@ -133,7 +129,6 @@ async function download(url, what) {
     },
     preRun: [m => {
       m.FS.mkdir('/pc'); m.FS.writeFile('/pc/Speed.exe', exe);
-      if (maxChar) m.ENV.RN_MAXCHAR = '1';   // host/mc.c mc_draw_actor: no debug box, Max is drawn by web/maxpayne/
       // The game draws at the pixels of this window (PATCH 0x408760), at most 2560x1440 to keep the GPU load sane.
       // A phone opened upright still gets a landscape back buffer (the game waits behind the upright gate, web/app.js): the
       // size is fixed here for the whole session.
@@ -238,9 +233,6 @@ async function download(url, what) {
       if (look !== null) m.ENV.RN_CARLOOK = look;
     }],
   });
-  // F-Max
-  if (maxChar)
-    import('./maxpayne/boot.js').then(m => m.start(M, s => line(s))).catch(e => line('[F-Max] STOP ' + e.message, 'stop'));
   telem = startTelemetry(M, t0, s => line(s));
   const onFrame = (s, t, ms) => { if (s.present && RN_APP.state === 'load') { if (!CURTAIN) arrive(); else if (!arrive.t) arrive.t = setTimeout(arrive, 45000); /* a trip that stalls must not leave the curtain down */ } telem?.frame?.(s, t, ms); };
   startGpu(M, document.getElementById('screen'), s => line(s, 'api'), onFrame).catch(e => line('gpu.js: ' + e.message, 'stop'));
