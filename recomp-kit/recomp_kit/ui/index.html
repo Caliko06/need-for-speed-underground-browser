@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="recomp-kit Workbench: real-time x86-32 to C and WebAssembly static recompilation compare dashboard, Unicorn oracle verification, and REA ledger.">
+  <title>recomp-kit · Binary Compare Workbench</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/tokens.css?v=3">
+  <link rel="stylesheet" href="static/app.css?v=3">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Command Bar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <polygon points="12 2 21 7 21 17 12 22 3 17 3 7 12 2"></polygon>
+            <polyline points="3.5 7.5 12 12.5 20.5 7.5"></polyline>
+            <line x1="12" y1="22" x2="12" y2="12.5"></line>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">recomp-kit</div>
+          <div class="brand-sub" data-i18n="brandSub">x86-32 ⇄ C / WASM Compare &amp; Live Telemetry</div>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <label class="sr-only" for="projectSelect" hidden>Project</label>
+        <select id="projectSelect" aria-label="Active project"></select>
+        <button type="button" id="btnOpenModal">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span data-i18n="loadExe">Cargar .exe</span>
+        </button>
+        <button type="button" id="eli5Toggle" class="toggle-pill is-on">Guía ELI5</button>
+        <button type="button" id="langToggle" class="toggle-pill">ES / EN</button>
+      </div>
+    </header>
+
+    <main class="workspace-wrap">
+      <!-- 5-Stage Hardware Pipeline Bus -->
+      <section class="pipeline-rail" aria-label="Recompilation pipeline">
+        <div class="pipeline-steps">
+          <div class="step-node" id="step1">
+            <div class="step-top">
+              <span class="step-index">1</span>
+              <span class="step-label" data-i18n="step1">Inspeccionar PE</span>
+            </div>
+            <p class="step-help eli5-only" data-i18n="step1d">Cabeceras x86, secciones y DLLs importadas.</p>
+            <div class="step-bottom">
+              <span class="step-metric" id="step1Metric">ready</span>
+            </div>
+          </div>
+
+          <div class="step-node" id="step2">
+            <div class="step-top">
+              <span class="step-index">2</span>
+              <span class="step-label" data-i18n="step2">Descubrir código</span>
+            </div>
+            <p class="step-help eli5-only" data-i18n="step2d">Detecta funciones reales en .text.</p>
+            <div class="step-bottom">
+              <span class="step-metric" id="step2Metric">pending</span>
+              <button type="button" class="btn-sm" id="btnDiscover" data-i18n="btnDiscover">Descubrir</button>
+            </div>
+          </div>
+
+          <div class="step-node" id="step3">
+            <div class="step-top">
+              <span class="step-index">3</span>
+              <span class="step-label" data-i18n="step3">Traducir a C</span>
+            </div>
+            <p class="step-help eli5-only" data-i18n="step3d">Convierte x86-32 a C portable sin traps.</p>
+            <div class="step-bottom">
+              <span class="step-metric" id="step3Metric">pending</span>
+              <button type="button" class="btn-sm" id="btnLift" data-i18n="btnLift">Traducir</button>
+            </div>
+          </div>
+
+          <div class="step-node" id="step4">
+            <div class="step-top">
+              <span class="step-index">4</span>
+              <span class="step-label" data-i18n="step4">Verificar Unicorn</span>
+            </div>
+            <p class="step-help eli5-only" data-i18n="step4d">Valida C generado bit a bit vs CPU x86.</p>
+            <div class="step-bottom">
+              <span class="step-metric" id="step4Metric">pending</span>
+              <button type="button" class="btn-sm" id="btnVerify" data-i18n="btnVerify">Verificar</button>
+            </div>
+          </div>
+
+          <div class="step-node" id="step5">
+            <div class="step-top">
+              <span class="step-index">5</span>
+              <span class="step-label" data-i18n="step5">Compilar WASM</span>
+            </div>
+            <p class="step-help eli5-only" data-i18n="step5d">Empaqueta el binario para navegador.</p>
+            <div class="step-bottom">
+              <span class="step-metric" id="step5Metric">pending</span>
+              <button type="button" class="btn-sm btn-primary" id="btnBuildWasm" data-i18n="btnBuildWasm">Compilar WASM</button>
+            </div>
+          </div>
+        </div>
+        <div class="toolchain-strip">
+          <div class="toolchain-chips" id="toolchainChips"></div>
+          <div class="top-controls">
+            <button type="button" class="btn-sm" id="btnRunGhidra">Run Ghidra CLI</button>
+            <button type="button" class="btn-sm" id="btnRunRea">Run REA CLI</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Workspace Tabs & Binary Identity -->
+      <div class="nav-strip">
+        <div class="tab-group" role="tablist" aria-label="Workbench views">
+          <button type="button" class="tab-btn is-active" role="tab" aria-selected="true" data-tab="overview" data-i18n="tabOverview">Compare &amp; Telemetry</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="lab" data-i18n="tabLab">Laboratorio REA</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="wasm" data-i18n="tabWasm">Ejecutor WASM</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="apis" data-i18n="tabApis">APIs de Windows</button>
+        </div>
+        <div class="binary-meta-strip mono">
+          <span class="meta-chip" id="metaBinary">loading</span>
+          <span class="meta-chip" id="metaArch">x86_32</span>
+          <span class="meta-chip" id="metaMd5">md5</span>
+        </div>
+      </div>
+
+      <!-- VIEW 1: Asymmetric Technical Compare & Live Telemetry Cockpit -->
+      <section class="view-panel is-active" id="panel-overview" aria-label="Compare and live telemetry cockpit">
+        <div class="cockpit-grid">
+          <!-- LEFT COLUMN: Metrics + Binary Oscilloscope + Live Side-by-Side x86 vs C Compare -->
+          <div class="cockpit-col">
+            <div class="glass-panel">
+              <div class="stat-ledger">
+                <div class="stat-cell">
+                  <span class="stat-label">Functions discovered</span>
+                  <span class="stat-value is-accent" id="statFuncs">0</span>
+                  <span class="stat-note" id="statFuncsNote">PE32</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="stat-label">Live executed (RN_COV)</span>
+                  <span class="stat-value is-warm" id="statLive">0</span>
+                  <span class="stat-note" id="statLiveNote">pending</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="stat-label">Verified in ledger (V)</span>
+                  <span class="stat-value is-ok" id="statVerified">0</span>
+                  <span class="stat-note" id="statVerifiedNote">0 total named</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="stat-label">Translation traps</span>
+                  <span class="stat-value" id="statTraps">0</span>
+                  <span class="stat-note" id="statTrapsNote">0 blocked</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Side-by-Side Binary Compare Deck (x86-32 vs Lifted C) -->
+            <div class="glass-panel">
+              <div class="panel-head">
+                <div>
+                  <h2>Live compare: x86-32 ⇄ Lifted C</h2>
+                  <p class="panel-sub" id="compareSubtitle">Side-by-side binary disassembly vs recompiled C with Unicorn oracle status</p>
+                </div>
+                <div class="top-controls">
+                  <label class="sr-only" for="compareFnSelect" hidden>Function to compare</label>
+                  <select id="compareFnSelect" aria-label="Function to compare"></select>
+                  <button type="button" class="btn-sm btn-ok" id="btnCompareVerify">Verify Unicorn</button>
+                  <button type="button" class="btn-sm" id="btnCompareOpenLab">Open in Lab</button>
+                </div>
+              </div>
+              <div class="compare-grid">
+                <div class="compare-pane">
+                  <div class="compare-pane-head">
+                    <span>x86-32 Disassembly (Original PE)</span>
+                    <span class="badge" id="compareX86Meta">VA</span>
+                  </div>
+                  <div class="compare-code" id="compareX86Pane">Loading function disassembly…</div>
+                </div>
+                <div class="compare-pane">
+                  <div class="compare-pane-head">
+                    <span>Lifted Portable C (recomp-kit)</span>
+                    <span class="badge badge-v" id="compareCMeta">C99</span>
+                  </div>
+                  <div class="compare-code" id="compareCPane">Loading lifted C…</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Binary Address-Space Oscilloscope -->
+            <div class="glass-panel">
+              <div class="panel-head">
+                <div>
+                  <h2>Binary address-space telemetry</h2>
+                  <p class="panel-sub">PE .text spectrum; scrub to inspect VA ranges, click any bar to jump to REA Lab</p>
+                </div>
+                <div class="legend-row">
+                  <span class="legend-item"><span class="swatch swatch-ok"></span>Verified V</span>
+                  <span class="legend-item"><span class="swatch swatch-accent"></span>Live RN_COV</span>
+                  <span class="legend-item"><span class="swatch swatch-jade"></span>Inferred I</span>
+                  <span class="legend-item"><span class="swatch swatch-danger"></span>Trapped</span>
+                  <span class="legend-item"><span class="swatch swatch-muted"></span>Static</span>
+                </div>
+              </div>
+              <div class="canvas-stage">
+                <canvas id="binaryMapCanvas" class="binary-map-canvas" aria-label="Binary text section function density and coverage map"></canvas>
+                <div class="canvas-hud">
+                  <span class="mono" id="binaryMapHud">Loading binary map…</span>
+                  <div class="xref-row" id="sectionsList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Real-Time Interactive Stream Console + Queue/Strings -->
+          <div class="cockpit-col">
+            <section class="stream-panel" aria-label="Interactive live telemetry stream">
+              <div class="stream-head">
+                <div class="stream-title-group">
+                  <h2 data-i18n="streamTitle">Live telemetry stream</h2>
+                  <span class="stream-pill" id="streamStatusPill">
+                    <span class="live-dot" aria-hidden="true"></span>
+                    <span id="streamStatusLabel">idle</span>
+                  </span>
+                </div>
+                <div class="top-controls">
+                  <button type="button" class="btn-sm btn-primary" id="btnRunPipeline" data-i18n="btnRunPipeline">Correr en vivo</button>
+                  <button type="button" class="btn-sm" id="btnOpenBatch" data-i18n="btnOpenBatch">Multi-.exe</button>
+                  <button type="button" class="btn-sm btn-danger" id="btnStopStream" disabled data-i18n="btnStopStream">Detener</button>
+                  <button type="button" class="btn-sm btn-ghost" id="btnClearStream" data-i18n="btnClearStream">Limpiar</button>
+                </div>
+              </div>
+
+              <div class="stream-proof-bar" id="streamProofBar">
+                <span id="streamProofSource">WEB UI: SSE connected (listening for CLI and UI jobs)</span>
+                <span id="streamProofCmd"></span>
+              </div>
+
+              <div class="stream-meter-row">
+                <div class="stream-meter" role="progressbar" aria-label="Pipeline progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="streamProgressBar">
+                  <div class="stream-meter-fill" id="streamMeterFill"></div>
+                </div>
+                <span class="stream-meter-text" id="streamMeterText">Ready for live stream</span>
+              </div>
+
+              <div class="batch-queue-row" id="batchQueueRow"></div>
+
+              <div class="filter-row" id="streamFilterRow">
+                <button type="button" class="filter-chip stream-filter-chip is-active" data-sfilter="all">All</button>
+                <button type="button" class="filter-chip stream-filter-chip" data-sfilter="stage">Stages</button>
+                <button type="button" class="filter-chip stream-filter-chip" data-sfilter="fn">Functions</button>
+                <button type="button" class="filter-chip stream-filter-chip" data-sfilter="unicorn">Unicorn</button>
+                <button type="button" class="filter-chip stream-filter-chip" data-sfilter="trap">Traps</button>
+              </div>
+
+              <div class="stream-feed" id="streamFeed" aria-live="polite">
+                <div class="stream-row">
+                  <span class="stream-ts">ready</span>
+                  <span class="badge">sse</span>
+                  <span class="stream-msg">Connected to live stream. Run any stage or queue .exe files to watch events flow.</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Compact Priority Queue -->
+            <div class="glass-panel">
+              <div class="panel-head">
+                <div>
+                  <h3>REA priority queue</h3>
+                  <p class="panel-sub">T1 live traps → T2 unnamed live → T3 static traps</p>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Address</th>
+                      <th>Tier</th>
+                      <th>Reason</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="queueBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Binary Strings Explorer -->
+            <div class="glass-panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Binary strings</h3>
+                  <p class="panel-sub" id="stringsCount">Scanning .rdata / .data…</p>
+                </div>
+                <input type="search" id="stringsSearch" placeholder="Filter strings…" aria-label="Filter binary strings">
+              </div>
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>VA</th>
+                      <th>Sec</th>
+                      <th>ASCII string</th>
+                      <th>Xref</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stringsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: REA Function Lab (Split Compare + Call Graph) -->
+      <section class="view-panel" id="panel-lab" aria-label="REA Function Lab">
+        <div class="eli5-strip eli5-only">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <p data-i18n="eli5Lab">Aquí haces ingeniería inversa real (REA).</p>
+        </div>
+
+        <div class="lab-grid">
+          <aside class="glass-panel func-sidebar" aria-label="Function index">
+            <div class="panel-head">
+              <h3>Functions</h3>
+              <span class="panel-sub mono" id="funcCount">0</span>
+            </div>
+            <input type="search" id="funcSearch" placeholder="Search 0x401000, name, trap…" aria-label="Search functions">
+            <div class="filter-row">
+              <button type="button" class="filter-chip is-active" data-filter="all">All</button>
+              <button type="button" class="filter-chip" data-filter="ran">Live</button>
+              <button type="button" class="filter-chip" data-filter="t1">T1</button>
+              <button type="button" class="filter-chip" data-filter="t2">T2</button>
+              <button type="button" class="filter-chip" data-filter="traps">Traps</button>
+              <button type="button" class="filter-chip" data-filter="named">Named</button>
+            </div>
+            <div class="func-scroll" id="funcList"></div>
+          </aside>
+
+          <div class="glass-panel" style="display:flex; flex-direction:column; gap:var(--space-4);">
+            <div class="panel-head">
+              <div>
+                <h2 id="fnTitle">Select a function</h2>
+                <div class="xref-row" id="fnBadges" style="margin-top:var(--space-2);"></div>
+              </div>
+              <div class="top-controls">
+                <button type="button" id="btnVerifyOne" class="btn-ok" data-i18n="btnVerifyOne">Probar en Unicorn</button>
+                <button type="button" id="btnCopyEvidence" data-i18n="btnCopyEvidence">Copiar evidencia JSON</button>
+              </div>
+            </div>
+
+            <!-- Interactive Live Call-Graph Canvas -->
+            <div class="canvas-stage">
+              <canvas id="callGraphCanvas" class="callgraph-canvas" aria-label="Interactive function call graph and cross-references"></canvas>
+              <div class="canvas-hud">
+                <span class="mono" id="callGraphHud">Select a function to trace callers, callees, Win32 APIs, and strings.</span>
+              </div>
+            </div>
+
+            <div class="eli5-strip eli5-only">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+                <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>
+              </svg>
+              <p id="fnEli5Text">Pick any function to see its plain-language diagnosis.</p>
+            </div>
+
+            <!-- Multi-Tool Compare Code Bench -->
+            <div class="code-tabs">
+              <div class="tab-group">
+                <button type="button" class="filter-chip code-tab-btn is-active" data-view="split">Split Compare (x86 ⇄ C)</button>
+                <button type="button" class="filter-chip code-tab-btn" data-view="disasm">x86 Disasm</button>
+                <button type="button" class="filter-chip code-tab-btn" data-view="c">Lifted C</button>
+                <button type="button" class="filter-chip code-tab-btn" data-view="ghidra" id="codeTabGhidra">Ghidra</button>
+                <button type="button" class="filter-chip code-tab-btn" data-view="hopper" id="codeTabHopper">Hopper</button>
+                <button type="button" class="filter-chip code-tab-btn" data-view="evidence">REA Evidence</button>
+              </div>
+            </div>
+
+            <div id="codeFrameContainer">
+              <div class="code-frame" id="codeFrame">Select a function from the left list.</div>
+            </div>
+
+            <!-- Binary Xrefs & Strings -->
+            <div class="xref-bar">
+              <div class="xref-row">
+                <span class="xref-title">Callers</span>
+                <div class="xref-row" id="xrefsIn"></div>
+              </div>
+              <div class="xref-row">
+                <span class="xref-title">Callees</span>
+                <div class="xref-row" id="xrefsOut"></div>
+              </div>
+              <div class="xref-row">
+                <span class="xref-title">Strings</span>
+                <div class="xref-row" id="xrefsStr"></div>
+              </div>
+            </div>
+
+            <!-- V/I/U Truth Ledger Tagger -->
+            <form class="tag-form" id="tagForm">
+              <div class="field">
+                <label for="tagName">Function name</label>
+                <input type="text" id="tagName" placeholder="e.g. compute_sum_squares" required>
+              </div>
+              <div class="field">
+                <label for="tagSystem">Subsystem</label>
+                <input type="text" id="tagSystem" placeholder="core">
+              </div>
+              <div class="field">
+                <label for="tagState">State</label>
+                <select id="tagState">
+                  <option value="V">V (Verified)</option>
+                  <option value="I">I (Inferred)</option>
+                  <option value="U">U (Unknown)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tagEvidence">Binary evidence</label>
+                <input type="text" id="tagEvidence" placeholder="VA + tool proof">
+              </div>
+              <button type="submit" class="btn-primary" data-i18n="btnSaveTag">Guardar en ledger</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: WASM Live Runner -->
+      <section class="view-panel" id="panel-wasm" aria-label="WebAssembly live runner">
+        <div class="eli5-strip eli5-only">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <p data-i18n="eli5Wasm">Ejecuta el .exe traducido a WebAssembly dentro de esta pestaña.</p>
+        </div>
+
+        <div class="split-2">
+          <div class="glass-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Live execution console</h2>
+                <p class="panel-sub">Real translated x86 running in WebAssembly or native macOS</p>
+              </div>
+              <div class="top-controls">
+                <button type="button" class="btn-primary" id="btnRunWasm" data-i18n="btnRunWasm">Correr .exe en navegador</button>
+                <button type="button" id="btnRunNative" data-i18n="btnRunNative">Correr nativo (macOS)</button>
+              </div>
+            </div>
+            <pre class="terminal-out" id="wasmConsole">Ready. Click 'Run .exe in browser' to execute the WebAssembly build.</pre>
+          </div>
+
+          <div class="glass-panel">
+            <div class="panel-head">
+              <div>
+                <h3>Intercepted Win32 API trace</h3>
+                <p class="panel-sub">Every OS call made by the executable during this run</p>
+              </div>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>DLL</th>
+                  <th>API</th>
+                  <th>Runtime status</th>
+                </tr>
+              </thead>
+              <tbody id="wasmTraceBody">
+                <tr><td colspan="3" class="panel-sub">Run the executable to capture live API calls.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: Windows APIs Radar -->
+      <section class="view-panel" id="panel-apis" aria-label="Windows API readiness radar">
+        <div class="eli5-strip eli5-only">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+            <line x1="9" y1="3" x2="9" y2="21"></line>
+          </svg>
+          <p data-i18n="eli5Apis">Radar de librerías Windows (DLLs) requeridas por el .exe.</p>
+        </div>
+
+        <div class="glass-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Windows DLL readiness</h2>
+              <p class="panel-sub" id="apiSummary">Auditing PE Import Address Table…</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>DLL</th>
+                <th>Role in Windows</th>
+                <th>Implemented</th>
+                <th>Sample missing APIs</th>
+              </tr>
+            </thead>
+            <tbody id="apisBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Load New .exe / Multi-.exe Batch Modal -->
+  <div class="modal-backdrop" id="newProjModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-sheet">
+      <h2 id="modalTitle">Load Windows x86-32 executable(s)</h2>
+      <p class="panel-sub">Enter one local PE32 .exe path, or paste multiple paths (one per line) to run a live multi-.exe stream.</p>
+      <form id="newProjForm" style="display:flex; flex-direction:column; gap:var(--space-3);">
+        <div class="field">
+          <label for="newExePaths">Absolute path(s) to .exe (one per line)</label>
+          <textarea class="batch-input" id="newExePaths" placeholder="/Users/angeldamian/path/to/game1.exe&#10;/Users/angeldamian/path/to/game2.exe" required></textarea>
+        </div>
+        <div class="field">
+          <label for="newProjName">Project name (optional, for single .exe)</label>
+          <input type="text" id="newProjName" placeholder="e.g. maxpayne">
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="newAutoStream" checked>
+          <span>Start live pipeline stream immediately (discover, lift, verify)</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="newWithWasm">
+          <span>Also compile WebAssembly (.wasm) at the end</span>
+        </label>
+        <div class="modal-actions">
+          <button type="button" id="btnCloseModal" class="btn-ghost">Cancel</button>
+          <button type="submit" class="btn-primary">Load and stream</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/static/canvas.js?v=3"></script>
+  <script src="/static/app.js?v=3"></script>
+</body>
+</html>

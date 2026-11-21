@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+examples/*/bin/
+examples/*/build/
+examples/*/census/
+examples/*/project.toml
+examples/*/.recomp-live.jsonl

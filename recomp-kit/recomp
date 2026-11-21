@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+PY="${RECOMP_PYTHON:-}"
+if [ -z "$PY" ]; then
+  if [ -x "$ROOT/../.venv/bin/python" ]; then
+    PY="$ROOT/../.venv/bin/python"
+  elif [ -x "$ROOT/.venv/bin/python" ]; then
+    PY="$ROOT/.venv/bin/python"
+  else
+    PY="python3"
+  fi
+fi
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" exec "$PY" -m recomp_kit.cli "$@"

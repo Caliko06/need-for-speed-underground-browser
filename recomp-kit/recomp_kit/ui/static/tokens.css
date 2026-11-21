@@ -1,0 +1,112 @@
+/* Hallmark · shape: app screen · genre: atmospheric · theme: Obsidian Precision Compare (custom) · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · weakest: R, limited atmospheric glows to two fixed low-opacity radial blooms so dark telemetry canvases, side-by-side x86/C compare panes, and live SSE stream carry all visual weight */
+
+:root {
+  color-scheme: dark;
+
+  /* Core Obsidian Instrument Surfaces (OKLCH, never pure black or pure white) */
+  --color-ground: oklch(13% 0.014 262);
+  --color-ground-deep: oklch(10.5% 0.012 262);
+  --color-glass: oklch(17.2% 0.016 262 / 0.84);
+  --color-glass-strong: oklch(16% 0.016 262 / 0.94);
+  --color-scrim: oklch(8% 0.012 262 / 0.72);
+  --color-surface-1: oklch(20.5% 0.018 262);
+  --color-surface-2: oklch(24.5% 0.02 262);
+  --color-surface-3: oklch(32% 0.022 262);
+  --color-code-bg: oklch(11.5% 0.013 262);
+
+  /* Precision Hairlines & Specular Top Rims */
+  --color-rim: oklch(85% 0.015 260 / 0.11);
+  --color-rim-hover: oklch(72% 0.14 235 / 0.42);
+  --color-rim-highlight: oklch(95% 0.01 250 / 0.08);
+
+  /* Ink Hierarchy (WCAG AAA/AA on obsidian — high legibility) */
+  --color-ink: oklch(96% 0.008 255);
+  --color-ink-secondary: oklch(84% 0.012 258);
+  --color-ink-muted: oklch(72% 0.014 260);
+
+  /* Signal Telemetry Palette (Cyan-Blue primary, Signal Emerald V/pass, Amber live, Violet inferred/C, Crimson trap) */
+  --color-accent: oklch(72% 0.145 235);
+  --color-accent-hover: oklch(78% 0.145 235);
+  --color-accent-soft: oklch(72% 0.145 235 / 0.14);
+  --color-accent-rim: oklch(72% 0.145 235 / 0.42);
+  --color-accent-ink: oklch(13% 0.02 250);
+
+  --color-ok: oklch(74% 0.155 158);
+  --color-ok-soft: oklch(74% 0.155 158 / 0.13);
+  --color-ok-rim: oklch(74% 0.155 158 / 0.42);
+
+  --color-warm: oklch(78% 0.15 72);
+  --color-warm-soft: oklch(78% 0.15 72 / 0.13);
+  --color-warm-rim: oklch(78% 0.15 72 / 0.42);
+
+  --color-jade: oklch(74% 0.13 288);
+  --color-jade-soft: oklch(74% 0.13 288 / 0.14);
+  --color-jade-rim: oklch(74% 0.13 288 / 0.42);
+
+  --color-danger: oklch(68% 0.19 24);
+  --color-danger-soft: oklch(68% 0.19 24 / 0.14);
+  --color-danger-rim: oklch(68% 0.19 24 / 0.45);
+
+  /* Two Fixed Deep-Space Radial Glows (non-animated) */
+  --bloom-cobalt: oklch(42% 0.14 248 / 0.22);
+  --bloom-emerald: oklch(42% 0.12 168 / 0.16);
+  --bloom-clear: oklch(13% 0.014 262 / 0);
+
+  /* Syntax Highlight Tokens (high-contrast oscilloscope readability) */
+  --syn-addr: oklch(64% 0.02 260);
+  --syn-mnem: oklch(76% 0.14 235);
+  --syn-branch: oklch(80% 0.15 72);
+  --syn-call: oklch(76% 0.15 158);
+  --syn-comment: oklch(64% 0.06 168);
+  --syn-kw: oklch(76% 0.135 288);
+  --syn-num: oklch(80% 0.145 72);
+
+  /* Elevation */
+  --shadow-glass: 0 10px 26px -12px oklch(4% 0.01 262 / 0.65), inset 0 1px 0 0 var(--color-rim-highlight);
+  --shadow-popover: 0 18px 36px -10px oklch(4% 0.01 262 / 0.8), inset 0 1px 0 0 var(--color-rim-highlight);
+
+  /* Typography (3 technical families: Space Grotesk + Inter + JetBrains Mono) */
+  --font-title: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-xs: 0.875rem;
+  --text-sm: 0.96rem;
+  --text-base: 1.04rem;
+  --text-md: 1.18rem;
+  --text-lg: 1.38rem;
+  --text-xl: 1.65rem;
+  --text-stat: 2.15rem;
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Radii */
+  --radius-sm: 0.45rem;
+  --radius-md: 0.7rem;
+  --radius-lg: 0.9rem;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --max-w: 1720px;
+  --topbar-h: 4.1rem;
+  --control-h: 2.5rem;
+
+  /* Motion */
+  --dur-micro: 150ms;
+  --dur-short: 240ms;
+  --dur-med: 380ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Z-index */
+  --z-sticky-nav: 40;
+  --z-modal: 90;
+  --z-toast: 100;
+}
