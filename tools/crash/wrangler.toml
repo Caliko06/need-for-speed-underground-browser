@@ -1,0 +1,6 @@
+# The crash endpoint (tools/crash/worker.js). Only nfsu.cc/crash goes through it; every other path stays on the R2 site.
+name = "nfsu-crash"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+routes = [{ pattern = "nfsu.cc/crash", zone_name = "nfsu.cc" }]
+r2_buckets = [{ binding = "CRASH", bucket_name = "nfsu-crash" }]

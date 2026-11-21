@@ -51,6 +51,17 @@ addEventListener('keydown', e => {
 // ?dbg=1: the log panel open from the start (a phone has no F2), to read or screenshot what the page did.
 if (RN_Q.get('dbg') === '1') document.body.classList.add('dbg');
 addEventListener('keydown', e => { if (e.code === 'F2') { document.body.classList.toggle('dbg'); e.preventDefault(); e.stopPropagation(); } }, true);
+// Crash report (OWNER 2026-11-21: crashes only, anonymous): on nfsu.cc the first stop line sends one small JSON to /crash
+// (tools/crash/worker.js keeps it in the private R2 bucket nfsu-crash; tools/crash/read.sh lists them). No address, no ids,
+// no saves: the build, the browser, the GPU path and the log lines around the stop. ?crash=0 sends nothing.
+function crashSend(s) {
+  if (!window.RN_PUBLIC || crashSend.done || RN_Q.get('crash') === '0') return;
+  crashSend.done = true;
+  const cut = l => l.length > 300 ? l.slice(0, 300) + '...' : l;
+  navigator.sendBeacon('/crash', new Blob([JSON.stringify({ format: 'rn-crash-1', v: window.RN_V || '', stop: cut(s), at: +secs(), state: RN_APP.state,
+    ua: navigator.userAgent, screen: `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, mem: navigator.deviceMemory || 0, cores: navigator.hardwareConcurrency || 0,
+    head: allLog.filter(l => /gpu\.js: (adapter|WebGL)| mode: /.test(l)).slice(0, 4).map(cut), tail: allLog.slice(-40).map(cut) })], { type: 'application/json' }));
+}
 function line(s, cls) {
   keep(`${secs()} ${s}`);
   if (/^STOP|^JS |abort|Aborted|RuntimeError/.test(s)) setTimeout(flush, 0);
@@ -65,7 +76,7 @@ function line(s, cls) {
   log.appendChild(d);
   while (log.childElementCount > DOM_LOG_MAX) log.firstElementChild.remove();
   // A 'stop' line (missing WebGPU, COOP/COEP, a lost GPU) ends the session: the gate says why (web/app.js), F2 opens this log.
-  if (cls === 'stop' || /^STOP/.test(s)) { if (memTick) { clearInterval(memTick); memTick = 0; } status.textContent = 'detenido a los ' + ((performance.now() - t0) / 1000).toFixed(2) + ' s'; status.className = 'stop'; RN_APP.set('stop', s); }
+  if (cls === 'stop' || /^STOP/.test(s)) { crashSend(s); if (memTick) { clearInterval(memTick); memTick = 0; } status.textContent = 'detenido a los ' + ((performance.now() - t0) / 1000).toFixed(2) + ' s'; status.className = 'stop'; RN_APP.set('stop', s); }
   // The launcher's curtain (?fast=1 with ?start=, web/index.html) lifts on arrival: the main menu, or the screen after the main menu (career).
   else if (CURTAIN && RN_APP.state === 'load') {
     if (/flow fe .*MU_Main_PC\.fng/.test(s)) { if (DEST === 'menu') arrive(); else main = true; }
