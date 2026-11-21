@@ -28,10 +28,10 @@ class H(http.server.SimpleHTTPRequestHandler):
         path = self.translate_path(self.path)
         if RTT:
             time.sleep(RTT)
-        if path.endswith('.gz') and '/data-chunks/' in path and os.path.isfile(path):
+        if path.endswith('.br') and '/data-chunks/' in path and os.path.isfile(path):
             self.send_response(200)
             self.send_header("Content-Type", "application/octet-stream")
-            self.send_header("Content-Encoding", "gzip")
+            self.send_header("Content-Encoding", "br")
             self.send_header("Content-Length", str(os.path.getsize(path)))
             self.end_headers()
             with open(path, 'rb') as f:

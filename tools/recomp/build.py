@@ -180,7 +180,7 @@ def compile_web():
     os.makedirs("web/out", exist_ok=True)
     # main() runs in a worker (PROXY_TO_PTHREAD) so guest threads and waits may block.
     subprocess.run(["emcc", "-O2", "-pthread", "-Ihost", f"-I{GEN}", *(["-DRN_STW"] if stw else []), *HOST, *objs, "-o", "web/out/speed.js",
-                    "-sINITIAL_MEMORY=1024MB", "-sSTACK_SIZE=4MB", "-sDEFAULT_PTHREAD_STACK_SIZE=4MB",
+                    "-sINITIAL_MEMORY=896MB", "-sSTACK_SIZE=4MB", "-sDEFAULT_PTHREAD_STACK_SIZE=4MB",
                     "-sPROXY_TO_PTHREAD=1", "-sPTHREAD_POOL_SIZE=9", "-sEXIT_RUNTIME=1",
                     "-sMODULARIZE=1", "-sEXPORT_NAME=Speed", "-sEXPORTED_RUNTIME_METHODS=FS,ENV,HEAPU8,HEAP32,HEAPU32,HEAPF64",
                     "-sEXPORTED_FUNCTIONS=_main,_rn_gpu_mailbox,_rn_input_ring,_rn_audio_ring,_rn_telem_addr,_rn_stab_addr,_rn_tune_addr,_rn_mem_mb,_rn_load_addr",

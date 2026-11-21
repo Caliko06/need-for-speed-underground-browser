@@ -75,9 +75,15 @@ const RN_APP = (() => {
       r.style.cssText = 'background:none;box-shadow:none;border:1px solid #ffffff55;padding:9px 22px;font-size:.8em';
       r.onclick = () => window.rnReport?.();
       // No isolation (Android WebView browsers such as LineageOS Jelly, in-app browsers): reloading never helps, so hand the link to Chrome.
-      if (/sin aislamiento/.test(why) && /Android/.test(navigator.userAgent)) {
-        b.textContent = 'Abrir en Chrome';
-        b.onclick = () => { location.href = `intent://${location.host}${location.pathname}#Intent;scheme=https;package=com.android.chrome;end`; };
+      // iPhone in-app browsers: x-safari-https:// hands the link to Safari (iOS 17+). Android: an intent to Chrome. Tried once on its
+      // own (links shared in Instagram, TikTok or WhatsApp open in their WebView); apps that block a jump without a tap keep the button.
+      const ios = /iPhone|iPad/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+      if (/sin aislamiento/.test(why) && (ios || /Android/.test(navigator.userAgent))) {
+        const to = ios ? `x-safari-https://${location.host}${location.pathname}${location.search}`
+          : `intent://${location.host}${location.pathname}${location.search}#Intent;scheme=https;package=com.android.chrome;end`;
+        b.textContent = ios ? 'Abrir en Safari' : 'Abrir en Chrome';
+        b.onclick = () => { location.href = to; };
+        if (!sessionStorage.rnJump) { sessionStorage.rnJump = 1; location.href = to; }
         r.textContent = 'Copiar enlace';
         r.onclick = () => navigator.clipboard?.writeText(location.origin + '/').then(() => { r.textContent = 'Enlace copiado'; }, () => {});
       }

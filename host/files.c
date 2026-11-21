@@ -128,7 +128,7 @@ EM_JS(int, web_read, (const char *real, double off, uint8_t *dst, int n), {
     for (var t = 0; ; t++) {
         try {
             x = new XMLHttpRequest();
-            x.open('GET', chunk ? '/data-chunks/' + chunk + '.gz' : '/' + path.split('/').map(encodeURIComponent).join('/'), false);
+            x.open('GET', chunk ? '/data-chunks/' + chunk : '/' + path.split('/').map(encodeURIComponent).join('/'), false);
             x.responseType = 'arraybuffer';
             if (!chunk) x.setRequestHeader('Range', 'bytes=' + off + '-' + (off + n - 1));
             x.send();
