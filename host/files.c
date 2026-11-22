@@ -12,6 +12,17 @@
 #include <sys/stat.h>
 #include "host.h"
 
+// Tier policy is opt-in; Ultra-Lite always omits music, other tiers require RN_NOMUSIC=1.
+int rn_nomusic(void) {
+    const char *tier = getenv("RN_TIER");
+    return rn_env("RN_NOMUSIC", 0) == 1 || (tier && !strcmp(tier, "ultralite"));
+}
+static int omitted_music(const char *path) {
+    const char *base = path;
+    for (const char *p = path; *p; p++) if (*p == '/' || *p == '\\') base = p + 1;
+    return rn_nomusic() && !strcasecmp(base, "STRM_Music_UG0_MB.ast");
+}
+
 #define MAXF 256
 #define AHEAD (256u << 10)
 #define AHEAD_MAX (4u << 20)
@@ -223,6 +234,7 @@ static void track_hook(void) {
 
 // Opens a game file: id >= 0, or -1 missing, -2 outside the folder, -3 a directory.
 int gf_open(const char *gpath) {
+    if (omitted_music(gpath)) return -1;  // No lookup, HTTP read or range-cache allocation for the omitted bank.
     char real[512];
     uint64_t size = 0;
     rn_race_bridge(gpath);
@@ -333,6 +345,7 @@ static char hint_text[256 << 10];     // /entry_hint.tsv (23 KB with 8 tracks, 2
 static int hint_n;                    // its bytes; set under blk_mu once read
 // Under blk_mu: queue a hint line, 1 when it was queued.
 static int pre_push(const char *real, double off, double len, int trk) {
+    if (omitted_music(real)) return 0;
     if (pre_tail - pre_head >= NQ) return 0;
     snprintf(preq[pre_tail % NQ].real, 256, "%s", real);
     preq[pre_tail % NQ].off = (uint64_t)off; preq[pre_tail % NQ].len = (uint32_t)len; preq[pre_tail % NQ].trk = trk;
@@ -377,13 +390,15 @@ static void *pre_main(void *hint) {
 // RN_PREFETCH=boot (web/boot.js, the launcher's entry): the hint's files start coming while the engine boots.
 static void files_prefetch_start(void) {
     const char *e = getenv("RN_PREFETCH");
-    if (!e || !*e) return;
+    const char *tier = getenv("RN_TIER");
+    if (!e || !*e || !strcmp(e, "0") || (tier && !strcmp(tier, "ultralite"))) return;
     pre_on = 1;
     pre_spawn((void *)e);
 }
 #endif
 // A game file the host knows the game is about to open (host/rivals.c: the pool's cars): whole when small, else its head.
 void gf_prefetch(const char *gpath) {
+    if (omitted_music(gpath)) return;
 #ifdef __EMSCRIPTEN__
     char real[512];
     uint64_t size = 0;

@@ -51,6 +51,11 @@ static void hooks_install(void) {
     static int done;
     if (done || !g_ctx) return;
     done = 1;
+    // Quick Race builder 0x4b70c0: filter Drift before assigning the next Mode_%d slot.
+    const char *tier = getenv("RN_TIER");
+    st(g_ctx, SCREEN_ADDR + 0xdc, tier && (!strcmp(tier, "lite") || !strcmp(tier, "ultralite")), 1);
+    extern int rn_nomusic(void);  // host/files.c; tested by the music-only stream-init cave.
+    st(g_ctx, SCREEN_ADDR + 0xe4, rn_nomusic(), 1);
     st(g_ctx, SCREEN_ADDR + 0xcc, host_addr_of("rn", "coll_widx"), 4);
     st(g_ctx, SCREEN_ADDR + 0xd4, host_addr_of("rn", "mode_menu"), 4);
     st(g_ctx, SCREEN_ADDR + 0xd8, host_addr_of("rn", "mode_switch"), 4);
