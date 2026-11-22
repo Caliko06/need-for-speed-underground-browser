@@ -282,9 +282,24 @@ static Blk *blk_at(const char *real, uint64_t at) {
         if (b->state && at >= b->off && at - b->off < b->len && !strcmp(b->real, real)) return b;
     return 0;
 }
-// The cache of pieces: 256 MB (the wasm break stood at 1555 of 2048 MB at the WORLD HUD with it full, log 2026-11-16); RN_RANGEMB=16 on phones and tablets (web/boot.js).
+static int ultralite(void) {
+    const char *e = getenv("RN_TIER");
+    return e && !strcmp(e, "ultralite");
+}
+// Lite budgets are host policy; guest memory (host/host.h) stays unchanged.
 static uint64_t cap(void) {
-    if (!blk_cap) { const char *e = getenv("RN_RANGEMB"); blk_cap = (uint64_t)(e && atoi(e) > 0 ? atoi(e) : 256) << 20; }
+    if (!blk_cap) {
+        const char *e = getenv("RN_RANGEMB");
+#ifdef RN_LITE_WASM
+        int mb = 32;
+#else
+        int mb = 256;
+#endif
+        if (e && atoi(e) > 0) mb = atoi(e);
+        if (ultralite() && mb > 16) mb = 16;
+        blk_cap = (uint64_t)mb << 20;
+        if (getenv("RN_RAM_AUDIT")) rn_log("ram cache: cap=%d MiB ultralite=%d", mb, ultralite());
+    }
     return blk_cap;
 }
 // A whole file is at most an eighth of the cache, so a phone's 16 MB keeps the old 256 KB steps for anything over 2 MB.
@@ -298,7 +313,7 @@ static Blk *blk_new(const char *real, uint64_t off, uint32_t len) {
             if (!b->state) spare = b;
             else if (b->state == 2 && (!old || b->tick < old->tick)) old = b;
         }
-        if (spare && (blk_bytes + len <= cap() || !old)) {
+        if (spare && (blk_bytes + len <= cap() || (!old && !ultralite()))) {
             snprintf(spare->real, sizeof spare->real, "%s", real);
             spare->off = off; spare->len = len; spare->data = 0; spare->state = 1;
             blk_bytes += len;
@@ -324,7 +339,12 @@ static int blk_fetch(Blk *b) {
 // ---- web: bringing files ahead of the game, NPRE requests at a time ------------------------------
 static int npre(void) {     // RN_NPRE (1..4, default 4): prefetch workers; phones ask for 2 (web/boot.js)
     const char *e = getenv("RN_NPRE");
+    if (ultralite()) return 1;
+#ifdef RN_LITE_WASM
+    int n = e && *e ? atoi(e) : 2;
+#else
     int n = e && *e ? atoi(e) : 4;
+#endif
     return n < 1 ? 1 : n > 4 ? 4 : n;
 }
 #define NPRE npre()
@@ -514,11 +534,16 @@ int64_t gf_read(int id, uint64_t off, uint8_t *dst, uint32_t n) {
             g->ahead = g->ahead && at == g->next ? (g->ahead < AHEAD_MAX ? 2 * g->ahead : AHEAD_MAX) : AHEAD;
             from = at;
             len = want > g->ahead ? want : g->ahead;
+            if (ultralite() && len > cap()) len = (uint32_t)cap();
             if (len > g->size - at) len = (uint32_t)(g->size - at);
             g->next = at + len;
         }
         b = blk_new(g->real, from, len);
         pthread_mutex_unlock(&blk_mu);
+        if (!b && ultralite()) {   // all room is in flight: wait for eviction candidates, never exceed cap
+            gil_release(); usleep(1000); gil_acquire();
+            continue;
+        }
         if (!b) return -1;
         // ReadFile blocks only the calling thread on Windows, so the request runs without the GIL and the other guest
         // threads go on (the main loop drew nothing while the file thread 0x63e4d0 waited: telemetry 2026-10-24).

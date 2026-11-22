@@ -162,6 +162,8 @@ def compile_native():
 
 
 def compile_web():
+    lite = os.environ.get("RN_LITE_WASM") == "1"
+    output = "speed_lite" if lite else "speed"
     srcs = [f"{GEN}/f{k:03d}.c" for k in range(CHUNKS)] + [f"{GEN}/table.c", f"{GEN}/abk.c"]
     # RN_NOCHK=1: guest bounds checks off (host/rt.h), objects in their own folder. Off by default.
     nochk = os.environ.get("RN_NOCHK") == "1"
@@ -179,15 +181,17 @@ def compile_web():
     objs = [wobj + os.path.basename(s)[:-2] + ".o" for s in srcs]
     os.makedirs("web/out", exist_ok=True)
     # main() runs in a worker (PROXY_TO_PTHREAD) so guest threads and waits may block.
-    subprocess.run(["emcc", "-O2", "-pthread", "-Ihost", f"-I{GEN}", *(["-DRN_STW"] if stw else []), *HOST, *objs, "-o", "web/out/speed.js",
-                    "-sINITIAL_MEMORY=896MB", "-sSTACK_SIZE=4MB", "-sDEFAULT_PTHREAD_STACK_SIZE=4MB",
-                    "-sPROXY_TO_PTHREAD=1", "-sPTHREAD_POOL_SIZE=9", "-sEXIT_RUNTIME=1",
+    subprocess.run(["emcc", "-O2", "-pthread", "-Ihost", f"-I{GEN}", *(["-DRN_STW"] if stw else []),
+                    *(["-DRN_LITE_WASM"] if lite else []), *HOST, *objs, "-o", f"web/out/{output}.js",
+                    f"-sINITIAL_MEMORY={640 if lite else 896}MB", "-sSTACK_SIZE=4MB",
+                    f"-sDEFAULT_PTHREAD_STACK_SIZE={2 if lite else 4}MB",
+                    "-sPROXY_TO_PTHREAD=1", f"-sPTHREAD_POOL_SIZE={7 if lite else 9}", "-sEXIT_RUNTIME=1",
                     "-sMODULARIZE=1", "-sEXPORT_NAME=Speed", "-sEXPORTED_RUNTIME_METHODS=FS,ENV,HEAPU8,HEAP32,HEAPU32,HEAPF64",
                     "-sEXPORTED_FUNCTIONS=_main,_rn_gpu_mailbox,_rn_input_ring,_rn_audio_ring,_rn_telem_addr,_rn_stab_addr,_rn_tune_addr,_rn_mem_mb,_rn_load_addr",
                     "-sFORCE_FILESYSTEM=1", "-sENVIRONMENT=web,worker",
                     # RN_PROF=1: keep function names for a CPU profile (tools/webcheck.mjs RN_PROFILE); same code.
                     *(["--profiling-funcs"] if os.environ.get("RN_PROF") else [])], check=True)
-    print("built web/out/speed.js + speed.wasm")
+    print(f"built web/out/{output}.js + {output}.wasm")
 
 
 def run_jobs(jobs):
