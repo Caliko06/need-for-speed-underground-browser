@@ -18,7 +18,7 @@ rclone copy dist/game "r2:$B/game" --transfers 16 --checksum --s3-no-check-bucke
   --header-upload "$IMMUTABLE" --progress
 # Everything else except speed.wasm, Speed.exe, and manifest.json as is. The *.gz packs are NOT Content-Encoding: the page
 # unpacks them itself (web/gpu.js:230).
-rclone copy dist "r2:$B" --filter "- /data-chunks/**" --filter "- /game/**" --filter "- out/speed.wasm" --filter "- pc/Speed.exe" \
+rclone copy dist "r2:$B" --filter "- /data-chunks/**" --filter "- /game/**" --filter "- out/speed.wasm" --filter "- out/speed_lite.wasm" --filter "- pc/Speed.exe" \
   --filter "- /manifest.json" --filter "- _headers" --filter "- /*.{html,js,json,webmanifest}" --transfers 16 \
   --checksum --s3-no-check-bucket --header-upload "$CACHE" --progress
 # The page and its scripts change with each fix: no-cache, so browsers and Cloudflare's edge ask again (304 when unchanged).
@@ -34,6 +34,11 @@ T=$(mktemp -d)
 brotli -q 11 -w 24 -c dist/out/speed.wasm > "$T/speed.wasm"
 rclone copyto "$T/speed.wasm" "r2:$B/out/speed.wasm" --ignore-times --s3-no-check-bucket --header-upload "Cache-Control: no-cache" \
   --header-upload "Content-Encoding: br" --header-upload "Content-Type: application/wasm"
+if [ -f dist/out/speed_lite.wasm ]; then
+  brotli -q 11 -w 24 -c dist/out/speed_lite.wasm > "$T/speed_lite.wasm"
+  rclone copyto "$T/speed_lite.wasm" "r2:$B/out/speed_lite.wasm" --ignore-times --s3-no-check-bucket --header-upload "Cache-Control: no-cache" \
+    --header-upload "Content-Encoding: br" --header-upload "Content-Type: application/wasm"
+fi
 brotli -q 11 -w 24 -c dist/pc/Speed.exe > "$T/Speed.exe"
 rclone copyto "$T/Speed.exe" "r2:$B/pc/Speed.exe" --ignore-times --s3-no-check-bucket --header-upload "$IMMUTABLE" \
   --header-upload "Content-Encoding: br" --header-upload "Content-Type: application/octet-stream"
