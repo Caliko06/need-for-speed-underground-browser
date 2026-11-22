@@ -1,4 +1,4 @@
-# Car physics and handling (Speed.exe PC) - RE notes
+# Car physics and handling (Speed.exe PC)
 
 Marks: V = read in code or bytes this session, I = inferred, U = open. Tools: G = Ghidra (gpar.sh on /root/ghidra_named, decomp and xref),
 N = named decompile /root/re/named_export, C = capstone `tools/recomp/asm.py`, D = data read from the exe or GLOBALB.BUN (carinfo.py layout).

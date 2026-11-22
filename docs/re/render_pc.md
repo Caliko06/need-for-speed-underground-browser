@@ -1,4 +1,4 @@
-# PC renderer of Speed.exe: what the Remaster needs (W2)
+# PC renderer of Speed.exe: what the Remaster needs
 
 Marks: V = read in code or bytes this session (tool named), I = inferred, U = open.
 Tools: C = capstone sweep of .text (`build/canon/w2/va.py` reads the PE by address), P = Ghidra pseudocode

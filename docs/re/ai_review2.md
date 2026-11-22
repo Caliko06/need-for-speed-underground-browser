@@ -1,4 +1,4 @@
-# Review 2: the three patches (nacho, 2026-11-04)
+# Review 2: the three patches
 
 Scope: (a) bec/lalo `docs/re/ai_stuck.md` float readers + patch, (b) bec/tomas `docs/re/ai_traffic.md` patch 1 at
 0x4539db, (c) bec/memo `docs/re/ai_corner.md` one-sided jitter. Tools: capstone 5.0.7 (the venv at

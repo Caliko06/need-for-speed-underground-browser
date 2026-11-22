@@ -1,4 +1,4 @@
-# Traffic: count byte, 0xcc / 0xd4 data, and who honks (Speed.exe, read only)
+# Traffic: count byte, 0xcc / 0xd4 data, and who honks
 
 Sources: build/hopper/trafficrow.txt + honk.txt (Hopper, complete), census/hopper/decomp.c, capstone (C). V = read in code, I = inferred, U = open. Nothing ran.
 

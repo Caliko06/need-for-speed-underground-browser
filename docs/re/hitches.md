@@ -1,4 +1,4 @@
-# Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are (lane 3)
+# Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are
 
 Log: `runs/w_L1/log.txt` (37,033 lines). Nothing was built or run; every number below comes from reading that log
 and `pc/Speed.exe` (objdump, image base 0x400000) plus the host sources. Markers: **F** = read in the log or in the

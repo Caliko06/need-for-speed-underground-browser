@@ -1,4 +1,4 @@
-# Free Run traffic placement (2026-10-28)
+# Free Run traffic placement
 
 Question: Free Run asked for 18 traffic cars, the race had 9 (1003) and 13 (1010). Where do they go?
 

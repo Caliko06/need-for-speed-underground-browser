@@ -1,4 +1,4 @@
-# Public pack map (plan.json step 2 rows 3-4), 2026-11-13
+# Public pack: what the browser downloads
 Run 1: `:5180/?play=1&pool=1&mode=remaster&mute=1`, cold headless Chrome, CDP Network log of page + workers (every sync XHR Range). Marks: exe loaded 0.5 s, first Present 1.6 s, front end ready 2.15 s, city ready 19.6 s, race HUD 23.6 s. Data: census/public_pack.tsv (1966 rows), census/names_files.tsv. Run 2 (menu route) died at 2.6 s: `STOP ... __syscall_mkdirat`, web/out was being rebuilt by another worker; not repeated (2-run limit). "Menu" below = front end ready before the WORLD jump (INFERENCE).
 ## Bytes on the wire (MB, uncompressed except speed.wasm = gzip 16.4 of 70.4)
 | Phase | web/out+pc | game/ | web/remaster | web/ug2 | build/openworld | page js | Total | Reqs |

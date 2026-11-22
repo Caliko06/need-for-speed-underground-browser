@@ -1,4 +1,4 @@
-# Night lighting in Speed.exe (RE, Block 7 part 1, 2026-10-27)
+# Night lighting in Speed.exe
 
 Sources: Ghidra headless (tools/ghidra/gpar.sh on build/ghidra/proj), Hopper batches build/hopper/{hlproj,carlight,worldflare}.txt,
 game/fx/*.efx (XOR 0xAA text HLSL). Checked at runtime with RN_WATCH/RN_POKE (native and Chrome).

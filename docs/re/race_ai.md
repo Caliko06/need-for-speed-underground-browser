@@ -1,4 +1,4 @@
-# Racer AI of Speed.exe: how rivals race each other (RE 2026-10-30)
+# Racer AI of Speed.exe: how rivals race each other
 
 Tools: Ghidra named decompile (/root/re/named_export, live Ghidra for missing functions), capstone scans of the whole
 .text (`asm.py`). Nothing was run. V = code read, I = inference, U = doubt. Names: census/names_raceai.tsv.

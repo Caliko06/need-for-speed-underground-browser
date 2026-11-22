@@ -1,4 +1,4 @@
-# Unlock state and checks in Speed.exe (row 9, RE only, no patch yet). Names: census/names_unlock.tsv
+# Unlock state and checks in Speed.exe
 Tools: G Ghidra, C capstone, GC ref/_ext/gc/Speed.elf (NFSU1 GameCube, symbols). Everything below V unless marked I.
 ## State (inside the 0xf660 blob of Ugd::PackBlock 0x4ab120, file `<profile>.ugd`)
 | What | Where | Proof |

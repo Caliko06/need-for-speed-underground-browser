@@ -1,4 +1,4 @@
-# Default music volume in Speed.exe (RE, 2026-10-28)
+# Default music volume in Speed.exe
 
 Answer: the nine Options > Audio sliders are nine floats in the per-player options block. A constructor,
 `0x4aa200`, sets all of them to 0.9. The music slider is the second one (`+0x3c`). One in-place patch at `0x4aa21e`

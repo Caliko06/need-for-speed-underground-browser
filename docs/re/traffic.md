@@ -1,4 +1,4 @@
-# Traffic: road network, spawn, recycling, models, AI (Speed.exe PC) — RE notes
+# Traffic: road network, spawn, recycling, models, AI (Speed.exe PC)
 
 Marks: V = verified (two tools agree, or code plus file bytes), I = inferred, U = open. Tools: H = Hopper export
 `census/hopper/decomp.c`, G = Ghidra export `census/ghidra/decomp_*.c`, C = capstone (`tools/recomp/asm.py`),

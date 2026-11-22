@@ -1,4 +1,4 @@
-# Camera at speed: distance, height, pitch, FOV (2026-11-03, becario rosa)
+# Camera at speed: distance, height, pitch, FOV
 
 Wish: "camera low/flat and car small at speed". Tools: capstone on the unpatched `pc/Speed.exe` (read-only, no build,
 no run), `census/hopper/decomp.c`, `docs/re/camera*.md`, `docs/archive/remaster/feel_2026-10-31.md` §1, port code

@@ -1,4 +1,4 @@
-# Rivals: the AI racers of Speed.exe (PC) - RE notes
+# Rivals: the AI racers of Speed.exe (PC)
 
 Marks: V = verified (two tools agree: Hopper + Ghidra, or code + bytes of the game files), I = inferred, U = open.
 Tools: G = Ghidra export `census/ghidra/decomp_*.c`, H = Hopper export `census/hopper/decomp.c`,

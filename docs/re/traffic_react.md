@@ -1,4 +1,4 @@
-# Why traffic ignores the player, and the smallest fix (RE 2026-10-31, nothing run)
+# Why traffic ignores the player, and the smallest fix
 Tools: G = Ghidra live (named project), C = capstone `tools/recomp/asm.py`. V = code read, I = inferred, U = open. Names: `census/names_traffic_w4.tsv`. Slot = 0x38-byte row of the neighbour list (ctx = car+0x2c of the AI object, own index byte ctx+0x388).
 
 ## Root cause

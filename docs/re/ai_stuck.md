@@ -1,4 +1,4 @@
-# Rivals: how often they get stuck, and what GetUnstuck really is (RE 2026-11-04)
+# Rivals: how often they get stuck, and what GetUnstuck really is
 
 Question: how often are rivals stuck or sideways, what triggers GetUnstuck (type 0xa, update 0x452070),
 how long does the recovery last, what does it do to the car, and is the trigger or the timer the cause.

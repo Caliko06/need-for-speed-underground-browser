@@ -1,4 +1,4 @@
-# Feel probe fix (2026-11-03, bec/pepa)
+# Feel probe fix
 
 Run that exposed the bugs: `runs/w_d_a/log.txt`, 682 `FEEL` lines, every one `cam 0 pov -1 row 00000000 dist 0.00 h 0.00 fov 0`,
 plus 5-line bursts of `FEEL A … 0-60 0.02 s`. Nothing was built or run for this fix; every offset below was read in

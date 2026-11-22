@@ -1,4 +1,4 @@
-# Main menu to WORLD (Speed.exe PC; RE for plan row 8; names in census/names_frontend.tsv, 22 rows)
+# Main menu flow
 
 V = capstone + Hopper agree, I = one tool, U = unknown. FEng objects are hashes (FEng::HashName 0x4fd230, upper-cased); text is a string-table hash.
 

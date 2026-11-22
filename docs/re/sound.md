@@ -1,4 +1,4 @@
-# Sound (Speed.exe PC) — RE notes
+# Sound (Speed.exe PC)
 
 Marks: V = read in code or bytes this session, I = inferred, U = open. Tools: G = Ghidra 12.1.4 (REA MCP / headless
 `tools/ghidra/gpar.sh`), H = Hopper export `census/hopper/decomp.c`, C = capstone `tools/recomp/asm.py`,

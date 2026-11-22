@@ -1,4 +1,4 @@
-# Jump cam refusals and the crash cam (RE only, 2026-10-31)
+# Jump cam refusals and the crash cam
 
 Source: OWNER log nfsu-session-2026-11-01T00-54-07 (WORLD 1010), disasm of pc/Speed.exe, Ghidra export. Nothing was run.
 V = read in code, I = inference, NV = not verified (needs the OWNER's F10 log).

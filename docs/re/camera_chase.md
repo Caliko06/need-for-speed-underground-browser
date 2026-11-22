@@ -1,4 +1,4 @@
-# Chase camera map (Speed.exe PC), second pass 2026-10-30
+# Chase camera map (Speed.exe PC)
 
 Tool for every line: G = Ghidra export `census/ghidra/decomp_*.c` (read this session), C = capstone `tools/recomp/asm.py dis`,
 D = bytes read with python struct from the unpatched exe. V = read in code or bytes. I = inferred. U = still open.

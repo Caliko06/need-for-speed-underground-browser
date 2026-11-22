@@ -1,4 +1,4 @@
-# Road section IDs: row 12 G1 / row 7 (static RE only)
+# Road section IDs
 Scope: retail `pc/Speed.exe`, existing road patches, UG2 source graph; no patch, build, game run or git write.
 Status: PARTIAL inventory, not proof of every carrier. `census/names_roadid.tsv` has 392 rows, including 358 distinct PC/cave/data addresses; exact final patch count is UNKNOWN.
 Evidence: PC Capstone + Ghidra/Hopper exports; GC ELF symbols + PPC accessors. Existing function names are retained; field labels below describe behavior, not recovered member spellings.

@@ -1,4 +1,4 @@
-# Coverage: which guest functions ever ran (2026-10-29)
+# Coverage: which guest functions ever ran
 
 Count at function ENTRY, direct calls included. Off by default; the normal build is byte-identical (md5 of build/gen
 `07b9d06a976fb6136bd302f1ed3619a6` before and after, `census/lift_report.json` unchanged by the lift).

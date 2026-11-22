@@ -1,4 +1,4 @@
-# Hosting map (plan.json step 2 row 6), OWNER 2026-11-14: Cloudflare R2 + a domain he buys
+# Hosting: Cloudflare R2 behind nfsu.cc
 Nothing below runs without the OWNER's go for that upload.
 | Step | Who | What |
 |---|---|---|

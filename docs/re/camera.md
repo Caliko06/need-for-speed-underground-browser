@@ -1,4 +1,4 @@
-# Cameras (Speed.exe PC) - RE notes
+# Cameras (Speed.exe PC)
 
 Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless
 (`tools/ghidra/gpar.sh`), H = Hopper export `census/hopper/decomp.c`, C = capstone `tools/recomp/asm.py`, D = bytes read

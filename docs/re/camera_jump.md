@@ -1,4 +1,4 @@
-# Jump camera: trigger, camera, return, and why it was missing (2026-10-30)
+# Jump camera: trigger, camera, return, and why it was missing
 
 Tools: G = Ghidra export `census/ghidra/decomp_0x401000_0x4a6800.c`, D = bytes of the unpatched exe (python struct, `tools/recomp/asm.py`),
 H = our host code read. Earlier work: `docs/openworld/re_jumpcam.md` (same chain, runtime logs of 2026-10-28). Not run in the pod this time
