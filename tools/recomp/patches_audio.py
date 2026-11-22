@@ -10,3 +10,13 @@ from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, RO
 # just-recycled (<3 s) car. Both flags off: the original call with the same argument.
 PATCHES.append(dict(addr=0x52536a, old="e8c1fbffff", new="e8" + _rel(0x52536a, 0x5256e8), when=lambda: True))
 PATCHES.append(dict(addr=0x5256e8, old="cc" * 6, new="ff25a4300100", entry=True, when=lambda: True))
+
+# PATCH: 0x537a60 EAXS_StreamManager::CreateStream type 0 = music. Skip before its 0x620 object and
+# 0x6400 stream buffers are allocated; speech/ambience types 1..9 retain the original path. REA/Hopper
+# + Ghidra 0x537a60; objdump 0x537a60..0x537c9e (ret 0x10). Update/pause/destruction check null slots
+# (0x5384e0, 0x537cc0, 0x5379c0), and music preview 0x51c720 also checks null. host/files.c owns
+# RN_NOMUSIC; host/trackfiles.c writes the byte at SCREEN_ADDR+0xe4 before the first bank load.
+PATCHES.append(dict(addr=0x7976b0, old="00" * 30,
+    new="803de430010000740a837c2404007503c2100064a100000000e99803daff", entry=True, when=lambda: True))
+PATCHES.append(dict(addr=0x537a60, old="64a100000000",
+    new="e9" + _rel(0x537a60, 0x7976b0) + "90", when=lambda: True))

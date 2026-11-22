@@ -47,6 +47,9 @@ static void car_prefetch(const char *car) {
 // each, car type = dword at +0x10) and calls 0x58c3b0 for each; 0x58bb50 prints "CARS\%s\TEXTURES.BIN" with the name at [0x734588] + 0xc90 * type + 0.
 // Called from gf_open (host/files.c): once per change of the list, every folder's files start coming at once (web only).
 void cars_hook(Ctx *c) {
+    // Ultra-Lite loads only the entrants the game actually opens, without speculative car requests.
+    const char *tier = getenv("RN_TIER");
+    if (tier && !strcmp(tier, "ultralite")) return;
     static uint32_t last;
     uint32_t tab = ld(c, 0x78a418, 4), n = ld(c, 0x78a41c, 4), ct = ld(c, 0x734588, 4);
     if (!tab || !ct || n == 0 || n > 64) return;

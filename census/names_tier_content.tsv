@@ -1,0 +1,5 @@
+address	name	status	evidence
+004b6880	QuickRaceModeSelect_Ctor	V	Hopper census:374486; REA ev_97cac2cea08fbfb2baadb42c169aca907e65049391c5fc0a4be7b894c6d06667; objdump
+004b70c0	QuickRaceModeSelect_BuildButtons	V	REA ev_4f93a822cb3723936a86b877e91f09d5fc1fc3d8eb0b0c3f96f0ce2b03615cbb; objdump 004b76db/004b781d
+004b6fe0	QuickRaceModeSelect_AddModeButton	V	REA ev_61b311e8903565484f0c2450b4c5cd049e08b6fff247700d11478a57a5b62b35; objdump 004b7070 writes EBX to node+8
+00537a60	EAXS_StreamManager_CreateStream	V	REA ev_0c08a1f5fb00be992309b8f1d46a350b434b1924eea584fe1f47f1710d1fded3; objdump 00537aa1/00537ac5; Ghidra decomp_0x4a6800_0x54c000.c:109535
