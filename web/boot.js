@@ -126,7 +126,16 @@ async function download(url, what) {
   }
   RN_APP.set('load');
   if (window.RN_HOLD) await window.RN_HOLD;       // ?fast=1: scene B draws first (web/index.html)
-  // Speed.exe downloads in parallel with speed.wasm (instantiateWasm below); both resolve before preRun.
+  // Speed.exe downloads in parallel with speed.wasm (or speed_lite.wasm on lite/ultralite).
+  const wantLite = RN_TIER === 'lite' || RN_TIER === 'ultralite';
+  const loadScript = src => new Promise((ok, no) => document.head.appendChild(Object.assign(document.createElement('script'), { src: src + (window.RN_V ? '?v=' + RN_V : ''), onload: ok, onerror: no })));
+  let wasmUrl = 'out/speed.wasm';
+  if (wantLite) {
+    try { await loadScript('out/speed_lite.js'); wasmUrl = 'out/speed_lite.wasm'; line('wasm: speed_lite (640 MB)'); }
+    catch { await loadScript('out/speed.js'); line('wasm: speed_lite missing, fallback speed'); }
+  } else {
+    await loadScript('out/speed.js');
+  }
   let exe = null;
   const exeP = download('pc/Speed.exe', 'Descargando').then(r => r.arrayBuffer()).then(b => new Uint8Array(b));
   exeP.catch(() => {});
@@ -138,7 +147,7 @@ async function download(url, what) {
     onAbort: what => line('STOP wasm abort: ' + what),
     // The 70 MB module compiles while it downloads, as Emscripten's own loader does, with the bytes counted on the gate.
     instantiateWasm: (imports, done) => {
-      Promise.all([exeP, download('out/speed.wasm', 'Descargando').then(r => WebAssembly.instantiateStreaming(r, imports))])
+      Promise.all([exeP, download(wasmUrl, 'Descargando').then(r => WebAssembly.instantiateStreaming(r, imports))])
         .then(([e, w]) => { exe = e; RN_APP.say('Arrancando…'); done(w.instance, w.module); }, e => line('STOP wasm: ' + e.message));
       return {};
     },

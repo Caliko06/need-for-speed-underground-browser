@@ -97,7 +97,6 @@ const RN_SEARCH = location.search || '?' + (sessionStorage.getItem('rn_q') ?? (R
 const bridgeTo = RN_Q.get('bridge');
 if (bridgeTo !== null) window.rnBridge = q => { location.href = (bridgeTo && bridgeTo !== '1' ? bridgeTo : `http://${location.hostname}:5190/`) + '?' + q; return 1; };
 </script>
-<script src="out/speed.js"></script>
 <script src="saves.js"></script>
 <script>
 // ?fast=1&go=1 (the launcher's "Jugar"): the launcher's 3D scene (web/launcher_b/index.html?curtain=1, named in full: R2 maps only / to index.html, a folder URL is a 404 page; frozen at the end of its push-in) covers the game while it boots
