@@ -1161,7 +1161,7 @@ int rn_screen_w = 1920, rn_screen_h = 1080;
 void win32_init(Ctx *c, uint32_t image_size) {
     int sw, sh;
     const char *scr = getenv("RN_SCREEN");
-    if (scr && sscanf(scr, "%dx%d", &sw, &sh) == 2 && sw >= 640 && sh >= 320 && sw <= 7680 && sh <= 4320) {
+    if (scr && sscanf(scr, "%dx%d", &sw, &sh) == 2 && sw >= 400 && sh >= 240 && sw <= 7680 && sh <= 4320) {
         rn_screen_w = sw & ~1; rn_screen_h = sh & ~1;
     }
     st(c, SCREEN_ADDR, rn_screen_w, 4); st(c, SCREEN_ADDR + 4, rn_screen_h, 4);
