@@ -2,7 +2,7 @@
 Scope: retail `pc/Speed.exe`, existing road patches, UG2 source graph; no patch, build, game run or git write.
 Status: PARTIAL inventory, not proof of every carrier. `census/names_roadid.tsv` has 392 rows, including 358 distinct PC/cave/data addresses; exact final patch count is UNKNOWN.
 Evidence: PC Capstone + Ghidra/Hopper exports; GC ELF symbols + PPC accessors. Existing function names are retained; field labels below describe behavior, not recovered member spellings.
-Prior art: `docs/openworld/re_widen.md` (especially Stage 4), `tools/openworld/citygraph.py:217-234`, `census/ug2/roads.md`; no externally proven NFSU1 widening implementation was located.
+Prior art: the WORLD road-widening note `re_widen` (not published), [`tools/openworld/citygraph.py:217-234`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/tools/openworld/citygraph.py#L217-L234), [`census/ug2/roads.md`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/census/ug2/roads.md); no externally proven NFSU1 widening implementation was located.
 
 | Carrier / path | Proven layout and exact PC sites | Width consequence |
 |---|---|---|

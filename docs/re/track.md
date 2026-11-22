@@ -1,8 +1,8 @@
 # Track: loading, sections, streaming, collision, route (Speed.exe PC)
 
 Marks: V = verified (a second tool agrees: Hopper export H vs Ghidra export G, plus capstone C over pc/Speed.exe, or file
-bytes F through tools/re/chunks.py), I = inferred, U = open. Prior notes (docs/openworld/re_stream.md, re_coll.md, re_zones.md,
-re_mesh.md, re_citygraph.md) were D; every claim reused here was re-read in the binary, the ones that were not are marked I/U.
+bytes F through tools/re/chunks.py), I = inferred, U = open. Prior notes (`re_stream`, `re_coll`, `re_zones`,
+`re_mesh`, `re_citygraph`) were D; every claim reused here was re-read in the binary, the ones that were not are marked I/U.
 Loaders and chunk ids are in docs/re/assets.md and not repeated; this doc starts where a TRACKB chunk has been handed to its loader.
 Names: census/names_track.tsv (62 rows, 48 V / 14 I). Road network (0x34121..24, traffic) belongs to docs/re/traffic.md.
 
@@ -40,7 +40,7 @@ Names: census/names_track.tsv (62 rows, 48 V / 14 I). Road network (0x34121..24,
    `FindNearestNode 0x443630`; `NeighbourNodes 0x443920` wraps closed paths; `WrapDistance 0x443d60` is the signed distance (17 callers, AI/traffic).
    Reverse races: `0x4435e0` replaces zone distance fields +0x1c/+0x20/+0x24 by length minus value (I, G only).
 7. Zones: manager `0x7372b0`; search `0x4436d0` (named Zone_Find in names_traffic), range search `0x443790`. Consumers: wrong way `0x430e00`,
-   reset `0x427ed0` / `0x4314a0` / `0x4264d0`, commentary `0x43fb50`, streamer type 10 in `0x444870`. Details and per-track counts: docs/openworld/re_zones.md.
+   reset `0x427ed0` / `0x4314a0` / `0x4264d0`, commentary `0x43fb50`, streamer type 10 in `0x444870`. Details and per-track counts: `re_zones`.
 
 ## Structures (offsets verified by the named code and, for files, by tools/re/chunks.py on TRACKB1001..1109)
 - wsrc row 0x20 (0x34132): +0 query mark byte (1 while collected), +1 bbox selector byte, +2 flags->body+0xb, +3 ->body+0xa, +4 s16 z hi,
@@ -50,7 +50,7 @@ Names: census/names_track.tsv (62 rows, 48 V / 14 I). Road network (0x34121..24,
   +0x14/+0x18/+0x1c/+0x20 bbox x0,y0,x1,y1, +0x30/+0x40/+0x50/+0x60 vertices (16 B each), +0x70/+0x74/+0x78 plane normal, +0x7c plane d. V H+G (0x43ff30).
   Pool node: +8 next, +0x10 free list, +0x18 used, +0x1c peak, +0x24 count, +0x28 stride, +0x2c capacity, data at +0x30 (0x43fe70 / 0x566ed0).
 - Ground cache (GroundQuery object): +0 box min xy, +8 max xy (floats), +0x10 box used, +0x20.. body pointers, +0xa8 count, +0xac last hit. V H+G.
-- Collision manager 0x77b130, wmap/wcell/wsrc/widx and the world bbox: docs/openworld/re_coll.md (layouts re-checked: 0x441380 stores
+- Collision manager 0x77b130, wmap/wcell/wsrc/widx and the world bbox: `re_coll` (layouts re-checked: 0x441380 stores
   +0 wmap, +4 rows, +8 wcell, +0xc rows, +0x10 wsrc, +0x14 rows = size>>5, +0x18 widx, +0x1c count; bbox +0x30/+0x40 from 0x34134).
 - Streamer 0x77a980: row 0x38 (0x34107): +8 s16 id, +0xa preload, +0xb wanted, +0xc state 0..3, +0x10 file index, +0x14 offset, +0x18 bytes, +0x1c resident
   bytes, +0x24 LRU, +0x28 request, +0x2c buffer. Viewer slots +0xd4/+0x118 (0x44 B: xy, v, enabled, id, candidate, counter). +0x17c count, +0x180 requests[256],

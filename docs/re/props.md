@@ -1,8 +1,8 @@
 # Props: smackable street objects (Speed.exe PC)
 
 Marks: V = verified (two tools agree, or code + file bytes), I = inferred, U = open. Tools: H = Hopper export,
-G = Ghidra export, C = capstone, F = game files (census/openworld_props.json, built from the TRACKB chunks).
-Prior notes in Spanish: docs/openworld/re_props.md (this doc re-checks them and corrects two numbers).
+G = Ghidra export, C = capstone, F = game files ([census/openworld_props.json](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/census/openworld_props.json), built from the TRACKB chunks).
+Prior notes in Spanish: `re_props` (this doc re-checks them and corrects two numbers).
 
 ## Answer
 - A prop is smackable when a placed object of the base stream (`0x34103` row in STREAML1RA.BUN) has an instance row
@@ -53,7 +53,7 @@ vehicles), found by key through `0x472c60`; no shape -> default box +-1.5 (`0x47
 7. Pool cleanup `0x595670`/`0x595750`: forced when fewer than 4 slots are free, else every 128 frames
    (0x8000007f mask). V H+G.
 
-## Classes (V F from census/openworld_props.json; roles by name = I)
+## Classes (V F from [census/openworld_props.json](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/census/openworld_props.json); roles by name = I)
 | # | class | smack type | surface | mass | release limit | life s | rows | unique |
 |---|---|---|---|---|---|---|---|---|
 | 0 | CS_AFrame | SAW_HORSE | WOOD | 0.5 | 0.4 | 0 | 0 | 0 |

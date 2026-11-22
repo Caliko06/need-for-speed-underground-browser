@@ -8,20 +8,19 @@ Step 2 facts from Main (ghosts r_a/r_b, RN_RESETLOG=1 RN_FREETMOVE=1): 59 resets
 MOVED-WHILE-SLOW, dz after the reset consistent with the road slope. Those go through 0x427f70 with a route path.
 The OWNER's bug is the **player's** reset, and the autopilot never triggers it (see the trigger table below).
 
-Note: the pedido named `docs/re/ai/reset_*.md`; that path does not exist in this worktree. The reset RE lives in
-`docs/re/coll_reset.md` (cache/pool), `docs/openworld/re_zones.md` (the triggers) and
-`build/build/hopper/resetcar.txt`/`collreset.txt`.
+The reset RE lives in
+[`docs/re/coll_reset.md`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/coll_reset.md) (cache/pool), the WORLD zone note `re_zones` (triggers; not published) and the Hopper exports of the reset functions.
 
 ## The reset, as the binary does it
 
 - Entry used by the port: `0x427f70` (host/free.c free_tmove, and the same tail as the game's own respawn). It ends in
-  `0x427c50` (V: coll_reset.md §1; the body at 0x427c50 reads arg0 = pointer to a 3-float position, arg1 = speed,
+  `0x427c50` (V: [coll_reset.md](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/coll_reset.md) §1; the body at 0x427c50 reads arg0 = pointer to a 3-float position, arg1 = speed,
   arg2 = heading word).
 - `0x427c50` writes, in this order (V, objdump of 0x427c50..0x427d84):
   - `car+0x3b4 = arg2` (heading word) and `car+0x3b6 = 0` (0x427c97/0x427c9e): **orientation is set**, not kept.
   - `car+0x60/64/68 = *arg0` (0x427cb1..0x427cb7) and `car+0x3d0 = arg1` (speed).
   - `call 0x440740(car+0x540)` (0x427cc0/0x427cc6): clears the car's collision cache: box = +inf/+inf/-inf/-inf and every
-    body count 0 (coll_reset.md §1, V).
+    body count 0 ([coll_reset.md](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/coll_reset.md) §1, V).
   - `call 0x4278d0` (0x427ccd), `car+0x460 = 0` (0x427d15).
   - `0x5673e0` output = unit heading * arg1 -> `car+0x70/74/78` (0x427d0a..0x427d13): **velocity is set** from the
     reset's own heading and speed, and its magnitude lands at `car+0x3d4` (0x427d2e..0x427d30).
@@ -42,7 +41,7 @@ Note: the pedido named `docs/re/ai/reset_*.md`; that path does not exist in this
   the binding of the two stack slots is not fully resolved by the aliasing decompiler; the number 3 and its position
   next to the dt computation are V).
 - So Speed.exe already caps a frame at 3 steps. A frame cannot integrate more than 3 * v/60 metres: at 50 m/s, 2.5 m.
-  The ground query inflates its box by `|vel|*0.05 + 3.0` m (coll_reset.md, V), which covers exactly that. A 50 ms frame
+  The ground query inflates its box by `|vel|*0.05 + 3.0` m ([coll_reset.md](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/coll_reset.md), V), which covers exactly that. A 50 ms frame
   alone does not tunnel a wall, and it cannot make a car fall (falling = no ground body, not a big step).
 - Turbo: `RN_TURBO=k` multiplies every guest clock by k (host/win32.c), so dt grows k times and the 3-step clamp binds
   harder (the game slows down, it does not step further). The web 60 fps path does not touch the clamp: dt still comes
@@ -58,12 +57,12 @@ Note: the pedido named `docs/re/ai/reset_*.md`; that path does not exist in this
    frame after a reset does not move the car through anything.
 2. **H2 - the cache car+0x540 is not refilled after 0x440740: FALSE.**
    V: 0x427c50 calls 0x440740 with car+0x540, which writes an empty (infinite) box and zeroes every body count;
-   0x4407b0 then must take the rebuild branch (coll_reset.md §1). No code path moves the car and leaves +0x540 stale.
+   0x4407b0 then must take the rebuild branch ([coll_reset.md](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/coll_reset.md) §1). No code path moves the car and leaves +0x540 stale.
 3. **H3 - the 8192 collision pool is full: FALSE as stated, PLAUSIBLE under another name.**
    V: the body pool is 1,024 slots (raised to 8,192 by patch 0x4412bd in this line of work); when it is full,
    0x441b90 calls 0x441b20, and when nothing has count 0 it executes `int3` 0x441b82 -> TRAP -> the game stops. It does
    not fall or pass a wall. I: the silent "no bodies" path is pool B `[0x72cbf4]` (wall polygon/witness bodies): 0x469810
-   tests `used == cap` and returns with nothing built, no int3 (re_coll_pool.md, V code / I consequence). That car then
+   tests `used == cap` and returns with nothing built, no int3 (`re_coll_pool`, V code / I consequence). That car then
    has no wall and no ground bodies: **both** symptoms, and exactly the pair reported. Pool B's cap is patched 0xa0 -> 0x800
    at 0x4669fe; a full raised pool A only makes the halt later.
 4. **H4 - velocity/orientation not cleared by 0x427c50: FALSE.**
@@ -78,7 +77,7 @@ Every trigger only raises `car+0x87c` (the "reset me" flag); none of them moves 
 |---|---|---|
 | request / crash recovery | `0x428080` sets `car+0x87c = 1` unless (global 0x78a368 != 0 and driver kind 2); callers 0x42a4d0 (from the service), 0x44b1b0 (AI update), 0x479e20 / 0x47ac00 (collision outcomes: the accident) | V decomp 0x428080; callers funcs.jsonl |
 | no ground every 32 frames, route > 5000 m | `JumpCamTrigger 0x426930`: `GroundQuery::HasGroundAt 0x440ce0` (wraps 0x440a40) at 0x426b29/0x426b50, then `mov [edi+0x87c],1` at 0x426b59; the 5000 m check sets it at 0x426ba2 | V objdump 0x426b29..0x426ba2 |
-| RESET zone (2) | `Car::ApplyResetZone 0x427ed0` sets `car+0x87c = 1` | V docs/openworld/re_zones.md, decomp |
+| RESET zone (2) | `Car::ApplyResetZone 0x427ed0` sets `car+0x87c = 1` | V decomp (WORLD note `re_zones`, not published) |
 | AI accident | `0x452710` sets `car+0x87c = 1` (AI only) | V decomp |
 
 The service is `Car::ServiceResetRequest 0x4264d0`, run from the car update (`CarCollisionBody::Move 0x46a030`):
@@ -86,7 +85,7 @@ it reads `car+0x87c`, gets the driver at `car+0x14`, and for **kind 1 (human) wi
 `mov eax,[esi+0x18]` (the controller) then `call 0x4314a0` (**V**: objdump 0x426526..0x42653e), clearing `car+0x87c`.
 `Player::ResetToRoute 0x4314a0`:
 - with a route path (`driver vtable +0x14` returns a node): `0x427f70(car, section, node, speed, 1, dir ±1, 0, 0, lateral)`,
-  the same 9-argument stdcall free.c uses (V decomp 0x4314a0, docs/free.c comment);
+  the same 9-argument stdcall free.c uses (V decomp 0x4314a0, host/free.c comment);
 - with no path: it scans **all** route nodes (`[0x7372c0]` count, `[0x7372c4]` rows of 0x14 B), keeps the nearest one
   that has ground by its own `0x440a40`, then calls `0x427c50(&pos, 0, heading = 0x564db0(car+0x818/0x81c))` (V decomp).
   Speed 0 there, so the reset leaves the car stopped at a node height.
@@ -120,6 +119,6 @@ action name; no code reads that event id.
 - `RN_RESETEVERY=<seconds>` (default off): every N s of a Free Run (flow mode 6) calls the player's own reset
   `0x4314a0` on the kind-1 car with the same argument the game passes (`eax = car+0x18`, no stack args), then clears
   `car+0x87c`, and logs it as `RSTE` through the same RST/RSTA/RSTW watch.
-  Recipe: `tools/openworld/ghost.sh rst 240 RN_RESETLOG=1 RN_RESETEVERY=3` (native, WORLD), or on :5186
+  Recipe: [`tools/openworld/ghost.sh`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/tools/openworld/ghost.sh) `rst 240 RN_RESETLOG=1 RN_RESETEVERY=3` (native, WORLD), or on :5186
   `?env=RN_RESETLOG=1` with `RN_RESETEVERY=3` in the environment. Non-player resets: `RN_RESETLOG=1 RN_FREELOG=1
   RN_FREETMOVE=1` with `?traffic=15&trafrefill=1`.

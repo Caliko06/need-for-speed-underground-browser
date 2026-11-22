@@ -68,7 +68,7 @@ rest zero; the next init in the ctor is `+0x300`).
 ## 3. AI slot pools — blocks 27+ (F)
 
 `0x45553c` 26 (0x18), `0x45557c` 27 (0x220), `0x4555bc` 27 (0xc4), `0x4555f9` 640 x 0x70
-(0x280) (F, values from `docs/openworld/re_racer_cap.md` §1.7, immediates re-checked in the
+(0x280) (F, values from `re_racer_cap` §1.7, immediates re-checked in the
 disassembly). One goal + one action + ~24 future points per AI car. Lift: 64/64/64/1536.
 `patches.py` already has 48/49/49/1280 for these (F, main's note) -> at 64 traffic the pools are
 short again: 56 AI cars need 64.
@@ -115,6 +115,6 @@ needed **if** it runs after every entrant is registered (NV, doc open item). If 
 
 ## Draft patch (step 0 + cap, all off)
 
-`tools/recomp/cand/cap_lalo.py`. Flip `when=lambda: False` -> `True` and rebuild; the build
+The candidate file (not published): flip `when=lambda: False` -> `True` and rebuild; the build
 stops if `old` stops matching. Step 0 is one site; step 1 is the immediate only (the entrant
 block is host memory: point `[0x78a418]` at `0x7c0000` from `host/` before the race build).

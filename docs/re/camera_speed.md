@@ -1,7 +1,7 @@
 # Camera at speed: distance, height, pitch, FOV
 
 Wish: "camera low/flat and car small at speed". Tools: capstone on the unpatched `pc/Speed.exe` (read-only, no build,
-no run), `census/hopper/decomp.c`, `docs/re/camera*.md`, `docs/archive/remaster/feel_2026-10-31.md` §1, port code
+no run), `census/hopper/decomp.c`, `docs/re/camera*.md`, the archived feel notes (not published) §1, port code
 `host/d3d9.c` + `web/tune.js`. Marks: **F** = read in bytes/code, **I** = inferred from F, **NV** = not verified.
 
 ## Answer
@@ -34,7 +34,7 @@ no run), `census/hopper/decomp.c`, `docs/re/camera*.md`, `docs/archive/remaster/
 | second blend | `0x48b61e..0x48b681` | `x·f`, then `+ (1-f)·forward` on all 3 axes | velocity weight = `f²` (F) |
 | pitch leveling | `0x48b685..0x48b6d7` | `fild dt`, `·[0x6cca38]` (0.00025), `/ [0x6b6e2c]` (2.0), `fsubr 1.0`, clamp 0..1, `·dir.z` | `r` → 0 at 2 s (F) |
 | row read | `0x48ba2a..0x48ba44` | `[esi+4]`→d, `[esi+0xc]`→lat, `[esi+8]`→h, `[esi+2]`→aux | per-POV row (F) |
-| tan(yaw) scale | `0x48ba48..0x48ba77` | `0x674898()`+aux → `sin(a)/sin(a+0x4000)` = `tan(a)` | a yaw, not a speed (F; corrects the "sine ratio at speed" guess in `feel_candidates.md` §3) |
+| tan(yaw) scale | `0x48ba48..0x48ba77` | `0x674898()`+aux → `sin(a)/sin(a+0x4000)` = `tan(a)` | a yaw, not a speed (F; corrects the "sine ratio at speed" guess in `feel_candidates` §3) |
 | chase eye/target | `0x48bb21..0x48bb36` | POV 0/1/4: target z = `d·tan(a) + h`, lateral = 0 | pitch swings with yaw error (F) |
 | contact eye | `0x48bafd` | eye `· [0x6b6eb0]` (1.3) when `car+0x38 != 0`, `car+0x3cc <= 2` | 1.3x, no speed (F) |
 | FOV | `0x48bbed` | `movzx eax, word [pov*2 + 0x6fbdf4]` → view `+8` | constant per POV (F) |
@@ -80,7 +80,7 @@ modes 6/7, not to the chase.
 Pitch of the shipped chase: `atan(h/d) = atan(1.7/5.8) = 16.3 deg` at every speed (F inputs, I on the on-screen read),
 leveled to 0 deg of *look* pitch by the `r` ramp (§1) 2 s after a cut.
 
-## 4. Three candidates (patches in `tools/recomp/cand/rosa.py`, all `when=lambda: False`)
+## 4. Three candidates (patches in a candidate file, not published, all `when=lambda: False`)
 
 Numbers are the row values the mover would use; `size` = `1/(tan(vfov/2)·d)` relative to the 4:3 reference (I).
 

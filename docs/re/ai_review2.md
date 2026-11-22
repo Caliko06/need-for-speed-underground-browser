@@ -1,8 +1,7 @@
 # Review 2: the three patches
 
-Scope: (a) bec/lalo `docs/re/ai_stuck.md` float readers + patch, (b) bec/tomas `docs/re/ai_traffic.md` patch 1 at
-0x4539db, (c) bec/memo `docs/re/ai_corner.md` one-sided jitter. Tools: capstone 5.0.7 (the venv at
-`/Users/angeldamian/RE-NFSU/.venv` has it), full-`.text` scan of `pc/Speed.exe`, `census/hopper/decomp.c`. Nothing run.
+Scope: (a) bec/lalo `docs/re/ai_stuck.md` float readers + patch, (b) bec/tomas [`docs/re/ai_traffic.md`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/ai_traffic.md) patch 1 at
+0x4539db, (c) bec/memo [`docs/re/ai_corner.md`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/ai_corner.md) one-sided jitter. Tools: capstone 5.0.7 (the repo venv has it), full-`.text` scan of `pc/Speed.exe`, `census/hopper/decomp.c`. Nothing run.
 V = read at the address. The old bytes quoted below are the image bytes, hex, read from the file.
 
 **(b) and (c) are mechanically sound.** (a) counts right but its diagnosis is wrong: the patch cannot remove the

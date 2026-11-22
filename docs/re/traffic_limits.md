@@ -2,7 +2,7 @@
 
 Read only, nothing was run. Tools: Ghidra live on the named project (G), capstone `tools/recomp/asm.py` (C),
 `tools/re/carinfo.py` on GLOBALB.BUN (F), file listing of game/Cars (D). V = read in code, I = inferred, U = open.
-Names: `census/names_trafficpool.tsv`. Earlier notes (docs/re/traffic.md, docs/openworld/re_racer_cap_probe.md) were leads.
+Names: `census/names_trafficpool.tsv`. Earlier notes (docs/re/traffic.md, `re_racer_cap_probe`) were leads.
 
 ## Answers first
 
@@ -25,7 +25,7 @@ Names: `census/names_trafficpool.tsv`. Earlier notes (docs/re/traffic.md, docs/o
 | 3 | Track polygon bodies | 0x466970, 0x469810 (G) | pool n = 0xa0 (160), stops adding when full | cars late in the update get no road polygons (I: may fall through) | code; they also take ids from 2 (U how long they live) |
 | 4 | Car body pool | 0x466970: CarCollisionBodySlotPool n=0x1e, slot 0x190 | 30, flags 0xb | grows by n/4+1 = 8 slots (V, G 0x567160) | none needed |
 | 5 | World object pool | 0x466970 n=0x20 (props, not cars) | 32 | grows | none |
-| 6 | AI slot pools | 0x455530 (docs/openworld/re_racer_cap_probe.md, not re-read) | 26/27/27/640 | grow (I) | optional |
+| 6 | AI slot pools | 0x455530 (`re_racer_cap_probe`, not re-read) | 26/27/27/640 | grow (I) | optional |
 | 7 | Neighbour list | 0x57a910, `mov [esp+0x4c], 0x10` at 0x57abad (C) | 16 cars per AI car | farther cars are invisible to that AI (soft) | code, not needed |
 | 8 | World car array | 0x41fe50 (G) | array at L+0x28 where L = [0x7361f8], layout room 150 until L+0x280; +0x18 total, +0x24 index of first traffic car | none up to 150 | none |
 | 9 | LoadedCar pool | 0x58c3b0 (G), pool [0x734500] | 40 (docs, I) | evicts unused entries, then grows | none |
@@ -101,7 +101,7 @@ The game rolls: horn flag is rolled first (probability 1.0 / 0.75 / 0.05 / 0.075
 only if the horn flag is set is the lights flag rolled (0.5, or 0.9 when the closing value [slot+4] > 50). A = 0.1..0.5 s (rand * 0.4 + 0.1),
 B = 0.05..0.25 s, C = 0.1..0.5 s, +0.6 when closing > 50. Trigger: the other car is a human, not traffic and not usage 1 (`0x57a6b0`),
 and it is in the traffic car's slot list. The older "within 50 m" is not what the code compares: 50 is tested against slot +4
-(a closing speed, per docs/openworld/re_traffic_rivals.md).
+(a closing speed, per `re_traffic_rivals`).
 
 To flash and honk from the host: `0x429100` with ecx = traffic car, A = 0.3, B = 0.15, C = 0.3, lights = 1, horn = 1, gap = 1
 (chosen values, not game values). It is silently ignored if the last arm is too recent.

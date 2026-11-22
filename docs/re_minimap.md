@@ -25,7 +25,7 @@ reading host/ and web/. NOT a runtime result unless marked. No game run was made
 | 0x4bf610 | Options menu: cycles byte_78a3f6 / saved dword_7588ec through 1 <-> 3 <-> 6. |
 | 0x5912b0 | Fills the mode table at 0x737850, stride 0x3c, 12 modes. |
 
-Correction to docs/openworld/re_trackmap.md: "mode 6 shows the whole picture" is wrong. Row 6 is all zeros and means
+Correction to `re_trackmap`: "mode 6 shows the whole picture" is wrong. Row 6 is all zeros and means
 "map off". The live mode comes from the saved option (1, 3, 11 or 5); the shots match 1 or 3.
 
 ## 2. Data source

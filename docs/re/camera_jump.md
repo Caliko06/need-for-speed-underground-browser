@@ -1,7 +1,7 @@
 # Jump camera: trigger, camera, return, and why it was missing
 
 Tools: G = Ghidra export `census/ghidra/decomp_0x401000_0x4a6800.c`, D = bytes of the unpatched exe (python struct, `tools/recomp/asm.py`),
-H = our host code read. Earlier work: `docs/openworld/re_jumpcam.md` (same chain, runtime logs of 2026-10-28). Not run in the pod this time
+H = our host code read. Earlier work: `re_jumpcam` (same chain, runtime logs of 2026-10-28). Not run in the pod this time
 (the game does not run there yet): the new facts below are from code and bytes, the Mac must confirm with a jump.
 
 ## The chain (V, G+D)
@@ -14,10 +14,10 @@ H = our host code read. Earlier work: `docs/openworld/re_jumpcam.md` (same chain
    - `0x706314`: 4.0 to 0.5 (look-ahead seconds fed to the flight predictor `0x429cf0`).
    - min height `0x7062cc`: 2.5 to 0.5. At x=128: **1.5 m**. Min distance `0x7062e4`: 2.5 to 0.5, at x=128: **1.5 m**.
 3. The predictor `0x429cf0` returns max height and distance of the flight. If both are above the curves, `0x42c4b0()` must return non-zero
-   (it builds the camera spline from the driver's route; fails if the route has fewer than 5 nodes over 75 m, see re_jumpcam.md), then
+   (it builds the camera spline from the driver's route; fails if the route has fewer than 5 nodes over 75 m, see `re_jumpcam`), then
    **`0x426930` calls `0x42da40(mode 6, 0, 1, 1)`** (call at `0x426dd7` region; the call to `0x42c4b0` at `0x426dd7` is the one our cave replaces).
 4. `0x42da40` mode 6: slow motion `0x420050(0.4, 8.0 s)` (`[0x6b7ab0]`, `[0x6b7a74]`), camera mover **type 0xf** (TrackCar, update `0x485c00`) through
-   `0x42c6d0(ctrl, 0xf, 1)`, `ctrl+0x60 = 6`, `[0x73654c] = 1`. Cooldown: 5 s per mode (`[0x6b7a88]`). Refusals: see re_jumpcam.md.
+   `0x42c6d0(ctrl, 0xf, 1)`, `ctrl+0x60 = 6`, `[0x73654c] = 1`. Cooldown: 5 s per mode (`[0x6b7a88]`). Refusals: see `re_jumpcam`.
 5. The shot (`0x485c00`, G): the eye is a point of the route spline (`mover+0x410..0x428`, segment chosen by the car's progress), the target is the
    car (`mover+0x438` car, position `+0x60`); FOV `mover[0x1c]+0xc4` is set here from the distance (`0x564db0`), `+0xbc = [0x6b6cd0]`. No wall sweep is
    run on this eye (the push-out `0x4838e0` has two call sites in the export, neither inside `0x485c00`, which calls `0x483860` and `0x485b90` instead).

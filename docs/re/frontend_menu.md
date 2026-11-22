@@ -22,7 +22,7 @@ V = capstone + Hopper agree, I = one tool, U = unknown. FEng objects are hashes 
 ## Quick Race chain (each screen's accept = slot 2 handler)
 MU_Main_PC (QuickRace) -> ModeSelect 0x4b7a94 (writes [0x777cc8] = mode) -> CarSelect 0x4bcb40 (writes [0x758c28] = car handle) -> TrackSelect 0x4bb2b0 (0x4bafe0 writes record+8 = track id, +0xc = reverse) -> Options 0x4b8050 / LapPopup 0x4bd710 -> QuickRace::StartRaceByMode 0x4b5c00.
 - 0x4b5c00: [0x777ccc]=0, RaceStatus::Reset 0x431df0 (esi 0x78a2f0), switch [0x777cc8] via 0x4b5d04 (3 -> RaceStarter::SetupFreeRun 0x4b5090), 0x4df790, then [0x77a90c] = "UnloadingFrontEnd" (0x6c9e8c), [0x77a904] = 0x448d10, [0x77a918] = 0 (@0x4b5ce1..0x4b5cf7). GameFlow does the rest (docs/re/gameflow.md state 3 -> 2 -> 4 -> 5 -> 6).
-- Per-mode settings record = 0x4ab510(0x748f70, mode); Free Run = 0x7589e0 (0x24 bytes): +8 track id, +0xc reverse. Setup 0x4b5090 copies +8 -> [0x78a2f0], +0xc -> [0x78a2fc], +0x18 -> [0x78a300]. (docs/openworld/re_freerun_menu.md says +0x18 is the reverse flag: wrong, the track pick stores it at +0xc, 0x4b9d5f / 0x4bb0bc.)
+- Per-mode settings record = 0x4ab510(0x748f70, mode); Free Run = 0x7589e0 (0x24 bytes): +8 track id, +0xc reverse. Setup 0x4b5090 copies +8 -> [0x78a2f0], +0xc -> [0x78a2fc], +0x18 -> [0x78a300]. (`re_freerun_menu` says +0x18 is the reverse flag: wrong, the track pick stores it at +0xc, 0x4b9d5f / 0x4bb0bc.)
 - WORLD is already the 32nd track row, id 1010, mask 0x90 (host/openworld.c world_rows), name pair TRACK_NAME_1010 -> "WORLD" (world_lang): it shows in the Free Run track list.
 
 ## What ?pool=1 / completion.py jump 3:1010 drives

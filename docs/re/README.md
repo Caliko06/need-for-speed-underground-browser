@@ -1,6 +1,6 @@
 # How Need for Speed Underground works inside
 
-One note per system of `Speed.exe` (2003, PC), read from the binary. Each claim carries the address or data that proves it, marked **V** (read in code or bytes), **I** (inferred) or **U** (open). Function names live in [`census/`](../../census).
+One note per system of `Speed.exe` (2003, PC), read from the binary. Each claim carries the address or data that proves it, marked **V** (read in code or bytes), **I** (inferred) or **U** (open). Function names live in [`census/`](../../census). A name like `re_zones` or `re_accel` is an earlier working note that was never published; what these notes reuse from it was read again in the binary. Links into `dd1146b` point to notes retired from the repo.
 
 **Play: [nfsu.cc](https://nfsu.cc)** · How these notes are read: [English](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) · [Español](https://nfsu.cc/blog/es/herramientas-ingenieria-inversa-ghidra-hopper-rea.html)
 

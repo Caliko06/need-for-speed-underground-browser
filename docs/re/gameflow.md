@@ -64,7 +64,7 @@ All writes of `[0x77a904]` with an immediate were enumerated with capstone (list
 
 Triggers in detail (V unless marked):
 - **Menu -> race**: `QuickRace::StartRaceByMode 0x4b5c00` switches on the mode `[0x777cc8]` (table 0x4b5d04: 0 circuit 0x4b49e0, 1 sprint 0x4b4c30,
-  2 knockout 0x4b4e60, 3 free run 0x4b5090, 4 0x4b52a0, 5 drag 0x4b55b0, 6 drift 0x4b59b0 (names of 4/5/6 from re_freerun_menu.md, I)), fills RaceStatus
+  2 knockout 0x4b4e60, 3 free run 0x4b5090, 4 0x4b52a0, 5 drag 0x4b55b0, 6 drift 0x4b59b0 (names of 4/5/6 from `re_freerun_menu`, I)), fills RaceStatus
   0x78a2f0 and sets next = UnloadingFrontEnd. Career starts through `Career::StartRaceFromEvent 0x4b5df0` (writer 0x4b62b3, same next).
 - **SkipFE / direct start**: `0x4b6390` copies the menu staging globals (0x734660.., 0x6f1d48..) into RaceStatus, creates the entrants with
   `0x5809c0(.., "SkipFE", ..)` and spawns opponents; from state 3 it requests UnloadingFrontEnd, from any other state it jumps straight to LoadingTrackCommon.

@@ -106,7 +106,7 @@ Picker `0x53c3a0` (V, G). It reads `p = player`, `order = 0x758b58[pos*2]`, wher
   - The pump `0x654050` runs the 100 Hz server `0x64e330`, then the mixer `0x656d70`, then Lock/Unlock.
   - `EAXSND8Wrapper::Initialize 0x532a20` sets 32 voices and 22,050/44,100 Hz from `0x6f7e88`.
   - `EAXMixMgr 0x5364e0` holds 4 groups × 11 channels, with presets at `0x743ca8` (stride 0x6c).
-- Names and the 20 corrections to the x86-ps2 map: agent TSV (night_log.md handoff), to be merged into
+- Names and the 20 corrections to the x86-ps2 map: agent TSV ([night_log.md](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/night_log.md) handoff), to be merged into
   `census/names_sound.tsv`.
 
 ## 5. Engine patch: from RPM to the four voice chains (night-opus-a2)

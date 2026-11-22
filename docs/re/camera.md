@@ -161,7 +161,7 @@ aux 5200 `[0x6b6c58]`), set 1 (when `[0x7364a0] == 3`) = (-15.8, 4.4, aux 3540 `
 
 ## 9. Free Run vs race vs garage
 
-- **Race and Free Run (I).** The same `0x42c670` choice (type 0x11) and the same special-mode gates; `docs/openworld` runtime table
+- **Race and Free Run (I).** The same `0x42c670` choice (type 0x11) and the same special-mode gates; an earlier WORLD runtime table
   (`re_jumpcam`) shows the same gates in Free Run. A difference by game mode exists in the factory block list (`[[0x7361f0]] in {5, 6, 10}`)
   and in `[0x7364a0]` (row set, view count kind). Which row set a normal single-player race uses (`[0x7364a0]` value) is U: the
   values 0..3 are set by `0x408370`/`0x408410` from the view list `[0x740504]` (G xrefs, C).

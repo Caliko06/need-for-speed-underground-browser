@@ -1,7 +1,7 @@
 # Acceleration chain and the knobs that scale it
 
 Question from the OWNER: "0-60 in ~2.7 s feels too fast". Sources read this session: `docs/re/physics.md`,
-`docs/archive/remaster/feel_2026-10-31.md` §5, `build/re_accel_2026-10-31.md` (read-only symlink to Main's), `census/hopper/decomp.c`
+the archived feel notes (not published) §5, `re_accel`, `census/hopper/decomp.c`
 (0x46cff0, 0x4774a0, 0x46aa40, 0x585410), direct float reads of `pc/Speed.exe`.
 Marks: F = read in code/data this or a prior RE session (cited), I = inference/model output, NV = not verified (no build, no run).
 
@@ -13,23 +13,23 @@ Per frame, `PhysicsMover 0x4774a0`: inputs -> per-wheel scales -> substeps `0x46
 1. **Base torque** `Engine::ComputeTorque 0x46cff0` (F, decomp 0x46cff0):
    `T = curve(rpm) * Engine+0xa0` then `* 1.05` if `Engine+0x1d != 0` (float `0x700024`, one reader only).
    `curve` = 9 samples 850..9000 rpm at `Engine+0x200..0x220` (ctor 0x46c7c0), turbo samples `+0x224..0x244`
-   already folded into the curve by `0x575bc0` (F, physics.md, build/re_accel §3).
+   already folded into the curve by `0x575bc0` (F, physics.md, `re_accel` §3).
 2. **Nitrous** is added after that product: `+ curve(rpm) * info+0x2ac` (F, same function). So nitrous L3 (6 s, strength
    0.5) does not scale with the 1.05 constant, and is not on during a 0-60 (F/I: not pressed in the logged run).
 3. **Wheel force** `F = T * gear * fd / r` (F for the fields, I for the port): gears/fd at `DriveTrain+0x54` /
-   `phys+0x1b0..`, `r = 0.3266`, `fd = split*[0x1bc] + (1-split)*[0x1b8]` (physics.md; build/re_accel §3).
+   `phys+0x1b0..`, `r = 0.3266`, `fd = split*[0x1bc] + (1-split)*[0x1b8]` (physics.md; `re_accel` §3).
 4. **Drag** is a body force, not a wheel term: `body+0x1e8 * body+0x1e4` in `0x585410` (F). Stock `phys+0x290 = 0`,
-   so the shipped car has no body drag; the ported table integration uses `k = 0.00043` (I, build/re_accel §7).
+   so the shipped car has no body drag; the ported table integration uses `k = 0.00043` (I, `re_accel` §7).
 5. **Acceleration** `a = (F - k v^2) / mass`, mass in tonnes, torque kN.m, force kN (F for units, I for the port).
 6. **Shift**: the acceleration table `0x581b30` rescans the shift rpm in 50 rpm steps from (idle+redline)/2; R34 lands at
-   7900 (F, build/re_accel §3). Each gear change costs ~0.25-0.4 s of torque interruption in the model (I, fitted there
+   7900 (F, `re_accel` §3). Each gear change costs ~0.25-0.4 s of torque interruption in the model (I, fitted there
    and re-fitted here).
 7. **Weight**: `0x576250` sets `mass = row[0] * stock_mass`, rows at spec chunk `0x2b0`; L1/L2/L3 = x0.932/0.866/0.800
-   for the R34 (F, build/re_accel §4).
+   for the R34 (F, `re_accel` §4).
 8. **Turbo**: level rows at `0x520` are 9 floats copied to `info+0x224` and added into the curve (F, tuning.md §1);
-   R34 stock peak 0.3428, turbo L1 0.3496 kN.m (F, build/re_accel §4).
+   R34 stock peak 0.3428, turbo L1 0.3496 kN.m (F, `re_accel` §4).
 9. **Engine / ECU / transmission** change the curve and the rpm limits; transmission L3 only touches top gear and
-   `out+0x1cc`, so 0-60 is unchanged (F, build/re_accel §4).
+   `out+0x1cc`, so 0-60 is unchanged (F, `re_accel` §4).
 
 ## 2. Constants and addresses that scale acceleration
 
@@ -49,7 +49,7 @@ The only in-exe global that scales acceleration without touching data chunks, pe
 **`0x700024`**: a 4-byte float, read once, single consumer. Mass/transmission/grip constants are per-level rows or
 per-car fields; patching those means either data edits in GLOBALB.BUN or a cave.
 
-## 3. The OWNER's levels (F, build/re_accel §2)
+## 3. The OWNER's levels (F, `re_accel` §2)
 
 R34 `SKYLINE`, spec `(weight 3, susp 1, engine 0, turbo 1, nitrous 3, ECU 0, trans 3, tires 3, brakes 2, spoiler 0, gf 0)`:
 mass 1.5 -> 1.2 t, peak torque 0.3496, gears 1-2 and fd unchanged, tires never traction-limited (mu ~2 vs ~1 g
@@ -58,7 +58,7 @@ demand), nitrous not pressed. So the relevant chain is: mass x0.8, turbo L1, x1.
 ## 4. Port of the chain, calibrated (I: model, not a measurement)
 
 Model: 9-point curve interpolation, `a = (T*gear*fd/r - k v^2)/m`, shift at 7900 rpm, dt 0.5 ms, target 26.82 m/s.
-Reproduces `build/re_accel_2026-10-31.md` within 0.02 s:
+Reproduces `re_accel` within 0.02 s:
 
 | case | prior report | this port |
 |---|---|---|

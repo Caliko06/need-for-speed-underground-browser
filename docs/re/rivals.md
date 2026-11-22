@@ -3,8 +3,8 @@
 Marks: V = verified (two tools agree: Hopper + Ghidra, or code + bytes of the game files), I = inferred, U = open.
 Tools: G = Ghidra export `census/ghidra/decomp_*.c`, H = Hopper export `census/hopper/decomp.c`,
 C = capstone `tools/recomp/asm.py dis`, D = data read from `game/` (`tools/re/events.py`, `tools/re/chunks.py`, scratch
-scripts). Names: `census/names_rivals.tsv`. Earlier notes (`docs/openworld/re_rivals_ai.md`, `re_rival_personality.md`,
-`re_rival_turnback.md`, `re_racer_cap*.md`, `re_ai_interact.md`) were re-checked; section "Corrections" lists what was wrong.
+scripts). Names: `census/names_rivals.tsv`. Earlier notes (`re_rivals_ai`, `re_rival_personality`,
+`re_rival_turnback`, `re_racer_cap*`, `re_ai_interact`) were re-checked; section "Corrections" lists what was wrong.
 Nothing was run. The REA MCP was not used.
 
 ## Answer
@@ -101,7 +101,7 @@ The four curves of a group: curve index `k = 2 x (laps >= 4) + (class in {2,3})`
 `[0x78a318]` != 0 the lap part is 0), class `[0x78a300]` = EventDesc +0x134. V (G, C)
 
 ## 2. Skill record (stride 0x54 at `0x779ff8`, index = skill 0..9)
-Offsets are from the record start (recomputed from the addresses the code uses; the older table in `re_rival_personality.md` was shifted).
+Offsets are from the record start (recomputed from the addresses the code uses; the older table in `re_rival_personality` was shifted).
 Values for skill 0 -> 9. "Reader" = instruction address (C).
 
 | off | skill 0 -> 9 | reader | meaning |
@@ -178,7 +178,7 @@ The selector (called as `goal->vt[5](ctx, currentType, currentPriority)`) is a f
 over JustDrive and Pass. The names come from the action vtable strings (earlier notes: I). Finder bodies (Pass, Block, GetUnstuck) were only compared between H and G (same callees and constants), not re-read: I.
 **Draw `0x462740` (vt+0x74)**: returns false if the same target was already refused less than 1.0 s ago (`0x6b734c`); else draws `rand01 < record+0x0c`; true = allowed.
 With record `+0x0c` = 1.0 for every skill the draw always passes; a refused draw (never in shipped data) stores the target and time. V (C, D)
-The "same target returns true" wording of `re_rivals_ai.md` was wrong.
+The "same target returns true" wording of `re_rivals_ai` was wrong.
 **Fork decider `0x462840` (vt+0x44)**: by fork type byte (`[fork+0xb]`): type 8 true only for the human, 2 true, 5 and 7 false, 9 asks 0x454a20; otherwise one roll `r`:
 `r <= rec+0` -> `type == 1`; `r <= rec+4` -> `type == 0`; `r <= rec+8` -> the default computed before. At skill 9 that is 90 % "type 0". V code, I meaning
 
@@ -195,21 +195,21 @@ The "same target returns true" wording of `re_rivals_ai.md` was wrong.
 ## 8. Turn-back, direction and driving line
 - Direction of every racer = vtable slot +0x40 = `0x45d640` = `mov eax, [0x78a2fc]`. Nothing in the racer AI turns a racer around. V (C, H, G)
 - The racer's path object type is its direction; it is built once when the ctx is created (`0x44cd30`, earlier note: not re-read, I) and grown per frame by `0x458cc0`.
-  The traffic decider `0x59c210` shows the game's own reversal (path retype + clearing 8 cache bits). `host/free.c` already uses this for Free Run (see `re_rival_turnback.md`). I
+  The traffic decider `0x59c210` shows the game's own reversal (path retype + clearing 8 cache bits). `host/free.c` already uses this for Free Run (see `re_rival_turnback`). I
 - Driving line = the route object (node records of 0x88 bytes, speed byte per node, future-point pools: goal 26, action 27, FuturePoints 27, FuturePoint 640; overflow chunks make them soft caps).
-  Slot pools do not fail when full (`re_racer_cap_probe.md`, I). The racer sees every car (human, rival, traffic) through the neighbour list built by `0x57a910` (16 cars max). I (earlier notes)
+  Slot pools do not fail when full (`re_racer_cap_probe`, I). The racer sees every car (human, rival, traffic) through the neighbour list built by `0x57a910` (16 cars max). I (earlier notes)
 - AI random numbers: world RNG at `[[0x7361f8]+0x2d0]` (`0x4216b0` int, `0x4216f0` float), same xorshift as the global `[0x6f227c]` used for names, cars, skills and grid: `s ^= 0x1d872b41; t = (s >> 5) ^ s; s = (t << 27) ^ t ^ s`. V (G, C)
 
 ## 9. Corrections to older notes
 | Note | Said | Binary shows |
 |---|---|---|
-| re_rivals_ai.md s4 | `[0x78a40c]` = difficulty | EventDesc `+0x148` (0 on 4 drag events, 2 elsewhere); difficulty is `[0x78a3fc]` |
-| re_rivals_ai.md s2 | draw returns yes for the same target | returns no; draw is always true at record `+0x0c` = 1.0 |
-| re_rivals_ai.md s4 | window threshold = record `+0x44` | `0x77a044` = record `+0x4c` (3..19 s); `+0x44` is the AI score gain |
-| re_rival_personality.md B | `+0x04` fork chance, `+0x10` catch-up strength, `+0x14/+0x18` top / corner speed | `+0x00/+0x04/+0x08` fork thresholds, `+0x10` drag action arg, `+0x14` speed multiplier, `+0x18` band floor |
-| re_rivals_ai.md, others | race clock in ms (x 0.001) | ticks, 4000 per second (x 0.00025) |
-| re_rivals_ai.md s4 | catch-up strength `[0x78a404]` writer unknown | EventDesc `+0x12c` in career; unset in quick race |
-| re_rivals_ai.md s4 | per-difficulty cap 0.93/0.97/1.0 | indexed by `[0x78a40c]` (event field), not difficulty |
+| `re_rivals_ai` s4 | `[0x78a40c]` = difficulty | EventDesc `+0x148` (0 on 4 drag events, 2 elsewhere); difficulty is `[0x78a3fc]` |
+| `re_rivals_ai` s2 | draw returns yes for the same target | returns no; draw is always true at record `+0x0c` = 1.0 |
+| `re_rivals_ai` s4 | window threshold = record `+0x44` | `0x77a044` = record `+0x4c` (3..19 s); `+0x44` is the AI score gain |
+| `re_rival_personality` B | `+0x04` fork chance, `+0x10` catch-up strength, `+0x14/+0x18` top / corner speed | `+0x00/+0x04/+0x08` fork thresholds, `+0x10` drag action arg, `+0x14` speed multiplier, `+0x18` band floor |
+| `re_rivals_ai`, others | race clock in ms (x 0.001) | ticks, 4000 per second (x 0.00025) |
+| `re_rivals_ai` s4 | catch-up strength `[0x78a404]` writer unknown | EventDesc `+0x12c` in career; unset in quick race |
+| `re_rivals_ai` s4 | per-difficulty cap 0.93/0.97/1.0 | indexed by `[0x78a40c]` (event field), not difficulty |
 
 ## 10. Functions
 Full list with evidence in `census/names_rivals.tsv`. Main entries: `0x4b5df0` StartRaceFromEvent, `0x4b4040` SpawnOpponents, `0x4b26f0` PresetRide::ApplyToRide,

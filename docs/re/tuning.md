@@ -35,11 +35,11 @@ until a row in `census/names_tuning.tsv` says V.
 
 | Note | Says | This RE shows | Evidence |
 |---|---|---|---|
-| `docs/driving_patches.md:4` | "the speed caps 0x583ea0, tuning 0x705f48..0x705f84" | `0x583ea0` is the generic lookup in a sampled float table (with clamping and linear interpolation; no cap of its own). `0x705f48..0x705f98` are four of those table headers for **steering vs speed**, read by `0x460a80`/`0x460de0`. Car tuning lives in GLOBALB chunk 0x34600 | V (G, D) |
-| `docs/archive/PLAN.md:114` | "speed caps 0x583ea0 on 0x705f48..0x705f84 (lead); bought upgrades really change the tuning values" | Same correction. Upgrades do change the physics, through `0x57f2b0` → `0x575960` with the table rows in §1. The 0x705f48 tables are the steering limit (relevant to the "rigid, late" handling item, not to upgrades) | V (G) |
-| `docs/re_scoreboard.md:57` | tuning block `0x705f48..`, speed caps `0x583ea0` | Point it to this doc and to chunk 0x34600 / `0x57f2b0` | V |
+| [`docs/driving_patches.md:4`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/driving_patches.md#L4) | "the speed caps 0x583ea0, tuning 0x705f48..0x705f84" | `0x583ea0` is the generic lookup in a sampled float table (with clamping and linear interpolation; no cap of its own). `0x705f48..0x705f98` are four of those table headers for **steering vs speed**, read by `0x460a80`/`0x460de0`. Car tuning lives in GLOBALB chunk 0x34600 | V (G, D) |
+| an archived plan (not published) | "speed caps 0x583ea0 on 0x705f48..0x705f84 (lead); bought upgrades really change the tuning values" | Same correction. Upgrades do change the physics, through `0x57f2b0` → `0x575960` with the table rows in §1. The 0x705f48 tables are the steering limit (relevant to the "rigid, late" handling item, not to upgrades) | V (G) |
+| [`docs/re_scoreboard.md:57`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re_scoreboard.md#L57) | tuning block `0x705f48..`, speed caps `0x583ea0` | Point it to this doc and to chunk 0x34600 / `0x57f2b0` | V |
 | `ref/docs/re/out/x86-ps2-map.tsv` row 0x473fc0 | `PhysicsUpgradeSpecification::GetUpgradeLevel` (tier I) | `0x473fc0` picks a row of the drift/drag blend table `0x6f0fc0` by a float vs 0.2/0.8; not GetUpgradeLevel | V (G, H) |
-| `docs/openworld/re_rivals_ai.md:107` | position curve "through sub_4175c0 / sub_583ea0" | Consistent: 0x583ea0 is the table lookup that reads that curve. No change needed | V |
+| `re_rivals_ai` | position curve "through sub_4175c0 / sub_583ea0" | Consistent: 0x583ea0 is the table lookup that reads that curve. No change needed | V |
 
 ## 1. Data: CarTypeInfo (chunk 0x34600)
 
@@ -80,7 +80,7 @@ nitrous L1..3 = 2/4/6 s in 2/4/6 shots. All 20 tuners share the nitrous rows. Tr
    then suspension 0x575a10, tires 0x575a90, aero 0x575b30, brakes (inline), engine/turbo/ECU/nitrous 0x575bc0,
    transmission 0x576360, and weight 0x576250 last.
 2. Mode blend (only when `[0x78a344]==0 && [0x7361a8]==0` and one of `[0x735fa0]`, `[0x78a345]`, `[0x7361a4]`;
-   0x78a345/0x7361a4 are the drift flags per `docs/openworld/re_zones.md`): `0x473fc0` picks one of 3 rows of the
+   0x78a345/0x7361a4 are the drift flags per `re_zones`): `0x473fc0` picks one of 3 rows of the
    0x6c-byte table `0x6f0fc0` from `out+0x1c0` (thresholds 0.2/0.8 at 0x6cc960/0x6cc95c). The row pulls several
    fields back toward stock by factors and snaps `out+0x1c0` to 0.175/0.5/0.825. V for the mechanics, I that this is
    the drift/drag handling assist. The map name "GetUpgradeLevel" for 0x473fc0 is **wrong**.

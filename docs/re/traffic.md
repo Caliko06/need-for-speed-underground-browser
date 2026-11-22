@@ -3,8 +3,8 @@
 Marks: V = verified (two tools agree, or code plus file bytes), I = inferred, U = open. Tools: H = Hopper export
 `census/hopper/decomp.c`, G = Ghidra export `census/ghidra/decomp_*.c`, C = capstone (`tools/recomp/asm.py`),
 F = the game files read with `tools/re/chunks.py` and a small parser (the checks are quoted in the text).
-Earlier notes (`docs/openworld/re_traffic_teleport.md`, `re_citygraph.md`, `re_ai_interact.md`,
-`docs/traffic_placement.md`, `docs/openworld_e_re.md`) were used as leads, not as proof; section "Prior notes" lists
+Earlier notes (`re_traffic_teleport`, `re_citygraph`, `re_ai_interact`,
+`docs/traffic_placement.md`, [`docs/openworld_e_re.md`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/openworld_e_re.md)) were used as leads, not as proof; section "Prior notes" lists
 what changed. Names: `census/names_traffic.tsv` (120 rows; V 67, I 49, U 4).
 
 ## Answer
@@ -80,7 +80,7 @@ section id < 128 (table of 128), link byte < 255 (u8 everywhere), intersection i
 | +6 u16 | source node index (the node whose link byte points here) | V F (1433/1433) |
 | +9 u8 | destination section id (`[0x77af30 + 4*byte]`) | V G + F (1433/1433 valid) |
 | +0xa u8 | source section id | V F |
-| +0xb u8 | type: file histogram 0:82 1:19 2:614 3:277 4:44 5:76 7:308 8:12 9:1; racer rule in `docs/openworld_e_re.md` B1 | V F, I meaning |
+| +0xb u8 | type: file histogram 0:82 1:19 2:614 3:277 4:44 5:76 7:308 8:12 9:1; racer rule in [`docs/openworld_e_re.md`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/openworld_e_re.md) B1 | V F, I meaning |
 | +0xd u8 | direction: 0 = forward entry, 1 = its reverse twin (21/21 pairs in 1006) | V F+G (`0x5a53c0` tests it with type 3) |
 | +0x14 | 0xffffffff in the file | I F |
 
@@ -177,14 +177,14 @@ ids are >= 1000 (V F), so columns 1..4 are unused. Traffic rides get no tuner sk
    give up past 500 m; side random below 24.5865 m/s, else the player's way). A spot needs a lane (`0x5995e0`), a drive flag (`0x4420b0`) and
    `0x59aa60`: not inside the start clear zone, not within 250 m of a player's route (`0x59ad90`, race state 4), and not closer than the
    spacing to any other car (`0x59b1e0`). On failure `0x5832a0` parks the car. V (H+G)
-5. **Despawn.** None. Parked cars wait for the next move; the 500 m rule of `docs/openworld/re_traffic_teleport.md` (free_recycle) is a host patch,
+5. **Despawn.** None. Parked cars wait for the next move; the 500 m rule of `re_traffic_teleport` (free_recycle) is a host patch,
    not in the game. I
 6. **Driving.** `0x583350`: per tick one traffic car of N is updated (round robin on `[0x6f08a4]`, I); a car with `+0x410` set only brakes; a failed route update
    parks it. Goal selectors `0x44e020` / `0x44e140`: if the action type is not 0x12 and the ceiling is <= 600, finder `0x4543d0` (intersection, priority 600);
    if the type is not 3 and the ceiling is <= 300, finder `0x453920` (car ahead in my lane within 5 m, priority 300). `0x453c60` changes lane (5 lanes) or
-   drops to 6 m/s at 15..30 m and 0 at <= 15 m. `0x44c2e0` honks at the player within 50 m. V (H+C) for the cascade, I for the rest (re_ai_interact.md section 3)
-7. **Collisions.** Traffic cars use the common car body (`CarCollisionBodySlotPool`, 30 bodies; re_racer_cap.md). Parking increments a counter at
-   `[[veh+0x3c]+0x1b]` (U what tests it). Racers avoid traffic through the shared neighbour list (re_ai_interact.md section 4, I).
+   drops to 6 m/s at 15..30 m and 0 at <= 15 m. `0x44c2e0` honks at the player within 50 m. V (H+C) for the cascade, I for the rest (`re_ai_interact` section 3)
+7. **Collisions.** Traffic cars use the common car body (`CarCollisionBodySlotPool`, 30 bodies; `re_racer_cap`). Parking increments a counter at
+   `[[veh+0x3c]+0x1b]` (U what tests it). Racers avoid traffic through the shared neighbour list (`re_ai_interact` section 4, I).
 
 Placement rules in detail (V asm, 2026-11-06; scratchpad gap1):
 - `0x59b1e0` (Spot_NearOtherCar) walks the WHOLE car list `[0x7361f8]` (players, racers, traffic, parked or not). Metric = route position, not Euclid:
@@ -218,11 +218,11 @@ The 120 names with evidence are in `census/names_traffic.tsv`. Main ones:
 |---|---|---|
 | `names_raw/assets_loadersA.tsv` | 0x34122 "+0xc node index u16, +0xa section" | wrong: source section +0xa, source node +6, destination +9 / +4 (V G+F) |
 | same | 0x34123 "per-section traffic rows" | they are intersections (two crossing sections, 49 in the game) (V H+G+F) |
-| same, `openworld_e_re.md` | 0x34124 "traffic route/junction records" | designer spawn points with per-level tables (V H+G+F) |
-| `re_traffic_teleport.md` | timer, 22 vs 1 car, 250/500 m, 0.35 gate, 99999 spacing | all confirmed (V H+G+F) |
-| `re_traffic_teleport.md` | "0x421a50 = route mode" | `[race+0x54] != 0 or [0x7361a8] != 0` (V H+G) |
+| same, [`openworld_e_re.md`](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/openworld_e_re.md) | 0x34124 "traffic route/junction records" | designer spawn points with per-level tables (V H+G+F) |
+| `re_traffic_teleport` | timer, 22 vs 1 car, 250/500 m, 0.35 gate, 99999 spacing | all confirmed (V H+G+F) |
+| `re_traffic_teleport` | "0x421a50 = route mode" | `[race+0x54] != 0 or [0x7361a8] != 0` (V H+G) |
 | `traffic_placement.md` | Free Run asks 12 x 1.5 | the factor is not in `0x4b3ac0` (U: host patch or other path) |
-| `re_ai_interact.md` | goal cascade 600 / 300 | confirmed (V H+C) |
+| `re_ai_interact` | goal cascade 600 / 300 | confirmed (V H+C) |
 
 ## Second-tool agreement (10 sampled names)
 
