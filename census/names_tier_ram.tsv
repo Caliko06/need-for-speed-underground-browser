@@ -1,0 +1,4 @@
+addr	name	system	confidence	evidence	tool	doc
+host:compile_web	LiteWasmBudget	tier_ram	V	tools/recomp/build.py compile_web: isolated speed_lite output; 640 MiB, 2 MiB pthread stack, 7 prewarmed workers	Python/source + WASM memory section	tableros/f2_tier_ram.md
+host:start_fn	GuestHostStackBudget	tier_ram	V	host/threads.c start_fn: explicit stack overrides Emscripten default; guest stack remains inside GUEST_MEM	C/source	tableros/f2_tier_ram.md
+host:cap/blk_new	UltraLiteRangeBudget	tier_ram	V	host/files.c cap/blk_new/gf_read: max 16 MiB including in-flight blocks; wait under pressure	C/source	tableros/f2_tier_ram.md

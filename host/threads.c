@@ -282,9 +282,14 @@ static void *run_timer(void *arg) {
 static void start_fn(Thread *t, void *(*fn)(void *)) {
     pthread_attr_t a;
     pthread_attr_init(&a);
-    pthread_attr_setstacksize(&a, 4u << 20);   // lifted guest calls are host calls
+#ifdef RN_LITE_WASM
+    pthread_attr_setstacksize(&a, 2u << 20);   // lifted calls need a host stack as well as the guest stack
+#else
+    pthread_attr_setstacksize(&a, 4u << 20);
+#endif
     t->started = 1;
     if (pthread_create(&t->pt, &a, fn, t)) { fprintf(stderr, "pthread_create failed\n"); exit(1); }
+    if (getenv("RN_RAM_AUDIT")) rn_log("ram thread: id=%x start=%08x timer=%u slots=%d", t->id, t->start, t->timer_id, nthreads);
 }
 static void start(Thread *t) { start_fn(t, run); }
 static Thread *thread_of(uint32_t h) {
