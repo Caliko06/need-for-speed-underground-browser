@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#04121a">
-<title>Reverse engineering a game with AI agents: what worked | NFSU.cc</title>
-<meta name="description" content="NFSU.cc went from the first commit to a public site in four weeks, with Claude, Codex and OpenCode agents doing the reading, patching and testing. The rules that kept them from guessing.">
+<title>Reverse engineering a game with AI agents: the rules that keep it exact | NFSU.cc</title>
+<meta name="description" content="On NFSU.cc, Claude, Codex and OpenCode agents read Speed.exe, write patches and run tests. These are the checks that stop them from guessing.">
 <link rel="canonical" href="https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html">
 <link rel="alternate" hreflang="en" href="https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html">
 <link rel="alternate" hreflang="es" href="https://nfsu.cc/blog/es/ingenieria-inversa-de-un-juego-con-agentes-de-ia.html">
@@ -15,15 +15,15 @@
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="NFSU.cc">
 <meta property="og:url" content="https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html">
-<meta property="og:title" content="Reverse engineering a game with AI agents: what worked">
-<meta property="og:description" content="NFSU.cc went from the first commit to a public site in four weeks, with Claude, Codex and OpenCode agents doing the reading, patching and testing. The rules that kept them from guessing.">
+<meta property="og:title" content="Reverse engineering a game with AI agents: the rules that keep it exact">
+<meta property="og:description" content="On NFSU.cc, Claude, Codex and OpenCode agents read Speed.exe, write patches and run tests. These are the checks that stop them from guessing.">
 <meta property="og:image" content="https://nfsu.cc/og.jpg">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="stylesheet" href="../blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Reverse engineering a game with AI agents: what worked", "description": "NFSU.cc went from the first commit to a public site in four weeks, with Claude, Codex and OpenCode agents doing the reading, patching and testing. The rules that kept them from guessing.", "inLanguage": "en", "datePublished": "2026-11-17", "dateModified": "2026-11-17", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "mainEntityOfPage": "https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://nfsu.cc/blog/en/index.html"}, {"@type": "ListItem", "position": 3, "name": "Reverse engineering a game with AI agents: what worked", "item": "https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html"}]}, {"@type": "SoftwareSourceCode", "name": "need-for-speed-underground-browser", "codeRepository": "https://github.com/Caliko06/need-for-speed-underground-browser", "url": "https://github.com/Caliko06/need-for-speed-underground-browser", "programmingLanguage": ["C", "Python", "JavaScript"], "runtimePlatform": "WebAssembly", "description": "Static recompilation of Need for Speed Underground (2003, PC) to WebAssembly."}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Reverse engineering a game with AI agents: the rules that keep it exact", "description": "On NFSU.cc, Claude, Codex and OpenCode agents read Speed.exe, write patches and run tests. These are the checks that stop them from guessing.", "inLanguage": "en", "datePublished": "2026-11-21", "dateModified": "2026-11-21", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "mainEntityOfPage": "https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://nfsu.cc/blog/en/index.html"}, {"@type": "ListItem", "position": 3, "name": "Reverse engineering a game with AI agents: the rules that keep it exact", "item": "https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html"}]}, {"@type": "SoftwareSourceCode", "name": "need-for-speed-underground-browser", "codeRepository": "https://github.com/Caliko06/need-for-speed-underground-browser", "url": "https://github.com/Caliko06/need-for-speed-underground-browser", "programmingLanguage": ["C", "Python", "JavaScript"], "runtimePlatform": "WebAssembly", "description": "Static recompilation of Need for Speed Underground (2003, PC) to WebAssembly."}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-drive.webp)">
 <header class="top">
@@ -38,34 +38,32 @@
 <main>
 <p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Guides</a></p>
 <article>
-<h1>Reverse engineering a game with AI agents: what worked</h1>
-<p class="lead">The first commit is from October 19, 2026. Four weeks and 1,022 commits later, the game was public. One person directed the work; AI coding agents did most of the reading, writing and testing.</p>
-<p class="date"><time datetime="2026-11-17">Updated November 17, 2026</time></p>
-<figure><img src="../img/olympic-city-world.webp" alt="Olympic City in the browser version of the game" width="1000" height="700" fetchpriority="high"><figcaption>One person decided what to build and judged every result by playing it.</figcaption></figure>
-<h2>Who did what</h2>
+<h1>Reverse engineering a game with AI agents: the rules that keep it exact</h1>
+<p class="lead">One person directs the project; AI coding agents do most of the reading, writing and testing. That works only because a wrong guess cannot survive the checks below.</p>
+<p class="date"><time datetime="2026-11-21">Updated November 21, 2026</time></p>
+<figure><img src="../img/olympic-city-world.webp" alt="Olympic City in the browser version of the game" width="1000" height="700" fetchpriority="high"><figcaption>One person decides what to build and judges every result by playing it.</figcaption></figure>
+<h2>Who does what</h2>
 <ul>
-<li><b>The owner</b> chose the direction, played every build and said yes or no. A rejected idea was written down and not reopened without them.</li>
-<li><b>Claude</b> (Anthropic's Claude Code) planned, read the binary and wrote most of the lifter and the host.</li>
-<li><b>Codex</b> (OpenAI) took whole slices in parallel: a subsystem, a tool, a test.</li>
-<li><b>OpenCode with DeepSeek</b> handled cheap, wide jobs: search the decompiled code, fill a census table, run a batch.</li>
+<li><b>The owner</b> chooses the direction, plays every build and says yes or no.</li>
+<li><b>Claude</b> (Anthropic's Claude Code) plans, reads the binary and writes most of the translator and the host.</li>
+<li><b>Codex</b> (OpenAI) takes whole slices in parallel: a subsystem, a tool, a test.</li>
+<li><b>OpenCode with DeepSeek</b> handles cheap, wide jobs: search the decompiled code, fill a census table, run a batch.</li>
 </ul>
 <h2>The risk: a confident guess</h2>
-<p>A language model can write a plausible offset or a plausible file format that is simply wrong, and a game built on wrong values fails far away from the mistake. Most of the rules of this project exist to stop that.</p>
+<p>A language model can write a plausible offset or a plausible file format that is simply wrong, and a game built on wrong values fails far away from the mistake. These checks exist to stop that:</p>
 <ul>
-<li><b>Proof or UNKNOWN.</b> Every value, format or patch names what proves it: an address read with REA (a reverse engineering server agents use over MCP) plus a second tool such as Ghidra or Hopper. Unproven means UNKNOWN, and nothing is built on it. More on that in <a href="reverse-engineering-tools-ghidra-hopper-rea.html">the toolbox</a>.</li>
-<li><b>A machine judge.</b> The lifter's output is compared bit for bit with a reference x86 CPU. An agent cannot argue with a mismatch. See <a href="static-recompilation-x86-to-webassembly.html">static recompilation</a>.</li>
-<li><b>Loud failures.</b> A missing instruction or a missing DirectX method stops the game with its name, so a gap is found the first time it runs instead of hiding.</li>
-<li><b>Real runs.</b> Changes are checked in a headless, muted Chrome that boots the real game and takes screenshots, and the owner judges from those screenshots and from playing.</li>
-<li><b>One state file.</b> A plan file lists every step with its state (fixed, verified, fails) and the evidence. A new session starts from it, not from memory.</li>
+<li><b>Proof or UNKNOWN.</b> Every value, format or patch names what proves it: an address read with REA (a reverse engineering server agents use over MCP) plus a second tool such as Ghidra or Hopper. Unproven means UNKNOWN, and nothing is built on it. More in <a href="reverse-engineering-tools-ghidra-hopper-rea.html">reading the binary</a>.</li>
+<li><b>A machine judge.</b> The translator's output is compared bit for bit with a reference x86 CPU. An agent cannot argue with a mismatch. See <a href="static-recompilation-x86-to-webassembly.html">static recompilation</a>.</li>
+<li><b>Loud failures.</b> A missing instruction or a missing DirectX method stops the game with its name, so a gap shows the first time it runs.</li>
+<li><b>Real runs.</b> A change is checked in a headless, muted Chrome that boots the real game and takes screenshots, and the owner judges by playing.</li>
+<li><b>One state file.</b> A plan file lists every step with its state and its evidence. Every session starts from it, not from memory.</li>
 </ul>
-<h2>What did not work</h2>
-<p>Long reports, percent-done scores and big multi-agent ceremonies cost time without making the game better, and were dropped. Heavy testing was cut to one check that matches how the owner plays. What stayed is small: a goal, the evidence rule, a commit after every finished step, and a person who plays the result.</p>
-<p>The code and its history are public on <a href="https://github.com/Caliko06/need-for-speed-underground-browser">GitHub</a>.</p>
+<p>The code is public on <a href="https://github.com/Caliko06/need-for-speed-underground-browser">GitHub</a>.</p>
 <p class="repo"><b>In the repo:</b> <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/difftest.py" rel="noopener"><code>tools/recomp/difftest.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/tree/main/docs/re" rel="noopener"><code>docs/re</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/tree/main/census" rel="noopener"><code>census</code></a></p>
 <div class="cta"><a href="/">Play now</a></div>
 </article>
 <h2 class="more">More guides</h2>
-<ul class="list"><li><a href="static-recompilation-x86-to-webassembly.html"><b>Static recompilation: turning a 2003 x86 .exe into WebAssembly</b><span>How the NFSU.cc lifter reads Speed.exe with Capstone, writes every one of its 13,760 functions as C, compiles them with Emscripten and checks them bit for bit against Unicorn.</span></a></li><li><a href="reverse-engineering-tools-ghidra-hopper-rea.html"><b>The reverse engineering toolbox: Ghidra, Hopper, REA and a census of names</b><span>Which disassemblers and decompilers were used to understand Need for Speed Underground, and the one rule that kept the work honest: no address is trusted until two tools agree.</span></a></li><li><a href="directx-9-and-windows-on-webgpu.html"><b>DirectX 9 and Windows XP rebuilt on WebGPU, Web Audio and workers</b><span>The recompiled game still calls Windows and DirectX. This is the layer that answers: a Radeon 9800 that draws with WebGPU, a sound card made of an AudioWorklet, and a hard drive that lives on a server.</span></a></li><li><a href="hosting-a-2-gb-game-on-cloudflare-r2-load-time.html"><b>From 65.7 to 28.2 seconds: hosting a 2 GB PC game on Cloudflare R2</b><span>Why a game built for a hard drive was slow over the internet, how one measurement found the cause (516 requests in a row), and the setup that serves 1.95 GB with the music included.</span></a></li></ul>
+<ul class="list"><li><a href="static-recompilation-x86-to-webassembly.html"><b>Static recompilation: how a 2003 x86 .exe runs as WebAssembly</b><span>How NFSU.cc turns Speed.exe into WebAssembly: Capstone reads it, every one of its 13,764 functions becomes C, Emscripten compiles them, and Unicorn checks them bit for bit.</span></a></li><li><a href="reverse-engineering-tools-ghidra-hopper-rea.html"><b>Reading the binary: Ghidra, Hopper, REA and a census of names</b><span>The disassemblers and decompilers behind every option and fix in Need for Speed Underground on NFSU.cc, and the rule that keeps them honest: no address counts until two tools agree.</span></a></li><li><a href="directx-9-and-windows-on-webgpu.html"><b>DirectX 9 and Windows XP rebuilt on WebGPU, Web Audio and workers</b><span>The recompiled game still calls Windows and DirectX. This is the layer that answers: a Radeon 9800 that draws with WebGPU, a sound card made of an AudioWorklet, and a hard drive that lives on a server.</span></a></li><li><a href="hosting-a-2-gb-game-on-cloudflare-r2-load-time.html"><b>Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu</b><span>How NFSU.cc serves the whole of Need for Speed Underground, music included, so a first visit reaches the menu after 32 MB: brotli pieces cut to the game&#x27;s own reads, whole small files and prefetch.</span></a></li></ul>
 </main>
 <footer><span>NFSU.cc: Need for Speed Underground in the browser.</span><a href="/">Play</a><a href="index.html">Guides</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">Code on GitHub</a><a href="../es/ingenieria-inversa-de-un-juego-con-agentes-de-ia.html" hreflang="es" lang="es">Español</a></footer>
 </body>

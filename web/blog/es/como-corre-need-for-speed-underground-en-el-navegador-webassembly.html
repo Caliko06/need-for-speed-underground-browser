@@ -44,7 +44,7 @@
 <figure><img src="../img/olympic-city-drive.webp" alt="Un coche manejando por Olympic City en la versión de navegador de Need for Speed Underground" width="1000" height="703" fetchpriority="high"><figcaption>El mismo código de física, rivales y HUD de 2003, ahora corriendo como WebAssembly.</figcaption></figure>
 <h2>Recompilación estática</h2>
 <p>El juego de PC es un programa de Windows, Speed.exe, hecho de código máquina para procesadores Intel de 32 bits. Una herramienta lee ese programa y escribe la misma lógica otra vez en WebAssembly, el formato de código portátil que los navegadores ejecutan casi a velocidad nativa. A esto se le llama recompilación estática: la traducción ocurre antes de que abras la página, no mientras juegas.</p>
-<p>Un emulador tendría que imitar una PC completa, instrucción por instrucción, en cada cuadro. Aquí el manejo, los rivales, los menús y las reglas del modo carrera son los originales, ya en el formato del navegador. El resultado es un archivo de unos 70 MB que viaja comprimido en unos 16 MB.</p>
+<p>Un emulador tendría que imitar una PC completa, instrucción por instrucción, en cada cuadro. Aquí el manejo, los rivales, los menús y las reglas del modo carrera son los originales, ya en el formato del navegador. El resultado es un archivo de unos 70 MB que viaja comprimido en 11 MB.</p>
 <h2>Una casa nueva para un programa viejo</h2>
 <p>El juego sigue creyendo que está en Windows XP. Pide ventanas, archivos, búferes de sonido, estado del teclado y una tarjeta gráfica con DirectX 9. Una capa escrita para este proyecto responde cada una de esas llamadas con lo que tiene un navegador:</p>
 <ul>

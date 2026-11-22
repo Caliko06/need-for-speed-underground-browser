@@ -44,7 +44,7 @@
 <figure><img src="../img/olympic-city-drive.webp" alt="A car driving through Olympic City in the browser version of Need for Speed Underground" width="1000" height="703" fetchpriority="high"><figcaption>The same physics, AI and HUD code as in 2003, now running as WebAssembly.</figcaption></figure>
 <h2>Static recompilation</h2>
 <p>The PC game is one Windows program, Speed.exe, made of machine code for 32-bit Intel processors. A tool reads that program and writes the same logic again as WebAssembly, the portable code format browsers run at close to native speed. This is called static recompilation: the translation happens before you ever open the page, not while you play.</p>
-<p>An emulator would have to imitate a whole PC, instruction by instruction, every frame. Here the handling, the rival drivers, the menus and the career rules are the original ones, already in the browser's own format. The result is a file of about 70 MB that travels compressed in about 16 MB.</p>
+<p>An emulator would have to imitate a whole PC, instruction by instruction, every frame. Here the handling, the rival drivers, the menus and the career rules are the original ones, already in the browser's own format. The result is a file of about 70 MB that travels compressed in 11 MB.</p>
 <h2>A new home for an old program</h2>
 <p>The game still believes it is on Windows XP. It asks for windows, files, sound buffers, keyboard state and a DirectX 9 graphics card. A layer written for this project answers each of those calls with what a browser has:</p>
 <ul>

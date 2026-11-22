@@ -14,14 +14,14 @@ SITE = "https://nfsu.cc"
 DATE = "2026-11-16"          # first published
 LANGS = ("en", "es")
 UI = {
-    "en": dict(guides="Guides", play="Play", other="Español", home="NFSU.cc", more="More guides", cta="Play now", updated="Updated %s", dev="How it was made", code="Code on GitHub", inrepo="In the repo:",
-               hub_title="Need for Speed Underground in the browser: guides and devlog", hub_h1="Guides",
-               hub_desc="How to play Need for Speed Underground online at nfsu.cc: first start, controls, browsers and phones, and how it was built: static recompilation, reverse engineering tools, WebGPU and AI agents.",
+    "en": dict(guides="Guides", play="Play", other="Español", home="NFSU.cc", more="More guides", cta="Play now", updated="Updated %s", dev="How it works", code="Code on GitHub", inrepo="In the repo:",
+               hub_title="Need for Speed Underground in the browser: guides", hub_h1="Guides",
+               hub_desc="How to play Need for Speed Underground online at nfsu.cc: first start, controls, browsers and phones, and how it works: static recompilation, reverse engineering tools, WebGPU and AI agents.",
                hub_lead="NFSU.cc is Need for Speed Underground (2003) running in a browser tab. These pages explain how to start, how to drive and what is under the hood.",
                foot="NFSU.cc: Need for Speed Underground in the browser."),
-    "es": dict(guides="Guías", play="Jugar", other="English", home="NFSU.cc", more="Más guías", cta="Jugar ahora", updated="Actualizado el %s", dev="Cómo se hizo", code="Código en GitHub", inrepo="En el repo:",
-               hub_title="Need for Speed Underground en el navegador: guías y bitácora", hub_h1="Guías",
-               hub_desc="Cómo jugar Need for Speed Underground online en nfsu.cc: primer arranque, controles, navegadores y celulares, y cómo se hizo: recompilación estática, herramientas de ingeniería inversa, WebGPU y agentes de IA.",
+    "es": dict(guides="Guías", play="Jugar", other="English", home="NFSU.cc", more="Más guías", cta="Jugar ahora", updated="Actualizado el %s", dev="Cómo funciona", code="Código en GitHub", inrepo="En el repo:",
+               hub_title="Need for Speed Underground en el navegador: guías", hub_h1="Guías",
+               hub_desc="Cómo jugar Need for Speed Underground online en nfsu.cc: primer arranque, controles, navegadores y celulares, y cómo funciona: recompilación estática, herramientas de ingeniería inversa, WebGPU y agentes de IA.",
                hub_lead="NFSU.cc es Need for Speed Underground (2003) corriendo en una pestaña del navegador. Estas páginas explican cómo empezar, cómo manejar y qué hay bajo el cofre.",
                foot="NFSU.cc: Need for Speed Underground en el navegador."),
 }
@@ -33,7 +33,7 @@ def keys(rows):
 # [[key]] in a text = the address of that guide in the same language.
 ARTICLES = [
     # Sources: browsers web/app.js:29; launcher rows web/launcher.js (screen A) and web/launcher_opts.js; first visit web/index.html:55;
-    # in-game panel web/overlay.js; load sizes plan.json step 2 row 4 (42.5 MB to the menu, 379 MB menu -> WORLD, speed.wasm 15.7 MB gzip);
+    # in-game panel web/overlay.js; load sizes: one cold visit with tools/loadcap.mjs 2026-11-21 (32.6 MB to the menu, speed.wasm 11.1 MB brotli);
     # remaster 1.1 GB web/launcher_opts.js; saves web/saves.js; F4 web/mode.js:78; low level = fx off, 30 fps, 1280 (launcher_opts.js quality).
     dict(key="play", img="olympic-city-world.webp",
          slug=dict(en="play-need-for-speed-underground-online", es="jugar-need-for-speed-underground-online"),
@@ -60,7 +60,7 @@ ARTICLES = [
 </ol>
 <p>Later visits go straight into the game. A small button in the corner opens a panel with the same options, and its "All settings" link takes you back to the launcher.</p>
 <h2>How big the first load is</h2>
-<p>Reaching the game's menu downloads about 45 MB; the game program itself is about 16 MB compressed. Your browser keeps the files, so the second visit starts faster.</p>
+<p>Reaching the game's menu downloads about 32 MB; the game program itself is 11 MB compressed. Your browser keeps the files, so the second visit starts faster.</p>
 <p>The optional remaster textures are a separate 1.1 GB download. They are off until you turn them on or pick the Ultra quality level.</p>
 <h2>Play or Career, Original or Remaster</h2>
 <p><b>Play</b> opens the game's main menu. <b>Career</b> goes straight into Go Underground; its progress can be "All open" or "Normal", where events unlock one by one.</p>
@@ -89,7 +89,7 @@ ARTICLES = [
 </ol>
 <p>Las siguientes visitas entran directo al juego. Un botón pequeño en la esquina abre un panel con las mismas opciones, y su enlace "Todos los ajustes" te regresa al launcher.</p>
 <h2>Cuánto pesa la primera carga</h2>
-<p>Llegar al menú del juego descarga unos 45 MB; el programa del juego pesa unos 16 MB comprimido. Tu navegador guarda los archivos, así que la segunda visita arranca más rápido.</p>
+<p>Llegar al menú del juego descarga unos 32 MB; el programa del juego pesa 11 MB comprimido. Tu navegador guarda los archivos, así que la segunda visita arranca más rápido.</p>
 <p>Las texturas del remaster son una descarga aparte de 1.1 GB. Están apagadas hasta que las prendes o eliges la calidad Ultra.</p>
 <h2>Jugar o Carrera, Original o Remaster</h2>
 <p><b>Jugar</b> abre el menú principal del juego. <b>Carrera</b> entra directo a Go Underground; su progreso puede ser "Todo abierto" o "Normal", donde los eventos se abren uno por uno.</p>
@@ -105,7 +105,7 @@ ARTICLES = [
 """)),
 
     # Sources: keys web/binds.js BIND_KEYS (game table 0x702c98) and web/pad.js header; Backspace = the menus' Back (table 0x7032d8 row 0x17);
-    # K and Select open the overlay (web/binds.js); M map web/gps/map.js:59; F4 web/mode.js:78; touch layer HANDOFF.md "Phone HUD v4"
+    # K and Select open the overlay (web/binds.js); F4 web/mode.js:78; touch layer HANDOFF.md "Phone HUD v4"
     # (GAS, BRAKE, NITROUS holds gas, HAND BRAKE in drift, SHIFT in drag or manual, CAMERA, RESET); iPhone home screen web/touch.js:131;
     # "Teclado como mando" web/launcher_opts.js steer.
     dict(key="controls", img="olympic-city-drive.webp",
@@ -187,7 +187,6 @@ ARTICLES = [
 <li><b>Frame rate</b>: 30 fps is half the work of 60.</li>
 <li><b>Remaster effects</b>: turns off bloom, smoothing and the other visual extras in one switch, without touching the gameplay improvements.</li>
 <li><b>MSAA 4x</b>: sharper edges, heavy on the graphics card. Leave it off on a laptop.</li>
-<li><b>Traffic</b>: fewer civilian cars in Free Run means less to simulate and draw.</li>
 </ul>
 <p>Picking <b>Original 2003</b> as the version is the lightest way to play: it is the game as it shipped, with none of the extra effects.</p>
 <h2>Phones and tablets</h2>
@@ -217,7 +216,6 @@ ARTICLES = [
 <li><b>Fotogramas</b>: 30 fps es la mitad del trabajo de 60.</li>
 <li><b>Efectos remaster</b>: apaga de un golpe el brillo, el suavizado y los demás extras visuales, sin tocar las mejoras de juego.</li>
 <li><b>MSAA 4x</b>: bordes más nítidos, pesado para la tarjeta gráfica. Déjalo apagado en una laptop.</li>
-<li><b>Tráfico</b>: menos coches civiles en Free Run es menos que simular y dibujar.</li>
 </ul>
 <p>Elegir <b>Original 2003</b> como versión es la forma más ligera de jugar: es el juego como salió, sin ninguno de los efectos extra.</p>
 <h2>Celulares y tabletas</h2>
@@ -228,7 +226,7 @@ ARTICLES = [
 """)),
 
     # Sources: AGENTS.md map (Speed.exe statically recompiled x86 -> WebAssembly, tools/recomp; host/ and web/ stand in for Windows/DirectX);
-    # speed.wasm 70 MB raw, ~16 MB gzip tools/upload_r2.sh; WebGPU web/gpu.js; threads + cross-origin isolation web/boot.js:97, plan.json step 2 row 2;
+    # speed.wasm 70 MB raw, 11.1 MB brotli tools/upload_r2.sh:29; WebGPU web/gpu.js; threads + cross-origin isolation web/boot.js:97, plan.json step 2 row 2;
     # game files by Range host/files.c (tools/upload_r2.sh comment); keys as DirectInput codes web/binds.js, web/dik.js; saves web/saves.js;
     # remaster effects web/launcher_opts.js (bloom, FXAA, MSAA, sharpness, anisotropic filter).
     dict(key="tech", img="olympic-city-drive.webp",
@@ -243,7 +241,7 @@ ARTICLES = [
          body=dict(en="""
 <h2>Static recompilation</h2>
 <p>The PC game is one Windows program, Speed.exe, made of machine code for 32-bit Intel processors. A tool reads that program and writes the same logic again as WebAssembly, the portable code format browsers run at close to native speed. This is called static recompilation: the translation happens before you ever open the page, not while you play.</p>
-<p>An emulator would have to imitate a whole PC, instruction by instruction, every frame. Here the handling, the rival drivers, the menus and the career rules are the original ones, already in the browser's own format. The result is a file of about 70 MB that travels compressed in about 16 MB.</p>
+<p>An emulator would have to imitate a whole PC, instruction by instruction, every frame. Here the handling, the rival drivers, the menus and the career rules are the original ones, already in the browser's own format. The result is a file of about 70 MB that travels compressed in 11 MB.</p>
 <h2>A new home for an old program</h2>
 <p>The game still believes it is on Windows XP. It asks for windows, files, sound buffers, keyboard state and a DirectX 9 graphics card. A layer written for this project answers each of those calls with what a browser has:</p>
 <ul>
@@ -261,7 +259,7 @@ ARTICLES = [
 """, es="""
 <h2>Recompilación estática</h2>
 <p>El juego de PC es un programa de Windows, Speed.exe, hecho de código máquina para procesadores Intel de 32 bits. Una herramienta lee ese programa y escribe la misma lógica otra vez en WebAssembly, el formato de código portátil que los navegadores ejecutan casi a velocidad nativa. A esto se le llama recompilación estática: la traducción ocurre antes de que abras la página, no mientras juegas.</p>
-<p>Un emulador tendría que imitar una PC completa, instrucción por instrucción, en cada cuadro. Aquí el manejo, los rivales, los menús y las reglas del modo carrera son los originales, ya en el formato del navegador. El resultado es un archivo de unos 70 MB que viaja comprimido en unos 16 MB.</p>
+<p>Un emulador tendría que imitar una PC completa, instrucción por instrucción, en cada cuadro. Aquí el manejo, los rivales, los menús y las reglas del modo carrera son los originales, ya en el formato del navegador. El resultado es un archivo de unos 70 MB que viaja comprimido en 11 MB.</p>
 <h2>Una casa nueva para un programa viejo</h2>
 <p>El juego sigue creyendo que está en Windows XP. Pide ventanas, archivos, búferes de sonido, estado del teclado y una tarjeta gráfica con DirectX 9. Una capa escrita para este proyecto responde cada una de esas llamadas con lo que tiene un navegador:</p>
 <ul>
