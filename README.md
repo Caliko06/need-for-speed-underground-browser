@@ -4,37 +4,31 @@
 
 # Play Need for Speed Underground online, in your browser
 
-**The 2003 PC game, free in a browser tab: no download, no install, no emulator. Open [nfsu.cc](https://nfsu.cc) and race on PC or phone. Under the hood, every function of `Speed.exe` was recompiled from x86 to WebAssembly.**
+**The 2003 PC game, free in a browser tab: no download, no install, no emulator. Open [nfsu.cc](https://nfsu.cc) and race on a computer or a phone.**
 
 <a href="https://nfsu.cc"><img src="https://img.shields.io/badge/%E2%96%B6%20Play%20now-nfsu.cc-3fb950?style=for-the-badge" alt="Play now at nfsu.cc"></a>
 
-![Target](https://img.shields.io/badge/x86-%E2%86%92%20WebAssembly-654ff0?style=flat-square&logo=webassembly&logoColor=white)
-![Functions](https://img.shields.io/badge/functions%20translated-13%2C770-1f6feb?style=flat-square)
-![Platforms](https://img.shields.io/badge/runs%20on-PC%20%C2%B7%20phones-8b949e?style=flat-square)
+![Runs on](https://img.shields.io/badge/runs%20on-PC%20%C2%B7%20Android%20%C2%B7%20iPhone%20%C2%B7%20iPad-8b949e?style=flat-square)
 ![Input](https://img.shields.io/badge/keyboard%20%C2%B7%20gamepad%20%C2%B7%20touch-8b949e?style=flat-square)
+![Target](https://img.shields.io/badge/x86-%E2%86%92%20WebAssembly-654ff0?style=flat-square&logo=webassembly&logoColor=white)
 
 **English** · [Español](README.es.md)
 
-[Play](https://nfsu.cc) · [What it looks like](#what-it-looks-like) · [How it works](#how-it-works) · [Guides](#guides-and-devlog) · [Repo map](#repo-map)
+[Play](#play) · [What you get](#what-you-get) · [Why it works](#why-it-works) · [Guides](#guides) · [Repo map](#repo-map)
 
 </div>
 
-> [!NOTE]
-> No emulator runs the game. `Speed.exe` is read once, on our side, and every function is written again as code a browser understands. What plays on the page is the game from 2003: same physics, same rivals, same menus, same soundtrack.
-
 ## Play
 
-1. Open **[nfsu.cc](https://nfsu.cc)** in Chrome, Edge, Firefox or Safari, on a computer or a phone. Any recent browser with WebGPU works ([details](https://nfsu.cc/blog/en/browsers-phones-performance-settings.html)).
-2. Press **Play**. The first visit downloads the game data once; later visits start from the browser cache.
-3. Drive with the keyboard, a gamepad or the touch controls. Your profile and saves stay in your own browser.
+1. Open **[nfsu.cc](https://nfsu.cc)** in Chrome, Edge, Firefox or Safari ([which versions](https://nfsu.cc/blog/en/browsers-phones-performance-settings.html)).
+2. Press **Play** for the game's main menu, or **Career** to go straight to Go Underground.
+3. Drive with the keyboard, a gamepad or the touch controls. Your profile and saves stay in your browser.
 
-## In numbers
+## What you get
 
-| Functions translated | Game program | Sent to the browser | Windows and DirectX stand-in | Game data served |
-|---:|---:|---:|---:|---:|
-| **13,770** | **70.5 MB** of WebAssembly | **13.0 MB** compressed | **14,650** lines of C | **1.95 GB**, songs and movies kept |
-
-## What it looks like
+| Game | Versions | Devices | Controls | Music |
+|---|---|---|---|---|
+| The whole 2003 game: Quick Race, Go Underground career, garage and tuning, Olympic City at night | **Original 2003**, as it shipped, or **Remaster**, with bloom, edge smoothing and sharper paint. <kbd>F4</kbd> switches | Computers, Android, iPhone and iPad. Phones start light: Original, 30 fps | Keyboard, gamepad, touch. Rebind in the launcher | The full soundtrack, every song |
 
 <table>
 <tr>
@@ -43,59 +37,51 @@
 </tr>
 <tr>
 <td align="center"><b>Olympic City</b><br><sub>The city as shipped in 2003, running in Chrome</sub></td>
-<td align="center"><b>Launcher</b><br><sub>Quality, game mode, volume and controls, in the game's menu style</sub></td>
+<td align="center"><b>Launcher</b><br><sub>Quality, version, volume and controls, in the game's menu style</sub></td>
 </tr>
 <tr>
 <td><img src="docs/media/garage.png" alt="The car select screen with a yellow Golf GTI"></td>
 <td><img src="docs/media/phone.webp" alt="The game on a phone, with touch controls drawn as thin circles"></td>
 </tr>
 <tr>
-<td align="center"><b>Car select</b><br><sub>The original menus, unchanged</sub></td>
-<td align="center"><b>Phones</b><br><sub>The same build on a phone screen, with touch controls</sub></td>
+<td align="center"><b>Car select</b><br><sub>The original menus</sub></td>
+<td align="center"><b>Phones</b><br><sub>The same build, with touch controls</sub></td>
 </tr>
 </table>
 
-## How it works
+## Why it works
+
+Nothing emulates a PC while you play. The game's own code runs in the page, so it drives, sounds and races the way it did in 2003.
+
+| | The game's code | What Windows gave it | The game's files |
+|---|---|---|---|
+| How | `Speed.exe` is translated once, ahead of time: all 13,764 of its functions become C, then one WebAssembly program | The page answers every call the game makes to Windows: DirectX 9 draws through WebGPU (WebGL 2 as a fallback), DirectInput reads keyboard, pad and touch, DirectSound plays through Web Audio | Served from Cloudflare in compressed pieces, fetched when the game opens them and kept by the browser |
+| Result | Same physics, rivals and menus as the original | One build for every device | An 11 MB program, then only the data the next screen needs |
+| Code | [`tools/recomp/`](tools/recomp) | [`host/`](host), [`web/`](web) | [`tools/build_public.py`](tools/build_public.py) |
+| Read more | [Static recompilation](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [DirectX 9 on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) | [Hosting 2 GB](https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html) |
 
 ```mermaid
 flowchart LR
-  EXE["pc/Speed.exe<br/>x86, 2003"] --> LIFT["tools/recomp<br/>each function becomes C"]
-  PATCH["patches_*.py<br/>one line each, with its proof"] --> LIFT
+  EXE["Speed.exe<br/>x86, 2003"] --> LIFT["tools/recomp<br/>every function to C"]
   LIFT --> WASM["speed.wasm"]
-  HOST["host/<br/>Windows, DirectX and sound, rewritten"] --> WASM
-  WASM --> PAGE["web/<br/>the page, launcher, touch controls"]
+  HOST["host/<br/>Windows, DirectX, sound"] --> WASM
+  WASM --> PAGE["nfsu.cc<br/>launcher, touch, saves"]
 ```
 
-| Step | Read | Translate | Stand in | Change | Serve |
-|---|---|---|---|---|---|
-| What happens | Every function of the game is found and named | Each function is written again as C, then compiled | The parts of Windows the game calls are rewritten for the browser | Every change to the game is a small patch that names its proof in the binary | Static files only, no server of our own |
-| Where | [`census/`](census), [`docs/re/`](docs/re) | [`tools/recomp/`](tools/recomp) | [`host/`](host) | [`tools/recomp/patches_*.py`](tools/recomp) | [`tools/build_public.py`](tools/build_public.py) |
-| Read how | [RE tools](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) | [Static recompilation](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [DirectX 9 on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) | [The lifter's patches](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [Hosting 2 GB](https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html) |
+Changes to the game are small patches in [`tools/recomp/patches_*.py`](tools/recomp), each naming the address in `Speed.exe` that justifies it. **Original 2003** keeps the game as it shipped; the extra effects and handling options belong to **Remaster**.
 
-> [!IMPORTANT]
-> One rule holds the project together: every value, format or patch names what proves it in the binary or the data (an address, a chunk id, a file and line). What is not proven is marked UNKNOWN, and nothing is built on it.
-
-## Guides and devlog
+## Guides
 
 | Play | [Play online](https://nfsu.cc/blog/en/play-need-for-speed-underground-online.html) | [Controls](https://nfsu.cc/blog/en/need-for-speed-underground-controls-keyboard-gamepad-phone.html) | [Browsers, phones, settings](https://nfsu.cc/blog/en/browsers-phones-performance-settings.html) |
 |---|---|---|---|
-| **How it was made** | [Static recompilation, x86 to WebAssembly](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) | [Reverse engineering tools](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) |
-| **More** | [Hosting a 2 GB game](https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html) | [Reverse engineering with AI agents](https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html) | [All posts](https://nfsu.cc/blog/en/index.html) |
-
-## Status
-
-The game is live at [nfsu.cc](https://nfsu.cc).
+| **How it runs** | [How it runs in a browser](https://nfsu.cc/blog/en/how-need-for-speed-underground-runs-in-a-browser-webassembly.html) | [Static recompilation](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) |
+| **Inside the game** | [Reading the binary](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) | [AI agents on the binary](https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html) | [All guides](https://nfsu.cc/blog/en/index.html) |
 
 ## Repo map
 
-| Folder | [`tools/recomp`](tools/recomp) | [`host`](host) | [`web`](web) | [`census`](census) | [`docs/re`](docs/re) | [`tools/hopper`](tools/hopper) |
-|---|---|---|---|---|---|---|
-| Holds | The translator and the patches | Windows and DirectX, rewritten | The page the player opens | Names and tables read from the binary | Reverse engineering notes | Queries for the disassembler |
-| Guide | [Recompilation](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) | [Play](https://nfsu.cc/blog/en/play-need-for-speed-underground-online.html) | [RE tools](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) | [RE tools](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) | [RE tools](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) |
-
-| Read first | Method notes | Hosting |
-|---|---|---|
-| File | [`docs/re/README.md`](docs/re/README.md) | [`docs/re/hosting.md`](docs/re/hosting.md) |
+| Folder | [`tools/recomp`](tools/recomp) | [`host`](host) | [`web`](web) | [`census`](census) | [`docs/re`](docs/re) |
+|---|---|---|---|---|---|
+| Holds | The translator and the patches | Windows, DirectX and sound for the browser | The page, launcher, touch controls | Every function of `Speed.exe`, named | One note per system of the game |
 
 <details>
 <summary><b>Build and run</b></summary>
@@ -106,11 +92,11 @@ tools/serve.py                               # serve on :5180
 node tools/webcheck.mjs --route              # boot check in headless Chrome
 ```
 
-The repo does not run alone. It needs a bought copy of the game on the machine.
+The build needs a bought copy of the game on the machine.
 
 | Not in git | `pc/Speed.exe` | `game/` | `build/`, `dist/`, `web/out/` |
 |---|---|---|---|
-| Why | The original program stays out | Game data stays out | Built files, made again by the build |
+| Why | The original program stays out | Game data stays out | Made again by the build |
 
 </details>
 
