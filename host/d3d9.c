@@ -18,6 +18,13 @@
 
 #define TR(...) do { if (rn_trace()) rn_log("d3d9 " __VA_ARGS__); } while (0)
 
+// Host-only render budget, exported by web/boot.js. Other tiers retain the existing path.
+static int tier_ultralite(void) {
+    static int on = -1;
+    if (on < 0) { const char *tier = getenv("RN_TIER"); on = tier && !strcmp(tier, "ultralite"); }
+    return on;
+}
+
 // ---- interfaces: vtable order of d3d9.h -----------------------------------------------------
 enum { I_D3D9, I_DEVICE, I_SURFACE, I_TEXTURE, I_CUBE, I_VB, I_IB, I_SWAPCHAIN, I_DECL, I_VS, I_PS, I_SB, I_QUERY, I_N };
 #define UNK "QueryInterface", "AddRef", "Release"
@@ -2466,6 +2473,8 @@ static void skin_blend(uint8_t *d, const uint8_t *const cv[3], const float *b, c
 }
 // Tries to draw the indexed triangle list smoothed; 1 = drawn.
 static int smooth_draw(Ctx *c, uint32_t base, uint32_t stride, uint32_t vmin, uint32_t nvert, uint32_t ibp, uint32_t count) {
+    // Keep the authored car/NPC mesh; avoid smoothing allocations and extra triangles on Ultra-Lite.
+    if (tier_ultralite()) return 0;
     static int level = -1;
     if (level < 0) { const char *e = getenv("RN_SMOOTH"); level = e ? atoi(e) : 3; }
     static int slog = -1, nlog;   // RN_SMOOTH_LOG=1: why a car draw is not smoothed (first 40 draws)
@@ -2797,7 +2806,8 @@ static uint32_t IDirect3DDevice9_DrawPrimitiveUP(Ctx *c) {
     rn_hud_on = hud;
     static int hud_seen;
     if (hud && !hud_seen) { hud_seen = 1; rn_log("d3d9 race HUD %ux%u (track loaded, 0x77a90c = 0x6c9c3c, 3D scene drawn)", rt->w, rt->h); rn_fixedclock_start(c); }
-    if (race && fxaa_frame != dev.frames) { fxaa_frame = dev.frames; uint32_t w1[8] = {rt->gpu}; psblur_vel(c, w1 + 1); gpu_cmd(GPU_FXAA, 8, w1); }
+    // GPU_FXAA dispatches the bridge's bloom, depth blur and FXAA passes (web/gpu.js).
+    if (!tier_ultralite() && race && fxaa_frame != dev.frames) { fxaa_frame = dev.frames; uint32_t w1[8] = {rt->gpu}; psblur_vel(c, w1 + 1); gpu_cmd(GPU_FXAA, 8, w1); }
     // OWNER A/B for the 16:9 decision (build/evidence/1_hud.md): RN_HUD=edges (default) | 169 (the side groups stop at a centred
     // 16:9 box) | 43 (the original 4:3 places); RN_FE=stretch widens the front-end island to the whole window (default: black bars).
     // input_hud_inset (web/touch.js, phones, live): the side groups stop that far from the picture's edge, so the notch and the

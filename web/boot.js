@@ -111,10 +111,14 @@ async function download(url, what) {
   // No WebGPU adapter (iOS 18 and older, Firefox on Android/Linux, old Android) or ?gl=1: WebGPU on WebGL 2 (web/webgpu_gl.js). It
   // replaces navigator.gpu and canvas.getContext('webgpu'), so it is loaded only here, never next to a working WebGPU.
   const webgl2 = RN_Q.get('gl') === '1' || !await navigator.gpu?.requestAdapter().catch(() => null);
+  RN_TIER = rnDetectTier(!webgl2);
+  line(`tier: ${RN_TIER} (${['full', 'standard', 'lite', 'ultralite'].includes(RN_TIER_OVERRIDE) ? 'override' : 'auto'}, ${webgl2 ? 'WebGL 2' : 'WebGPU'}, RAM ${navigator.deviceMemory || '?'} GB, cores ${navigator.hardwareConcurrency || '?'})`);
   if (webgl2) {
     // Resolve the mobile default before startGpu consumes RN_Q; this visit's ?sharp= still wins.
-    if ((RN_PHONE || RN_APP.coarse) && !RN_SHARP_EXPLICIT) RN_Q.set('sharp', 'off');
-    if (!document.createElement('canvas').getContext('webgl2')) { line('gpu.js: este navegador no tiene WebGPU ni WebGL 2', 'stop'); return; }
+    if ((RN_LOW_TIER || RN_APP.coarse) && !RN_SHARP_EXPLICIT) RN_Q.set('sharp', 'off');
+    const probe = document.createElement('canvas').getContext('webgl2');
+    if (!probe) { line('gpu.js: este navegador no tiene WebGPU ni WebGL 2', 'stop'); return; }
+    probe.getExtension('WEBGL_lose_context')?.loseContext(); // release the capability probe, never retain a second GL device
     await new Promise((ok, no) => document.head.appendChild(Object.assign(document.createElement('script'), { src: 'webgpu_gl.js' + (window.RN_V ? '?v=' + RN_V : ''), onload: ok, onerror: no })));
     navigator.gpu.gpu_js.canvas = document.getElementById('screen');
     if (RN_Q.get('glerr') === '1') navigator.gpu.gpu_js.errs = {};   // GL errors per command kind (web/webgpu_gl.js submit)   // the device's GL context is the page's canvas (no copy per frame)
@@ -148,8 +152,11 @@ async function download(url, what) {
       const home = RN_APP.coarse && (navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
       const turned = RN_APP.coarse && innerHeight > innerWidth;
       const vw = home ? Math.max(screen.width, screen.height) : turned ? innerHeight : innerWidth, vh = home ? Math.min(screen.width, screen.height) : turned ? innerWidth : innerHeight;
-      const dpr = window.devicePixelRatio || 1, BB = Number(RN_Q.get('bbmax') || ((RN_PHONE || RN_APP.coarse) ? (webgl2 ? 960 : 1280) : 2560)), k = Math.min(1, BB / (vw * dpr), BB * 9 / 16 / (vh * dpr));
-      // Phones and tablets: at most 960x540 on WebGL2, 1280x720 on WebGPU; ?bbmax= overrides either default.
+      const low = RN_LOW_TIER || RN_PHONE || RN_APP.coarse, dpr = window.devicePixelRatio || 1;
+      const requestedBB = Number(RN_Q.get('bbmax') || (low ? (webgl2 ? 960 : 1280) : 2560));
+      const BB = RN_TIER === 'lite' && webgl2 ? Math.min(960, requestedBB) : requestedBB;
+      const k = Math.min(1, BB / (vw * dpr), BB * 9 / 16 / (vh * dpr));
+      // Ultra-Lite caps bbmax at 720 in mode.js; Lite WebGL2 caps at 960. Other tiers retain their existing defaults.
       // Even sizes: the layer keeps width and height even (host/win32.c). At k = 1 the canvas gets exactly
       // back buffer / dpr CSS pixels, centred, so one back-buffer pixel is one device pixel; k < 1: Chrome scales it up.
       const bw = 2 * Math.floor(vw * dpr * k / 2), bh = 2 * Math.floor(vh * dpr * k / 2);
@@ -168,7 +175,7 @@ async function download(url, what) {
       // ?fps=30: the host frame pacer targets 30 fps (web/mode.js degradation switches; ?fx=0 is read there)
       if (RN_Q.get('fps') === '30') m.ENV.RN_FPS = '30';
       // host/files.c: the cache of fetched pieces (256 MB elsewhere). Phones: 96 MB, enough for the boot hint, one track and the cars (wasm break 1342 MB with 16 MB, 1523 with 256 on desktop, loadcap 2026-11-18); an iPhone tab dies near 1.5 GB.
-      if (RN_PHONE) { m.ENV.RN_RANGEMB = '32'; m.ENV.RN_NPRE = '2'; }   // ?env= below can override (32 MB keeps 4 MB whole-file reads, saves 64 MB on 3 GB iPhones)
+      if (RN_LOW_TIER) { m.ENV.RN_RANGEMB = '32'; m.ENV.RN_NPRE = '2'; }   // ?env= below can override (32 MB keeps 4 MB whole-file reads, saves 64 MB on 3 GB iPhones)
       // host/files.c: helper threads bring what this entry always reads (web/entry_hint.tsv) while the engine boots and the menus pass; then each track's race load and the cars.
       m.ENV.RN_PREFETCH = 'boot';
       if (RN_Q.get('fx') === '0' || RN_Q.get('fps') === '30') line(`lite: fx ${RN_Q.get('fx') === '0' ? 'off' : 'on'}, fps ${RN_Q.get('fps') === '30' ? 30 : 60}`);
@@ -177,6 +184,9 @@ async function download(url, what) {
         const k = kv.indexOf('=');
         m.ENV[k < 0 ? kv : kv.slice(0, k)] = k < 0 ? '1' : kv.slice(k + 1);
       }
+      // Keep the renderer and host on the same tier; Ultra-Lite's budget cannot be undone by ?env=.
+      m.ENV.RN_TIER = RN_TIER;
+      if (RN_TIER === 'ultralite') { m.ENV.RN_FPS = '30'; m.ENV.RN_LIMSLEEP = '1'; }
       // ?ai=0: rivals drive the shipped skill records, no nervous, clean or aggressive personalities (host/rivals.c). Read at each race.
       if (RN_Q.get('ai') === '0') m.ENV.RN_AI = '0';
       // ?trafyield=0: traffic does not move aside for the player closing from behind (host/rivals.c traffic_tick)

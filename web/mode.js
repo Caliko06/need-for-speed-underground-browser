@@ -23,10 +23,24 @@ const RN_ORIGINAL_ENV = { RN_TRAFFIC: '0', RN_RIVALS: '0', RN_SMOOTH: '0', RN_HU
 // Phones and tablets (coarse pointer) always start light (OWNER 2026-11-15): Original, effects off, 30 fps, whatever this
 // browser stored; only a ?mode= / ?fx= / ?fps= in the address (this visit's overlay or menu switch, a test) says otherwise.
 const RN_PHONE = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
+// Capability policy, not a GPU benchmark. Missing privacy-limited signals stay unknown (0).
+// F6 matrix: full needs WebGPU + 8 GB + 6 cores; constrained RAM/CPU takes priority over pointer type.
+const RN_TIER_OVERRIDE = new URLSearchParams(RN_SEARCH).get('tier');
+function rnDetectTier(webgpu = !!navigator.gpu) {
+  if (['full', 'standard', 'lite', 'ultralite'].includes(RN_TIER_OVERRIDE)) return RN_TIER_OVERRIDE;
+  const ram = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
+  if ((ram > 0 && ram < 3) || (cores > 0 && cores <= 2)) return 'ultralite';
+  if (RN_PHONE || (ram > 0 && ram < 4)) return 'lite';
+  if (webgpu && ram >= 8 && cores >= 6) return 'full';
+  return 'standard';
+}
+// boot.js resolves adapter availability before loading either renderer or exporting host ENV.
+let RN_TIER = rnDetectTier();
+const RN_LOW_TIER = RN_TIER === 'lite' || RN_TIER === 'ultralite';
 const RN_MODE = (() => {
   const q = new URLSearchParams(RN_SEARCH).get('mode');
   if (q === 'original' || q === 'remaster') return q;
-  if (RN_PHONE) return 'original';
+  if (RN_LOW_TIER) return 'original';
   // Default remaster (OWNER 2026-11-10); original only when picked.
   try { return localStorage.getItem('rn_mode') === 'original' ? 'original' : 'remaster'; } catch { return 'remaster'; }
 })();
@@ -38,17 +52,23 @@ const RN_SHARP_EXPLICIT = new URLSearchParams(RN_SEARCH).has('sharp');
 const RN_Q = (() => {
   const q = new URLSearchParams(RN_SEARCH);
   // WebGPU phones keep sharpen on upscale (OWNER 2026-11-15); boot.js turns this default off for WebGL2 after adapter detection.
-  if (RN_PHONE && !RN_SHARP_EXPLICIT) q.set('sharp', '0.5');
+  if (RN_LOW_TIER && !RN_SHARP_EXPLICIT) q.set('sharp', '0.5');
   if (RN_MODE === 'original') for (const [k, v] of Object.entries(RN_ORIGINAL)) if (!q.has(k)) q.set(k, v);
-  if (RN_PHONE && !q.has('fx')) q.set('fx', '0');
+  if (RN_LOW_TIER && !q.has('fx')) q.set('fx', '0');
   if (q.get('fx') === '0') for (const k of RN_FX_OFF) if (!q.has(k)) q.set(k, RN_ORIGINAL[k]);
   // 30 fps unless ?fps= says otherwise (host RN_FPS, web/boot.js)
-  if (RN_PHONE && !q.has('fps')) q.set('fps', '30');
+  if (RN_LOW_TIER && !q.has('fps')) q.set('fps', '30');
   // Phones (OWNER 2026-11-15: the blur and the motion looked wrong, the phone ran hot): the game's speed blur off (web/tune.js level 0; the
   // shipped one lays a half-size zoomed copy of the world over a picture that is already scaled up) and the frame limiter sleeps
   // instead of spinning (host/win32.c limiter_sleep: in menus the spin held one core at 99 %). ?blur= or ?env=RN_LIMSLEEP=0 say otherwise.
-  if (RN_PHONE && !q.has('blur')) q.set('blur', '0');
-  if (RN_PHONE) q.set('env', ['RN_LIMSLEEP=1', q.get('env')].filter(Boolean).join(','));
+  if (RN_LOW_TIER && !q.has('blur')) q.set('blur', '0');
+  if (RN_LOW_TIER) q.set('env', ['RN_LIMSLEEP=1', q.get('env')].filter(Boolean).join(','));
+  if (RN_TIER === 'ultralite') {
+    q.set('msaa', '1'); q.set('fx', '0'); q.set('fps', '30'); q.set('blur', '0'); q.set('sharp', 'off'); q.set('roadrefl', 'off');
+    for (const k of RN_FX_OFF) if (k !== 'roadrefl') q.set(k, RN_ORIGINAL[k]);
+    const bb = Number(q.get('bbmax'));
+    q.set('bbmax', String(bb > 0 ? Math.min(720, bb) : 720));
+  }
   return q;
 })();
 

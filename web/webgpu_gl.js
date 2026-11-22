@@ -24,6 +24,7 @@
 (function (global) {
    'use strict';
 
+   const ULTRALITE = typeof RN_TIER !== 'undefined' && RN_TIER === 'ultralite';
    const GL = (typeof WebGL2RenderingContext !== 'undefined') ? WebGL2RenderingContext : {};
    const ORIG_GET_CONTEXT = HTMLCanvasElement.prototype.getContext;
 
@@ -3928,6 +3929,9 @@ function pairedSampler(pipeline, index, bindGroup, texName) {
       }
       createSampler(desc) {
          if (!this._gl) this._ensureGl();
+         // Clamp before GPUSampler and colorSamplerFor cache the descriptor: one normal sampler,
+         // no extra GL objects or per-draw allocations, including when a caller requests anisotropy.
+         if (ULTRALITE) desc = Object.assign({}, desc, { maxAnisotropy: 1 });
          return new GPUSampler(this, desc || {});
       }
       createBindGroupLayout(desc) { return new GPUBindGroupLayout(this, desc); }
