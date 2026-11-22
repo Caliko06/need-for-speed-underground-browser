@@ -111,8 +111,8 @@ async function download(url, what) {
   // No WebGPU adapter (iOS 18 and older, Firefox on Android/Linux, old Android) or ?gl=1: WebGPU on WebGL 2 (web/webgpu_gl.js). It
   // replaces navigator.gpu and canvas.getContext('webgpu'), so it is loaded only here, never next to a working WebGPU.
   const webgl2 = RN_Q.get('gl') === '1' || !await navigator.gpu?.requestAdapter().catch(() => null);
-  RN_TIER = rnDetectTier(!webgl2);
-  line(`tier: ${RN_TIER} (${['full', 'standard', 'lite', 'ultralite'].includes(RN_TIER_OVERRIDE) ? 'override' : 'auto'}, ${webgl2 ? 'WebGL 2' : 'WebGPU'}, RAM ${navigator.deviceMemory || '?'} GB, cores ${navigator.hardwareConcurrency || '?'})`);
+  rnSetTier(rnDetectTier(!webgl2));
+  line(`tier: ${RN_TIER} (${RN_TIERS.includes(RN_TIER_OVERRIDE) ? 'override' : 'auto'}, ${webgl2 ? 'WebGL 2' : 'WebGPU'}, RAM ${navigator.deviceMemory || '?'} GB, cores ${navigator.hardwareConcurrency || '?'})`);
   if (webgl2) {
     // Resolve the mobile default before startGpu consumes RN_Q; this visit's ?sharp= still wins.
     if ((RN_LOW_TIER || RN_APP.coarse) && !RN_SHARP_EXPLICIT) RN_Q.set('sharp', 'off');

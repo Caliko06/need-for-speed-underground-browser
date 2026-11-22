@@ -23,21 +23,28 @@ const RN_ORIGINAL_ENV = { RN_TRAFFIC: '0', RN_RIVALS: '0', RN_SMOOTH: '0', RN_HU
 // Phones and tablets (coarse pointer) always start light (OWNER 2026-11-15): Original, effects off, 30 fps, whatever this
 // browser stored; only a ?mode= / ?fx= / ?fps= in the address (this visit's overlay or menu switch, a test) says otherwise.
 const RN_PHONE = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
-// Capability policy, not a GPU benchmark. Missing privacy-limited signals stay unknown (0).
-// F6 matrix: full needs WebGPU + 8 GB + 6 cores; constrained RAM/CPU takes priority over pointer type.
+// Policy: treat reported hardware as 80% usable capacity and step down 1 tier ("concepto -1")
+// when lacking WebGPU or running on a low-RAM phone, so devices stay inside real-world headroom.
+const RN_TIERS = ['ultralite', 'lite', 'standard', 'full'];
 const RN_TIER_OVERRIDE = new URLSearchParams(RN_SEARCH).get('tier');
 function rnDetectTier(webgpu = !!navigator.gpu) {
-  if (['full', 'standard', 'lite', 'ultralite'].includes(RN_TIER_OVERRIDE)) return RN_TIER_OVERRIDE;
+  if (RN_TIERS.includes(RN_TIER_OVERRIDE)) return RN_TIER_OVERRIDE;
   const ram = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
-  if ((ram > 0 && ram < 3) || (cores > 0 && cores <= 2)) return 'ultralite';
-  if (RN_PHONE || (ram > 0 && ram < 4)) return 'lite';
-  if (webgpu && ram >= 8 && cores >= 6) return 'full';
-  return 'standard';
+  const effRam = ram * 0.8, effCores = Math.floor(cores * 0.8);
+  let idx;
+  if ((effRam > 0 && effRam < 3) || (effCores > 0 && effCores <= 2)) idx = 0;
+  else if (RN_PHONE || (effRam > 0 && effRam < 4) || (effCores > 0 && effCores <= 3)) idx = 1;
+  else if (webgpu && effRam >= 6.4 && effCores >= 6) idx = 3;
+  else idx = 2;
+  if (!webgpu && idx > 0) idx--;
+  if (RN_PHONE && effRam > 0 && effRam < 4 && idx > 0) idx--;
+  return RN_TIERS[idx];
 }
-// boot.js resolves adapter availability before loading either renderer or exporting host ENV.
+// boot.js resolves adapter availability before loading either renderer or exporting host ENV,
+// then calls rnSetTier() so RN_TIER, RN_LOW_TIER, RN_MODE and RN_Q stay in sync.
 let RN_TIER = rnDetectTier();
-const RN_LOW_TIER = RN_TIER === 'lite' || RN_TIER === 'ultralite';
-const RN_MODE = (() => {
+let RN_LOW_TIER = RN_TIER === 'lite' || RN_TIER === 'ultralite';
+let RN_MODE = (() => {
   const q = new URLSearchParams(RN_SEARCH).get('mode');
   if (q === 'original' || q === 'remaster') return q;
   if (RN_LOW_TIER) return 'original';
@@ -49,7 +56,7 @@ const RN_MODE = (() => {
 //        terms back to the shipped ones); the remaster's gameplay and camera keys stay. ?fps=30: host RN_FPS (frame pacer).
 const RN_FX_OFF = ['remaster', 'skinhd', 'bloom', 'fxaa', 'sharp', 'aniso', 'carlook', 'cardetail', 'roadrefl'];
 const RN_SHARP_EXPLICIT = new URLSearchParams(RN_SEARCH).has('sharp');
-const RN_Q = (() => {
+function rnBuildQ() {
   const q = new URLSearchParams(RN_SEARCH);
   // WebGPU phones keep sharpen on upscale (OWNER 2026-11-15); boot.js turns this default off for WebGL2 after adapter detection.
   if (RN_LOW_TIER && !RN_SHARP_EXPLICIT) q.set('sharp', '0.5');
@@ -70,7 +77,17 @@ const RN_Q = (() => {
     q.set('bbmax', String(bb > 0 ? Math.min(720, bb) : 720));
   }
   return q;
-})();
+}
+const RN_Q = rnBuildQ();
+function rnSetTier(tier) {
+  RN_TIER = tier;
+  RN_LOW_TIER = tier === 'lite' || tier === 'ultralite';
+  const explicitMode = new URLSearchParams(RN_SEARCH).get('mode');
+  if (explicitMode !== 'original' && explicitMode !== 'remaster' && RN_LOW_TIER) RN_MODE = 'original';
+  const fresh = rnBuildQ();
+  for (const k of [...RN_Q.keys()]) RN_Q.delete(k);
+  for (const [k, v] of fresh) RN_Q.set(k, v);
+}
 
 (() => {
   const toast = document.createElement('div');
