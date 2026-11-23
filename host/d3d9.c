@@ -666,6 +666,7 @@ static uint32_t IDirect3DDevice9_Reset(Ctx *c) {
             return D3DERR_INVALIDCALL;
         }
     }
+    rn_screen_apply(c, pp);   // a page screen request lands here (host/win32.c rn_request_screen)
     uint32_t old[14];
     memcpy(old, dev.pp, sizeof old);
     for (int k = 0; k < 14; k++) dev.pp[k] = ld(c, pp + 4 * k, 4);

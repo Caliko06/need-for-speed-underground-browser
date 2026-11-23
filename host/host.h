@@ -91,6 +91,7 @@ extern const char *rn_screen;   // RN_FLOWLOG: the post-race screen shown (e.g. 
 extern unsigned rn_turbo;       // RN_TURBO: the guest clocks run this many times faster (native tests; 1 = play)
 extern const char *rn_fe;       // RN_FLOWLOG: the front end's active packages, "A.fng,B.fng,..."
 extern int rn_screen_w, rn_screen_h;   // the desktop the game sees: RN_SCREEN=WxH (the page passes its window size)
+void rn_screen_apply(Ctx *c, uint32_t pp);   // host/win32.c: applies a pending rn_request_screen inside Reset
 void rn_log(const char *fmt, ...);
 void input_jump(Ctx *c);        // RN_JUMP (host/input.c), from the RN_FLOWLOG pass at each Present
 void rn_cov_report(void);   // host/cov.c: the coverage bitmap (RN_COV=1 build); empty otherwise
