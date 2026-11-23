@@ -36,7 +36,7 @@ window.rnReport = () => {
   const date = new Date().toISOString(), name = `nfsu-session-${date.replace(/[:.]/g, '-')}.json`;
   const blob = new Blob([JSON.stringify({ format: 'rn-session-2', url: location.origin + location.pathname + RN_SEARCH, date, ua: navigator.userAgent,
     screen: `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, saved: +secs(), state: RN_APP.state,
-    ...(telem ? telem.dump() : {}), stats: window.rnStats ? window.rnStats.windows : [], log: allLog })], { type: 'application/json' });
+    ...(telem ? telem.dump() : {}), stats: window.rnStats ? window.rnStats.windows : [], quality: window.rnQuality ? window.rnQuality.decisions : [], log: allLog })], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 10000);
@@ -168,6 +168,10 @@ async function download(url, what) {
       const requestedBB = Number(RN_Q.get('bbmax') || (low ? (webgl2 ? 960 : 1280) : 2560));
       const BB = RN_TIER === 'lite' && webgl2 ? Math.min(960, requestedBB) : requestedBB;
       const k = Math.min(1, BB / (vw * dpr), BB * 9 / 16 / (vh * dpr));
+      // The size this device may grow back to (web/quality.js): the same rule without the measured bbmax (an address ?bbmax= still counts).
+      const ceilBB0 = Number(new URLSearchParams(RN_SEARCH).get('bbmax')) || (low ? (webgl2 ? 960 : 1280) : 2560), ceilBB = RN_TIER === 'ultralite' ? Math.min(720, ceilBB0) : RN_TIER === 'lite' && webgl2 ? Math.min(960, ceilBB0) : ceilBB0;
+      const kc = Math.min(1, ceilBB / (vw * dpr), ceilBB * 9 / 16 / (vh * dpr));
+      window.RN_CEIL = { w: 2 * Math.floor(vw * dpr * kc / 2), h: 2 * Math.floor(vh * dpr * kc / 2) };
       // Ultra-Lite caps bbmax at 720 in mode.js; Lite WebGL2 caps at 960. Other tiers retain their existing defaults.
       // Even sizes: the layer keeps width and height even (host/win32.c). At k = 1 the canvas gets exactly
       // back buffer / dpr CSS pixels, centred, so one back-buffer pixel is one device pixel; k < 1: Chrome scales it up.
@@ -269,6 +273,7 @@ async function download(url, what) {
   });
   telem = startTelemetry(M, t0, s => line(s));
   startStats(M);   // web/stats.js
+  startQuality(M, line, !webgl2);   // web/quality.js
   const onFrame = (s, t, ms) => { if (s.present && RN_APP.state === 'load') { if (!CURTAIN) arrive(); else if (!arrive.t) arrive.t = setTimeout(arrive, 45000); /* a trip that stalls must not leave the curtain down */ } telem?.frame?.(s, t, ms); };
   startGpu(M, document.getElementById('screen'), s => line(s, 'api'), onFrame).catch(e => line('gpu.js: ' + e.message, 'stop'));
   // RN_STEERLOG (host/input.c): also each key at the page and each present's GPU completion, on the page's clock

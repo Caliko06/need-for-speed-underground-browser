@@ -68,7 +68,7 @@ function startTune(M) {
   document.body.appendChild(toast);
   let hide = 0;
 
-  function apply(show) {
+  function apply(show, keep) {
     const p = BLUR[level], h = M.HEAPU32;
     RN_PS.on = !!p.ps && !psOff;
     h[base + 1] = bits(p.ramp[0]); h[base + 2] = bits(p.ramp[1]); h[base + 3] = bits(p.cap); h[base + 4] = bits(STREAK); h[base + 5] = trailColor(p.trails);
@@ -78,7 +78,7 @@ function startTune(M) {
     h[base + 9] = hfovK ? bits(hfovK) : 0;
     h[base + 10] = DECAY_RS;
     Atomics.add(h, base, 1);
-    try { localStorage.setItem(KEY, String(level)); } catch {}
+    if (!keep) try { localStorage.setItem(KEY, String(level)); } catch {}   // keep: the quality controller's change (web/quality.js) is not the player's choice
     if (!show) return;
     toast.textContent = `Blur ${level}/${BLUR.length - 1}: ${p.name}   (F6 / F7)`;
     toast.style.display = 'block';
@@ -95,4 +95,6 @@ function startTune(M) {
   }, true);
   window.addEventListener('keyup', e => { if (e.code === 'F6' || e.code === 'F7') { e.preventDefault(); e.stopPropagation(); } }, true);
   apply(false);
+  // web/quality.js: blur off under load and back, without touching the stored choice
+  window.rnBlur = { get: () => level, set: l => { if (BLUR[l] && !(psOff && BLUR[l].ps)) { level = l; apply(false, true); } } };
 }
