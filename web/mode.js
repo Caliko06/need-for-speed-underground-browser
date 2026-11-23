@@ -27,8 +27,21 @@ const RN_PHONE = (() => { try { return matchMedia('(pointer: coarse)').matches; 
 // when lacking WebGPU or running on a low-RAM phone, so devices stay inside real-world headroom.
 const RN_TIERS = ['ultralite', 'lite', 'standard', 'full'];
 const RN_TIER_OVERRIDE = new URLSearchParams(RN_SEARCH).get('tier');
-function rnDetectTier(webgpu = !!navigator.gpu) {
+// Measured quality (web/quality.js, plan row Q5): the last tier/bbmax/fx/fps the frame-time controller settled on for this device,
+// kept in localStorage 'rn_quality' = {dev, tier, bbmax, fx, fps, updated}. dev = hash of UA + screen + GPU id (the GPU id is cached
+// in 'rn_gpu' by quality.js). It replaces static detection; ?tier= ?fps= ?fx= ?bbmax= in the address still win. ?adapt=0 ignores it.
+const RN_ADAPT = new URLSearchParams(RN_SEARCH).get('adapt') !== '0';
+const rnHash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return (h >>> 0).toString(16); };
+const rnDevKey = gpu => rnHash([navigator.userAgent, Math.max(screen.width, screen.height) + 'x' + Math.min(screen.width, screen.height), window.devicePixelRatio || 1,
+  gpu ?? (() => { try { return localStorage.getItem('rn_gpu') || ''; } catch { return ''; } })()].join('|'));
+const RN_STORED = (() => {
+  if (!RN_ADAPT) return null;
+  try { const r = JSON.parse(localStorage.getItem('rn_quality')); if (r && r.dev === rnDevKey() && RN_TIERS.includes(r.tier)) return r; } catch {}
+  return null;
+})();
+function rnDetectTier(webgpu = !!navigator.gpu, ignoreStored = false) {
   if (RN_TIERS.includes(RN_TIER_OVERRIDE)) return RN_TIER_OVERRIDE;
+  if (RN_STORED && !ignoreStored) return RN_STORED.tier;
   const ram = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
   const effRam = ram * 0.8, effCores = Math.floor(cores * 0.8);
   let idx;
@@ -58,6 +71,11 @@ const RN_FX_OFF = ['remaster', 'skinhd', 'bloom', 'fxaa', 'sharp', 'aniso', 'car
 const RN_SHARP_EXPLICIT = new URLSearchParams(RN_SEARCH).has('sharp');
 function rnBuildQ() {
   const q = new URLSearchParams(RN_SEARCH);
+  if (RN_STORED) {   // measured values (web/quality.js); a key in the address wins
+    if (RN_STORED.bbmax > 0 && !q.has('bbmax')) q.set('bbmax', String(RN_STORED.bbmax));
+    if (String(RN_STORED.fx) === '0' && !q.has('fx')) q.set('fx', '0');
+    if (Number(RN_STORED.fps) === 30 && !q.has('fps')) q.set('fps', '30');
+  }
   // WebGPU phones keep sharpen on upscale (OWNER 2026-11-15); boot.js turns this default off for WebGL2 after adapter detection.
   if (RN_LOW_TIER && !RN_SHARP_EXPLICIT) q.set('sharp', '0.5');
   if (RN_MODE === 'original') for (const [k, v] of Object.entries(RN_ORIGINAL)) if (!q.has(k)) q.set(k, v);

@@ -24,7 +24,8 @@ function startStats(M) {
     const win = { t: Math.round(performance.now() / 1000), frames: n, fps: +(1000 * n / sum).toFixed(1), p50: +q(.5).toFixed(1), p95: +q(.95).toFixed(1), p99: +q(.99).toFixed(1),
       stutters: ms.filter(x => x > lim).length, gpuMs: +(gpu.reduce((a, b) => a + b, 0) / n).toFixed(2), target: +target().toFixed(1) };
     const W = window.rnStats.windows; W.push(win); if (W.length > KEEP) W.shift();
-    if (box) box.textContent = `${win.fps} fps  p95 ${win.p95} ms  stutters ${win.stutters}`;
+    dispatchEvent(new CustomEvent('rn-stats', { detail: win }));   // web/quality.js
+    if (box) box.textContent = `${win.fps} fps  p95 ${win.p95} ms  stutters ${win.stutters}` + (window.rnQuality ? '\n' + window.rnQuality.label() : '');
   };
   setInterval(() => { if (RN_APP.state !== 'stop') tick(); }, WIN_MS);
 }
