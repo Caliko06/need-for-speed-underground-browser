@@ -139,6 +139,7 @@ async function download(url, what) {
   } else {
     await loadScript('out/speed.js');
   }
+  window.RN_SAVES?.hook();                       // web/saves.js: seed /save before the game's preRun (else no profile: name screen)
   let exe = null;
   const exeP = download('pc/Speed.exe', 'Descargando').then(r => r.arrayBuffer()).then(b => new Uint8Array(b));
   exeP.catch(() => {});

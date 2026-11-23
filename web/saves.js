@@ -50,7 +50,7 @@
     return names.length;
   }
 
-  // Game page: wraps Speed (out/speed.js) so its preRun fills /save first. Must load after out/speed.js.
+  // Game page: wraps Speed (out/speed.js) so its preRun fills /save first. web/boot.js calls RN_SAVES.hook() right after it loads out/speed*.js (3aafd5b made that load late).
   function hook() {
     if (typeof Speed !== 'function') return;
     const orig = Speed;
@@ -125,6 +125,5 @@
     }] });
   }
 
-  window.RN_SAVES = { backup, restore, list: async () => [...(await all()).keys()] };
-  hook();
+  window.RN_SAVES = { backup, restore, hook, list: async () => [...(await all()).keys()] };
 })();
