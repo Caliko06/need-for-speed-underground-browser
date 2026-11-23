@@ -10,7 +10,7 @@ Usage: .venv/bin/python tools/recomp/build.py [native|web|lift]   (default: nati
 import bisect, collections, glob, hashlib, json, multiprocessing as mp, os, re, struct, subprocess, sys
 import pefile
 sys.path.insert(0, os.path.dirname(__file__))
-from lift import Lifter, Unsupported
+from lift import FlagABI, Lifter, Unsupported, FLAG_BIT
 import abk, patches
 
 CHUNKS = 160
@@ -27,20 +27,32 @@ BOUNDS = [_census[k * len(_census) // CHUNKS] for k in range(1, CHUNKS)]
 FUNCS.update({p["addr"]: "call" for p in patches.active() if p.get("entry")})
 FUNCS.update({a: "call" for p in patches.active() for a in p.get("entries", ())})   # calls into a multi-entry cave
 L = None
+LIFTED = None
 # RN_JOBS caps both pools: a pod quota is smaller than os.cpu_count() and freezes the container when exceeded.
 JOBS = int(os.environ.get("RN_JOBS") or os.cpu_count())
 
 
-def init():
-    global L
+def init(lifted=None, flag_abi=None):
+    global L, LIFTED
     L = Lifter("pc/Speed.exe", FUNCS)
     L.cov = COV
+    L.flag_abi = flag_abi
+    LIFTED = set(FUNCS) if lifted is None else lifted
+
+
+def scan(e):
+    try:
+        body, switches, bad = L.body(e)
+    except Unsupported as x:
+        return e, None, [], str(x)
+    cover = [(a, i.size) for a, i in body.items()] if FUNCS[e] != "data" else []
+    return e, L.flag_graph(e, body, switches, bad, compact=True), cover, None
 
 
 def work(e):
     try:
-        src = L.lift(e, set(FUNCS))
-        cover = [(a, i.size) for a, i in L.body(e)[0].items()] if FUNCS[e] != "data" else []
+        src = L.lift(e, LIFTED)
+        cover = [(a, i.size) for a, i in L.body(e)[0].items()] if L.flag_abi is None and FUNCS[e] != "data" else []
         return e, src, L.info, cover, None
     except Unsupported as x:
         return e, None, None, [], str(x)
@@ -54,7 +66,7 @@ def write_if_changed(path, text):
 
 def seal():
     """Hash of everything the lift reads: the exe, the census, the lifter and patch sources, the ABK files (by size and time)."""
-    h = hashlib.sha256(f"cov={COV} x87run={os.environ.get('RN_X87RUN')}".encode())
+    h = hashlib.sha256(f"cov={COV} x87run={os.environ.get('RN_X87RUN')} strict_flags={os.environ.get('RN_STRICT_FLAGS') == '1'}".encode())
     for f in ["pc/Speed.exe", "census/speed_exe_functions.tsv",
               *sorted(glob.glob("tools/recomp/**/*.py", recursive=True) + glob.glob("tools/recomp/caves/*.s"))]:
         h.update(f.encode() + b"\0" + open(f, "rb").read())
@@ -66,6 +78,34 @@ def seal():
     return h.hexdigest()
 
 
+def filter_seeds(scanned):
+    # A data pointer that lands inside an instruction of real code is not a code start.
+    inside = set()
+    for e, _, cover, _ in scanned:
+        for a, n in cover:
+            inside.update(range(a + 1, a + n))
+    failed = {hex(e): err for e, _, _, err in scanned if err}
+    kept = {e for e, _, _, err in scanned if not err and not (FUNCS[e] == "data" and e in inside)}
+    return kept, failed, len(scanned) - len(kept) - len(failed)
+
+
+def analyze_flags(exe_u32, mods):
+    with mp.Pool(JOBS, initializer=init) as pool:
+        scanned = pool.map(scan, sorted(FUNCS), chunksize=64)
+    lifted, failed, dropped = filter_seeds(scanned)
+    graphs = {e: graph for e, graph, _, _ in scanned if e in lifted}
+    del scanned
+    for k, m in enumerate(mods):
+        mod, entries = abk.module_lifter(m, abk.CB0 + k * abk.CB_STEP, FUNCS, exe_u32)
+        for e in sorted(entries):
+            graphs[e] = mod.flag_graph(e, *mod.body(e), compact=True)
+    abi = FlagABI(graphs)
+    flags = lambda mask: ",".join(f for f, bit in FLAG_BIT.items() if mask & bit) or "none"
+    print(f"flag ABI: {sum(bool(m) for m in abi.inputs.values())} live entries, "
+          f"indirect inputs {flags(abi.indirect_in)}, indirect returns {flags(abi.indirect_out)}", flush=True)
+    return abi, lifted, failed, dropped
+
+
 def lift_all():
     os.makedirs(GEN, exist_ok=True)
     sig, sealf = seal(), f"{GEN}/.seal"
@@ -73,20 +113,23 @@ def lift_all():
             os.path.exists(f"{GEN}/{n}") for n in ["funcs.h", "table.c", "abk.c"] + [f"f{k:03d}.c" for k in range(CHUNKS)]):
         print(f"lift skipped: inputs unchanged (seal {sig[:12]}, delete {sealf} to force)")
         return
-    with mp.Pool(JOBS, initializer=init) as pool:
-        res = pool.map(work, sorted(FUNCS), chunksize=64)
-    # A data pointer that lands inside an instruction of real code is not a code start.
-    inside = set()
-    for e, src, info, cover, err in res:
-        for a, n in cover:
-            inside.update(range(a + 1, a + n))
-    traps, failed, dropped, out = collections.Counter(), {}, 0, []
+    pe = pefile.PE("pc/Speed.exe")
+    img, base = pe.get_memory_mapped_image(), pe.OPTIONAL_HEADER.ImageBase
+    exe_u32 = lambda a: struct.unpack_from("<I", img, a - base)[0]
+    mods = abk.modules()
+    abi, lifted = None, None
+    if os.environ.get("RN_STRICT_FLAGS") != "1":
+        abi, lifted, failed, dropped = analyze_flags(exe_u32, mods)
+    with mp.Pool(JOBS, initializer=init, initargs=(lifted, abi)) as pool:
+        res = pool.map(work, sorted(FUNCS if lifted is None else lifted), chunksize=64)
+    if abi is None:
+        lifted, failed, dropped = filter_seeds([(e, None, cover, err) for e, _, _, cover, err in res])
+    traps, out = collections.Counter(), []
     for e, src, info, cover, err in res:
         if err:
             failed[hex(e)] = err
             continue
-        if FUNCS[e] == "data" and e in inside:
-            dropped += 1
+        if e not in lifted:
             continue
         out.append((e, src))
         for t in info["traps"]:
@@ -106,9 +149,7 @@ def lift_all():
                      "const uint32_t rn_fn_addr[] = {" + ",".join(f"0x{e:x}" for e, _ in out) + "};\n"
                      "void (*const rn_fn_ptr[])(Ctx *) = {" + ",".join(f"f_{e:x}" for e, _ in out) + "};\n"
                      + patches.c_table())
-    pe = pefile.PE("pc/Speed.exe")
-    img, base = pe.get_memory_mapped_image(), pe.OPTIONAL_HEADER.ImageBase
-    src, _, mods = abk.c_source(FUNCS, {e for e, _ in out}, lambda a: struct.unpack_from("<I", img, a - base)[0])
+    src, _, mods = abk.c_source(FUNCS, {e for e, _ in out}, exe_u32, flag_abi=abi, mods=mods)
     write_if_changed(f"{GEN}/abk.c", src)
     rep = {"functions": len(out), **mods, "patches": [f"{p['addr']:#x}" for p in patches.active()], "data_seeds_inside_instructions": dropped, "failed": failed,
            "trap_sites_by_reason": dict(traps.most_common())}
