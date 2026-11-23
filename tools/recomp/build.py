@@ -187,7 +187,7 @@ def compile_web():
                     f"-sDEFAULT_PTHREAD_STACK_SIZE={2 if lite else 4}MB",
                     "-sPROXY_TO_PTHREAD=1", f"-sPTHREAD_POOL_SIZE={7 if lite else 9}", "-sEXIT_RUNTIME=1",
                     "-sMODULARIZE=1", "-sEXPORT_NAME=Speed", "-sEXPORTED_RUNTIME_METHODS=FS,ENV,HEAPU8,HEAP32,HEAPU32,HEAPF64",
-                    "-sEXPORTED_FUNCTIONS=_main,_rn_gpu_mailbox,_rn_input_ring,_rn_audio_ring,_rn_telem_addr,_rn_stab_addr,_rn_tune_addr,_rn_mem_mb,_rn_load_addr",
+                    "-sEXPORTED_FUNCTIONS=_main,_rn_gpu_mailbox,_rn_input_ring,_rn_audio_ring,_rn_telem_addr,_rn_stab_addr,_rn_frame_ring_addr,_rn_tune_addr,_rn_mem_mb,_rn_load_addr",
                     "-sFORCE_FILESYSTEM=1", "-sENVIRONMENT=web,worker",
                     # RN_PROF=1: keep function names for a CPU profile (tools/webcheck.mjs RN_PROFILE); same code.
                     *(["--profiling-funcs"] if os.environ.get("RN_PROF") else [])], check=True)

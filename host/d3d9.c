@@ -840,8 +840,15 @@ static int rn_hud_on;   // the race HUD is up this frame (set where "d3d9 race H
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE uint32_t rn_stab_addr(void) { return (uint32_t)(uintptr_t)&rn_stab; }
 #endif
+// Always-on frame ring (web/stats.js): the last 256 Presents as 4 floats {present-to-present ms, gpu_wait ms, GIL hold ms, in race 0/1}.
+// Layout (uint32 words): [0] = frames written so far, [1..3] pad, then 256 x 4 floats; the newest is entry (idx - 1) & 255.
+static struct { uint32_t idx, pad[3]; float e[256][4]; } rn_frame_ring;
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE uint32_t rn_frame_ring_addr(void) { return (uint32_t)(uintptr_t)&rn_frame_ring; }
+#endif
 static void spike_log(Ctx *c) {
     static uint64_t t0;
+    static double gw0;
     static uint32_t clk0, reads0, kb0, race0;
     static double ms0;
     uint64_t t = now_us();
@@ -857,6 +864,12 @@ static void spike_log(Ctx *c) {
         race0 = rn_race;
     }
     rn_stab.racing = racing;
+    if (t0) {
+        float *e = rn_frame_ring.e[rn_frame_ring.idx & 255];
+        e[0] = (float)((t - t0) / 1000.0), e[1] = (float)(rn_telem.gpu_wait_ms - gw0), e[2] = hold_ms, e[3] = racing ? 1.f : 0.f;
+        rn_frame_ring.idx++;
+    }
+    gw0 = rn_telem.gpu_wait_ms;
     if (t0 && t - t0 > 23000 && racing) {
         rn_stab.spikes++;
         rn_stab.last_frame = rn_telem.presents;
