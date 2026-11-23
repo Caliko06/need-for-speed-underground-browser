@@ -33,7 +33,19 @@ typedef struct Ctx {
 // watched store (host/crashwatch.c) can name the instruction that made it. A host API sets it to its entry address.
 #define CHK(a, n, at) do { c->halt_at = (at); if ((uint32_t)((a) - LOW) > c->memsz - LOW - (n)) { c->why = "memory fault"; goto trap; } } while (0)
 #else
-#define CHK(a, n, at) do { if ((uint32_t)((a) - LOW) > c->memsz - LOW - (n)) { c->halt_at = (at); c->why = "memory fault"; goto trap; } } while (0)
+#define CHK(a, n, at) do { if (__builtin_expect((uint32_t)((a) - LOW) > c->memsz - LOW - (n), 0)) { c->halt_at = (at); c->why = "memory fault"; goto trap; } } while (0)
+#endif
+// tools/recomp/lift.py: CHK_IMG = a constant address inside Speed.exe's mapped image (never faults); CHK_SP = one check of a
+// straight-line block's esp accesses; CHK_STW = the per-instruction esp check that CHK_SP replaces. RN_STW keeps exact
+// per-instruction checks (halt_at = the last access) and drops the coalesced one.
+#ifdef RN_STW
+#define CHK_IMG(a, n, at) CHK(a, n, at)
+#define CHK_STW(a, n, at) CHK(a, n, at)
+#define CHK_SP(a, n, at) do { } while (0)
+#else
+#define CHK_IMG(a, n, at) do { } while (0)
+#define CHK_STW(a, n, at) do { } while (0)
+#define CHK_SP(a, n, at) CHK(a, n, at)
 #endif
 #define TRAP(at, msg) do { c->halt_at = (at); c->why = (msg); goto trap; } while (0)
 
@@ -79,7 +91,15 @@ void rn_cpuid(Ctx *c, uint32_t *a, uint32_t *b, uint32_t *cc, uint32_t *d);
 #define FC2 0x400u
 #define FC3 0x4000u
 static inline double *fr(Ctx *c, int i) { return &c->st[(c->ftop + i) & 7]; }
-static inline double fround(Ctx *c, double v) { return ((c->fcw >> 8) & 3) == 0 ? (double)(float)v : v; }
+// After CreateDevice (host/d3d9.c, FPU_PRESERVE off) the game runs at 24-bit precision: PC = 00 is the hot case.
+static inline double fround(Ctx *c, double v) { return __builtin_expect(((c->fcw >> 8) & 3) == 0, 1) ? (double)(float)v : v; }
+// RN_FAST_X87 (every game build): no x87 exception flags and no NaN fix-ups (host NaNs, sNaN loads kept), no stack-fault
+// check on push, no indefinite written on pop. ftag stays exact (fxam at 0x67a42d reads it). The game reads fsw only through
+// C0..C3 (5629 of 5983 fstsw sites test ah; the low-byte tests check 0x10/0x20, never IE/ZE/SF; build/gen census
+// 2026-11-23). RN_STRICT_X87 or RN_REF_QEMU5 (tools/recomp/difftest.py) keep the exact Intel SDM / Unicorn semantics.
+#if !defined(RN_STRICT_X87) && !defined(RN_REF_QEMU5)
+#define RN_FAST_X87 1
+#endif
 // NaN results follow the x87 rules (Intel SDM table 4-7), not the host's: an invalid operation on
 // non-NaN operands gives the "real indefinite" (-NaN); NaN operands propagate quieted, the larger
 // significand wins and a tie takes the positive one.
@@ -113,6 +133,11 @@ __attribute__((noinline, cold)) static double fx1_nan(Ctx *c, double a) {
     c->fsw |= FIE;
     return bitsd(0xfff8000000000000ull);
 }
+#ifdef RN_FAST_X87
+#define fx2(c, a, b, r) (r)
+#define fx1(c, a, r) (r)
+#define fdiv_(c, a, b) ((a) / (b))
+#else
 __attribute__((always_inline)) static inline double fx2(Ctx *c, double a, double b, double r) { return r == r ? r : fx2_nan(c, a, b); }
 __attribute__((always_inline)) static inline double fx1(Ctx *c, double a, double r) { return r == r ? r : fx1_nan(c, a); }
 static inline double fdiv_(Ctx *c, double a, double b) {
@@ -123,6 +148,7 @@ static inline double fdiv_(Ctx *c, double a, double b) {
 #endif
     return fx2(c, a, b, a / b);
 }
+#endif
 #define FADD(a, b) fx2(c, (a), (b), (a) + (b))
 #define FSUB(a, b) fx2(c, (a), (b), (a) - (b))
 #define FMUL(a, b) fx2(c, (a), (b), (a) * (b))
@@ -131,6 +157,10 @@ static inline double fdiv_(Ctx *c, double a, double b) {
 // Stack faults are masked on Windows: an empty register reads as the "real indefinite" (-NaN), and a push
 // onto a full register loads it too. Keeping every empty slot at that value gives both for free.
 static inline double findef(void) { uint64_t b = 0xfff8000000000000ull; double v; memcpy(&v, &b, 8); return v; }
+#ifdef RN_FAST_X87
+static inline void fpush(Ctx *c, double v) { c->ftop = (c->ftop - 1) & 7; c->st[c->ftop] = v; c->ftag |= 1u << c->ftop; }
+static inline void fpop(Ctx *c) { c->ftag &= ~(1u << c->ftop); c->ftop = (c->ftop + 1) & 7; }
+#else
 static inline void fpush(Ctx *c, double v) {
     c->ftop = (c->ftop - 1) & 7;
     if (c->ftag & (1u << c->ftop)) { v = findef(); c->fsw |= FIE | FSF | 0x200u; }
@@ -138,12 +168,17 @@ static inline void fpush(Ctx *c, double v) {
     c->ftag |= 1u << c->ftop;
 }
 static inline void fpop(Ctx *c) { c->st[c->ftop] = findef(); c->ftag &= ~(1u << c->ftop); c->ftop = (c->ftop + 1) & 7; }
+#endif
 static inline void ffree(Ctx *c, int i) { *fr(c, i) = findef(); c->ftag &= ~(1u << ((c->ftop + i) & 7)); }
 static inline void finit(Ctx *c) {
     c->fcw = 0x37f; c->fsw = 0; c->ftop = 0; c->ftag = 0;
     for (int k = 0; k < 8; k++) c->st[k] = findef();
 }
 // x87 loads of float/double memory turn a signaling NaN into a quiet one (Intel SDM, FLD).
+#ifdef RN_FAST_X87
+#define ldfx(c, a) ((double)ldf(c, a))
+#define lddx(c, a) ldd(c, a)
+#else
 static inline double ldfx(Ctx *c, uint32_t a) {
     uint32_t b = ld(c, a, 4);
     float f;
@@ -159,6 +194,7 @@ static inline double lddx(Ctx *c, uint32_t a) {
     }
     return bitsd(b);
 }
+#endif
 static inline void fset(Ctx *c, int i, double v) { *fr(c, i) = fround(c, v); }
 static inline void fucom(Ctx *c, double a, double b) {
     c->fsw &= ~(FC0 | FC2 | FC3);
