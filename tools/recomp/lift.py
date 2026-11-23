@@ -1039,7 +1039,8 @@ class Lifter:
         body, self.switches, bad = self.body(entry)
         targets = {entry}
         for a, i in body.items():
-            if i.group(CS_GRP_JUMP) and i.operands and i.operands[0].type == x86.X86_OP_IMM:
+            # loop/loope/loopne are not CS_GRP_JUMP in capstone; an overlapping decode stream is entered by `goto L<nxt>`.
+            if (i.group(CS_GRP_JUMP) or self.mnem(i)[1] in ("loop", "loope", "loopne")) and i.operands and i.operands[0].type == x86.X86_OP_IMM:
                 targets.add(i.operands[0].imm)
             targets.update(self.switches.get(a, []))
         self.labels = set(body) | bad
@@ -1056,6 +1057,7 @@ class Lifter:
         coal = not self.trace and not runs
         self.fs, self.uses_fs, self.sp = None, False, None
         entered = targets | self.all_cases       # labels a jump can reach: the run state must be in the Ctx there
+        entered |= {a + i.size for a, i in body.items() if a + i.size in self.labels and next_label.get(a) != a + i.size}
         for a in order:
             i = body.get(a)
             if self.fs and a in entered:
