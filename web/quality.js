@@ -10,6 +10,37 @@
 //   tier  next boot one tier down (content gates)
 // Never above the ceiling of the static detection (tier) / boot rule (RN_CEIL). The result is kept per device in localStorage 'rn_quality'
 // (web/mode.js reads it before static detection). ?adapt=0 turns all of it off.
+// Below the floor (OWNER 2026-11-22; a Moto G6 Plus: menu ~9 fps, race 1.5-2 fps on the lowest tier): on ultralite with nothing left for the ladder to drop,
+// 2 windows running with p50 > 100 ms (after the first 10 s, menus count) show a notice; the player may play on. Kept in rn_quality as floor / floorFps,
+// "Jugar de todos modos" as floorDismissed (never again on this device). ?floor=0 off, ?floor=1 forces the notice (nothing stored).
+const RN_FLOOR_Q = new URLSearchParams(RN_SEARCH).get('floor');
+const rnFloor = { floor: !!(RN_STORED && RN_STORED.floor), floorFps: RN_STORED && RN_STORED.floorFps || 0, floorDismissed: !!(RN_STORED && RN_STORED.floorDismissed), shown: false,
+  flags() { return this.floor ? { floor: true, floorFps: this.floorFps, ...(this.floorDismissed ? { floorDismissed: true } : {}) } : {}; },
+  persist() {   // the record may already exist (written by the ladder): merge the flags into it
+    try { const r = JSON.parse(localStorage.getItem('rn_quality')); if (r && r.dev === rnDevKey()) localStorage.setItem('rn_quality', JSON.stringify({ ...r, ...this.flags() })); } catch {}
+  },
+  show(fps) {
+    if (this.shown) return; this.shown = true;
+    const T = window.RN_TR || (s => s);
+    const css = document.createElement('style');
+    css.textContent = `#fl { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; background: rgba(5,8,13,.72); }
+      #fl > div { max-width: 340px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: rgba(12,10,24,.9); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.14); border-radius: 12px; color: #e8e6f2; font: 14px/1.4 system-ui, sans-serif; }
+      #fl p { margin: 0; } #fl small { color: #9a93c0; font-size: 12px; }
+      #fl button { font: inherit; color: #fff; padding: 10px 12px; min-height: 44px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; background: linear-gradient(135deg, #ff7a18, #af002d); transition: transform .12s; }
+      #fl button:active { transform: scale(.97); }
+      @media (prefers-reduced-motion: reduce) { #fl button { transition: none; } }`;
+    const box = document.createElement('div'); box.id = 'fl'; box.setAttribute('role', 'alertdialog');
+    const inner = document.createElement('div');
+    const a = document.createElement('p'), b = document.createElement('small'), btn = document.createElement('button');
+    a.textContent = T('Este dispositivo es demasiado lento para el juego') + (fps ? ` (≈${fps} fps).` : '.');
+    b.textContent = T('Funciona bien en una computadora o en un teléfono reciente.');
+    btn.textContent = T('Jugar de todos modos');
+    btn.onclick = () => { box.remove(); css.remove(); if (RN_FLOOR_Q !== '1') { this.floor = true; this.floorDismissed = true; this.persist(); } const c = document.getElementById('screen'); if (c) c.focus(); };
+    inner.append(a, b, btn); box.append(inner);
+    document.head.appendChild(css); document.body.appendChild(box); btn.focus();
+  } };
+if (RN_FLOOR_Q !== '0' && (RN_FLOOR_Q === '1' || (RN_ADAPT && rnFloor.floor && !rnFloor.floorDismissed)))
+  addEventListener('DOMContentLoaded', () => rnFloor.show(rnFloor.floorFps));
 const RN_LADDER = ['res', 'blur', 'fx', 'fps', 'tier'];
 function startQuality(M, say, webgpu) {
   if (!RN_ADAPT) return;
@@ -41,7 +72,7 @@ function startQuality(M, say, webgpu) {
 
   const save = () => {
     const nres = stack.filter(e => e.a === 'res').length;
-    const rec = { tier, bbmax: nres ? resSize().w : 0, fx: fx ? 1 : 0, fps, updated: new Date().toISOString() };
+    const rec = { tier, bbmax: nres ? resSize().w : 0, fx: fx ? 1 : 0, fps, updated: new Date().toISOString(), ...rnFloor.flags() };
     window.rnQuality.record = rec;
     gpuId().then(g => { try { localStorage.setItem('rn_quality', JSON.stringify({ dev: rnDevKey(g), ...rec })); } catch {} });
   };
@@ -99,6 +130,18 @@ function startQuality(M, say, webgpu) {
     save();
     return true;
   };
+
+  let floorTicks = 0, floorBad = 0;
+  addEventListener('rn-stats', ev => {   // below the floor: nothing left to drop and still under 10 fps
+    const w = ev.detail;
+    if (RN_FLOOR_Q === '0' || rnFloor.floorDismissed || rnFloor.shown || ++floorTicks <= 2) return;
+    if (tier !== 'ultralite' || resLeft() || can.blur() || can.fx() || can.fps() || can.tier()) { floorBad = 0; return; }
+    floorBad = w.p50 > 100 ? floorBad + 1 : 0;
+    if (floorBad < 2) return;
+    rnFloor.floor = true; rnFloor.floorFps = Math.max(1, Math.round(w.fps));
+    say(`quality: below the floor (p50 ${w.p50} ms, fps ${w.fps}), notice shown`);
+    save(); rnFloor.show(rnFloor.floorFps);
+  });
 
   addEventListener('rn-fe', () => {
     const now = inRaceNow();
