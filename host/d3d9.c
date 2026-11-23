@@ -2345,30 +2345,24 @@ static void draw_cmd(Ctx *c, uint32_t type, uint32_t count, uint32_t vbase, uint
     if (!draw_supported(c, ps ? ps->sm : NULL)) return;
     roadrefl_note(ps);
     if (type <= 3) { rn_halt(c, "d3d9: point and line draws are not drawn yet"); return; }
-    // Index list: given, or made for fans.
-    uint32_t nidx = 0, *ix = NULL, n = verts_of(type, count);
+    // Index list: given, or made for fans (written directly into the command list; no malloc/free per draw).
+    uint32_t nidx = 0, n = verts_of(type, count), out_type = type;
     if (rdraw.vb) {
         nidx = rdraw.ib ? n : 0; nvert = rdraw.ib ? 0 : n;
     } else if (xdraw.vb) {
-        nidx = xdraw.nidx; nvert = xdraw.nvert; ix = malloc(4u * nidx);
-        for (uint32_t k = 0; k < nidx; k++) ix[k] = xdraw.idx[k];
-        type = 4;
+        nidx = xdraw.nidx; nvert = xdraw.nvert; out_type = 4;
     } else if (ib || type == 6) {
         nidx = type == 6 ? 3 * count : n;
-        ix = malloc(4u * nidx);
-        for (uint32_t k = 0; k < nidx; k++) {
-            uint32_t src = type == 6 ? (k % 3 == 0 ? 0 : k / 3 + k % 3) : k;
-            uint32_t v = ib ? ld(c, ib + (i32 ? 4 : 2) * src, i32 ? 4 : 2) : src;
-            ix[k] = (uint32_t)((int32_t)v + ibias) - vmin;
-        }
-        if (type == 6) type = 4;
+        if (type == 6) out_type = 4;
     }
     if (!ib && !xdraw.vb && !rdraw.vb) nvert = n;
     Obj *rt = obj_k(dev.rt[0]), *ds = obj_k(dev.ds);
-    uint32_t nvc = vs->hl ? 16 + 4 * SM1_HL_N : (uint32_t)(vs->sm->max_const + 1), npc = 8, vbytes = rdraw.vb ? 0 : nvert * stride, ni = rdraw.vb ? 0 : nidx;
+    uint32_t nvc = (uint32_t)(vs->sm->max_const + 1), npc = 8, vbytes = rdraw.vb ? 0 : nvert * stride, ni = rdraw.vb ? 0 : nidx;
+    if (vs->hl && nvc < 16 + 4 * SM1_HL_N) nvc = 16 + 4 * SM1_HL_N;
     uint32_t total = D_HDR + 4 * nvc + 4 * npc + (vbytes + 3) / 4 + ni;
-    uint32_t *w = gpu_put(GPU_DRAW, (int)total);   // straight into the frame list: no calloc, copy and free per draw
-    w[D_TOPO] = type; w[D_NVERT] = nvert; w[D_NIDX] = nidx; w[D_STRIDE] = stride;
+    uint32_t *w = gpu_put_raw(GPU_DRAW, (int)total);   // straight into the frame list: no malloc/free or payload memset
+    memset(w, 0, 4u * D_HDR);
+    w[D_TOPO] = out_type; w[D_NVERT] = nvert; w[D_NIDX] = nidx; w[D_STRIDE] = stride;
     w[D_VS] = dev.vs; w[D_PS] = dev.ps; w[D_DECL] = dev.decl;
     w[D_RT] = rt->gpu; w[D_DS] = ds && dev.rs[7] ? ds->gpu : 0;
     w[D_VP] = dev.vp.x; w[D_VP + 1] = dev.vp.y; w[D_VP + 2] = dev.vp.w; w[D_VP + 3] = dev.vp.h;
@@ -2403,10 +2397,31 @@ static void draw_cmd(Ctx *c, uint32_t type, uint32_t count, uint32_t vbase, uint
     if (vs->hl) memcpy(p + 4 * 16, lights_hl(c), 16u * 4 * SM1_HL_N);
     p += 4 * nvc;
     memcpy(p, dev.psf, 16u * npc); p += 4 * npc;
-    if (vbytes) memcpy(p, xdraw.vb ? xdraw.vb : G(vbase + vmin * stride), vbytes);
+    if (vbytes) {
+        if (vbytes & 3) p[vbytes / 4] = 0;
+        memcpy(p, xdraw.vb ? xdraw.vb : G(vbase + vmin * stride), vbytes);
+    }
     p += (vbytes + 3) / 4;
-    if (ni) memcpy(p, ix, 4u * ni);
-    free(ix);
+    if (ni) {
+        if (xdraw.vb) {
+            for (uint32_t k = 0; k < ni; k++) p[k] = xdraw.idx[k];
+        } else {
+            uint32_t adj = (uint32_t)ibias - vmin;
+            if (type == 6) {
+                for (uint32_t k = 0; k < ni; k++) {
+                    uint32_t src = k % 3 == 0 ? 0 : k / 3 + k % 3;
+                    uint32_t v = ib ? ld(c, ib + (i32 ? 4 : 2) * src, i32 ? 4 : 2) : src;
+                    p[k] = v + adj;
+                }
+            } else if (i32) {
+                const uint8_t *src = (const uint8_t *)G(ib);
+                for (uint32_t k = 0; k < ni; k++) { uint32_t v; memcpy(&v, src + 4u * k, 4); p[k] = v + adj; }
+            } else {
+                const uint8_t *src = (const uint8_t *)G(ib);
+                for (uint32_t k = 0; k < ni; k++) { uint16_t v; memcpy(&v, src + 2u * k, 2); p[k] = (uint32_t)v + adj; }
+            }
+        }
+    }
     // RN_DRAWSTAT=1: words per frame by kind of draw (resident, smoothed car, indexed copy, plain copy), every 300 frames.
     static int dstat = -1;
     if (dstat < 0) dstat = getenv("RN_DRAWSTAT") != NULL;

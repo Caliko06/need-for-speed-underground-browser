@@ -42,8 +42,8 @@ void sm1_disasm(const Sm1 *s, void (*out)(const char *line));
 //   group 1 binding 2k / 2k+1: sampler / texture_2d of stage k (ps); binding 16+k: texture_cube of stage k. A ps_1_x
 //   tex samples the one its stage's word in u.tt says (gpu.h T_CUBE): the type comes from the bound texture.
 //   vs input v<n> at @location(n); varyings: 0 oD0, 1 oD1, 2+k oTk, 10 oFog.
-enum { SM1_U_VC = 0, SM1_U_PC = 4096, SM1_U_HP = 4224, SM1_U_FOGC = 4240, SM1_U_AF = 4256, SM1_U_AR = 4272,
-       SM1_U_TT = 4288, SM1_U_SIZE = 4320 };
+enum { SM1_U_PC = 0, SM1_U_HP = 128, SM1_U_FOGC = 144, SM1_U_AF = 160, SM1_U_AR = 176,
+       SM1_U_TT = 192, SM1_U_VC = 224, SM1_U_SIZE = 4320 };
 // mode: 0 plain; SM1_CAR_VS / SM1_CAR_PS = the car body pair of PC Speed.exe (vs 0x4728b668 / ps 0xc27f3669, token FNV hash), per-pixel lighting.
 // SM1_HL_VS / SM1_HL_PS = the headlight world pairs (worldheadlight vs 0x67da8f41 / ps 0x91d5deec, worldheadlightreflect
 // vs 0x102e066d / ps 0x9bb3f7c7): SM1_HL_N more projectors (host/lights.c) in oT4..oT7, from VS c16..c31.

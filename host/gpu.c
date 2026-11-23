@@ -10,7 +10,7 @@
 static uint32_t *list;
 static uint32_t nlist, cap;
 
-uint32_t *gpu_put(int op, int n) {
+uint32_t *gpu_put_raw(int op, int n) {
     while (nlist + 1 + (uint32_t)n > cap) {
         cap = cap ? cap * 2 : 1u << 16;
         list = realloc(list, 4u * cap);
@@ -18,11 +18,15 @@ uint32_t *gpu_put(int op, int n) {
     }
     list[nlist++] = (uint32_t)op | (uint32_t)n << 8;
     uint32_t *w = list + nlist;
-    memset(w, 0, 4u * n);
     nlist += (uint32_t)n;
     return w;
 }
-void gpu_cmd(int op, int n, const uint32_t *w) { memcpy(gpu_put(op, n), w, 4u * n); }
+uint32_t *gpu_put(int op, int n) {
+    uint32_t *w = gpu_put_raw(op, n);
+    memset(w, 0, 4u * n);
+    return w;
+}
+void gpu_cmd(int op, int n, const uint32_t *w) { memcpy(gpu_put_raw(op, n), w, 4u * n); }
 
 uint32_t gpu_pending(void) { return nlist; }
 

@@ -24,6 +24,7 @@ static int nsrc_of(int op, int ps, int major_minor) {
 }
 
 static int sm1_check(const Sm1 *s, char *err, int errn);
+static int mat_rows(int op, int *dot);
 static Dst dst_of(uint32_t t) {
     return (Dst){(uint8_t)(((t >> 28) & 7) | ((t >> 8) & 0x18)), (uint8_t)((t >> 16) & 0xf), (uint8_t)((t >> 20) & 1),
                  (uint8_t)((t >> 24) & 0xf), (uint16_t)(t & 0x7ff)};
@@ -95,7 +96,9 @@ int sm1_decode(Sm1 *s, const uint32_t *tok, uint32_t n, char *err, int errn) {
                 in->s[k] = src_of(tok[i++]);
                 Src *r = &in->s[k];
                 if (r->type == R_CONST) {
-                    int top = r->rel ? 255 : r->num;
+                    int dot, rows = k == 1 ? mat_rows(op, &dot) : 0;
+                    int top = r->rel ? 255 : r->num + (rows ? rows - 1 : 0);
+                    if (top > 255) top = 255;
                     if (top > s->max_const) s->max_const = top;
                 }
             }
@@ -476,8 +479,8 @@ char *sm1_wgsl(const Sm1 *s, int mode) {
     mode &= ~SM1_REFL;
     Buf b = {malloc(4096), 0, 4096};
     b.p[0] = 0;
-    emit(&b, "struct U { c: array<vec4f, 256>, pc: array<vec4f, 8>, hp: vec4f, fogc: vec4f, af: vec4u, ar: vec4f,"
-             " tt: array<vec4u, 2> };\n@group(0) @binding(0) var<uniform> u: U;\n%s", helpers);
+    emit(&b, "struct U { pc: array<vec4f, 8>, hp: vec4f, fogc: vec4f, af: vec4u, ar: vec4f,"
+             " tt: array<vec4u, 2>, c: array<vec4f, 256> };\n@group(0) @binding(0) var<uniform> u: U;\n%s", helpers);
     emit(&b, "struct VO { @builtin(position) pos: vec4f, @location(0) d0: vec4f, @location(1) d1: vec4f");
     for (int k = 0; k < 8; k++) emit(&b, ", @location(%d) t%d: vec4f", 2 + k, k);
     emit(&b, ", @location(10) fog: f32 };\n");

@@ -11,7 +11,7 @@ const D_TOPO = 0, D_NVERT = 1, D_NIDX = 2, D_STRIDE = 3, D_VS = 4, D_PS = 5, D_D
   D_FOG = 35, D_FOGC = 36, D_TEX = 37, D_TEXN = 8, D_NVC = 37 + 64, D_NPC = 38 + 64,
   D_RVB = 39 + 64, D_RVOFF = 40 + 64, D_RIB = 41 + 64, D_RIFMT = 42 + 64, D_RFIRST = 43 + 64, D_RBASEV = 44 + 64, D_HDR = 45 + 64;
 const T_ID = 0, T_AU = 1, T_AV = 2, T_MAG = 3, T_MIN = 4, T_MIP = 5, T_TT = 6, T_ANISO = 7, T_CUBE = 0x10000;
-const U_SIZE = 4320, U_STEP = 4352;     // sm1.h SM1_U_SIZE, rounded to the 256-byte offset alignment
+const U_SIZE = 4320, U_FIXED = 224;     // sm1.h SM1_U_SIZE; fixed fields at 0..223, c[256] at 224..4319
 
 // PS2 depth speed blur (psblur below): web/tune.js sets .on from the blur preset ('PS2 depth') and ?psblur.
 const RN_PS = { on: false };
@@ -382,7 +382,7 @@ const Q = array<f32, 12>(1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 2.0, 2.0, 2.0, 2.0, 4.0, 
     return fxaaPipe;
   };
   const fxaaSamp = device.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge' });
-  let fxaaTmp = null;
+  let fxaaTmp = null, fxaaView = null, fxaaBg = null;
   // BRIDGE: remaster, the last step of a frame. The back buffer is at most 2560 wide (web/index.html), so on the OWNER's
   // window (1920x871 css, dpr 2) Chrome stretched 2560x1160 to 3840x1742 with a bilinear filter: a soft image. The present
   // now draws it into a canvas at the window's device pixels through AMD FidelityFX CAS (MIT; its upscaling path: the four
@@ -441,6 +441,7 @@ fn amp(a: vec3f, b: vec3f, c: vec3f, d: vec3f, e: vec3f, mn: ptr<function, f32>,
     return casPipe;
   };
   const casU = device.createBuffer({ size: 32, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const casBgs = new WeakMap();
   // The canvas's size in device pixels (what the screen shows), kept by a ResizeObserver.
   let disp = null;
   if (SHARP >= 0) new ResizeObserver(([e]) => {
@@ -843,12 +844,12 @@ struct U { rect: vec4f, par: vec4f, zz: vec4f, tint: vec4f };
     cap = Math.max(need, cap * 2, 1 << 20);
     return [device.createBuffer({ size: cap, usage: usage | GPUBufferUsage.COPY_DST }), cap];
   };
-  // Their CPU copies live across frames (a new 8 MB of uniforms per frame made GC pauses). A uniform slot keeps the
-  // previous frame's constants above this draw's count, so those are zeroed back (unv/unp: counts last written there).
+  // Their CPU copies live across frames (allocating per frame made GC pauses). Each draw writes its fixed fields
+  // (0..223) followed by its nvc vertex constants (224..), stepped to the 256-byte uniform offset alignment.
   const uni = new ArrayBuffer(256 * 1024), uf = new Float32Array(uni);
   const UOFF_ARR = [0], BF_ARR = [0, 0, 0, 0];
   let vdata = new Uint8Array(0), idata = new Uint32Array(0), udata = new ArrayBuffer(0), udw = null, udf = null,
-    unv = new Uint16Array(0), unp = new Uint16Array(0), uBind = null, uBindBuf = null;
+    uBind = null, uBindBuf = null;
   // Texture bind groups by layout and resources (each GPU object gets a number the first time it is seen).
   const objIds = new WeakMap(), texBinds = new Map();
   let nextObj = 1, texBindCount = 0;
@@ -1137,16 +1138,16 @@ fn mulfloor(c: f32, w: f32) -> f32 {
         vneed += ((w[a + D_NVERT] * w[a + D_STRIDE] + 3) & ~3) + w[a + D_STRIDE];   // + start on a whole vertex
         ineed += 4 * w[a + D_NIDX];
       }
-      if (op === GPU_DRAW) uneed += U_STEP;
+      if (op === GPU_DRAW) uneed += (U_FIXED + 16 * w[a + D_NVC] + 255) & ~255;
     }
     [vbuf, vcap] = grow(vbuf, vcap, vneed, GPUBufferUsage.VERTEX);
     [ibuf, icap] = grow(ibuf, icap, ineed + 4, GPUBufferUsage.INDEX);
-    [ubuf, ucap] = grow(ubuf, ucap, uneed + U_STEP, GPUBufferUsage.UNIFORM);
+    // Tail padding of U_SIZE keeps uoff + U_SIZE <= ubuf.size for every draw (WebGPU minBindingSize & WebGL2 bindBufferRange).
+    [ubuf, ucap] = grow(ubuf, ucap, uneed + U_SIZE, GPUBufferUsage.UNIFORM);
     if (vdata.length < vneed) vdata = new Uint8Array(vcap);
     if (idata.length < ineed / 4 + 1) idata = new Uint32Array(icap / 4);
-    if (udata.byteLength < uneed + U_STEP) {
+    if (udata.byteLength < uneed + U_SIZE) {
       udata = new ArrayBuffer(ucap); udw = new Uint32Array(udata); udf = new Float32Array(udata);
-      unv = new Uint16Array(ucap / U_STEP); unp = new Uint16Array(ucap / U_STEP);
     }
     if (uBindBuf !== ubuf) {
       uBind = device.createBindGroup({ layout: drawBgl, entries: [{ binding: 0, resource: { buffer: ubuf, size: U_SIZE } }] });
@@ -1324,21 +1325,18 @@ fn mulfloor(c: f32, w: f32) -> f32 {
         }
         const nv = w[a + D_NVERT], ni = w[a + D_NIDX], stride = w[a + D_STRIDE], nvc = w[a + D_NVC], npc = w[a + D_NPC];
         const ps = shaders.get(w[a + D_PS]);
-        // uniforms (sm1.h SM1_U_*)
-        const ub = uoff / 4, src = a + D_HDR, slot = uoff / U_STEP;
-        const nv4 = 4 * nvc, np4 = 4 * npc;
-        for (let j = 0; j < nv4; j++) udf[ub + j] = f32[src + j];
-        const psrc = src + nv4, pub = ub + 1024;
-        for (let j = 0; j < np4; j++) udf[pub + j] = f32[psrc + j];
-        if (unv[slot] > nvc) udf.fill(0, ub + nv4, ub + 4 * unv[slot]);
-        if (unp[slot] > npc) udf.fill(0, pub + np4, pub + 4 * unp[slot]);
-        unv[slot] = nvc; unp[slot] = npc;
-        udf[ub + 1056] = 1 / w[a + D_VP + 2]; udf[ub + 1057] = 1 / w[a + D_VP + 3];
+        // uniforms (sm1.h SM1_U_*: pc[8], hp, fogc, af, ar, tt[8] at 0..223, then c[0..nvc-1] at 224..)
+        const ub = uoff >>> 2, src = a + D_HDR;
+        const nv4 = 4 * nvc, np4 = 4 * npc, psrc = src + nv4;
+        if (np4) udf.set(f32.subarray(psrc, psrc + np4), ub);
+        if (npc < 8) udf.fill(0, ub + np4, ub + 32);
+        udf[ub + 32] = 1 / w[a + D_VP + 2]; udf[ub + 33] = 1 / w[a + D_VP + 3];
         const fc = w[a + D_FOGC];
-        udf[ub + 1060] = ((fc >>> 16) & 255) / 255; udf[ub + 1061] = ((fc >>> 8) & 255) / 255; udf[ub + 1062] = (fc & 255) / 255;
-        udw[ub + 1064] = w[a + D_AFUNC]; udw[ub + 1065] = w[a + D_FOG];
-        udf[ub + 1068] = w[a + D_AREF] / 255;
-        for (let k = 0; k < 8; k++) udw[ub + 1072 + k] = w[a + D_TEX + D_TEXN * k + T_TT];
+        udf[ub + 36] = ((fc >>> 16) & 255) / 255; udf[ub + 37] = ((fc >>> 8) & 255) / 255; udf[ub + 38] = (fc & 255) / 255;
+        udw[ub + 40] = w[a + D_AFUNC]; udw[ub + 41] = w[a + D_FOG]; udw[ub + 42] = 0;   // af.z must stay 0 (sm1.c d3d_inf)
+        udf[ub + 44] = w[a + D_AREF] / 255;
+        for (let k = 0; k < 8; k++) udw[ub + 48 + k] = w[a + D_TEX + D_TEXN * k + T_TT];
+        if (nv4) udf.set(f32.subarray(src, src + nv4), ub + 56);
         // vertices and indices: in the payload, or in resident buffers (GPU_BUFFER)
         const rvb = w[a + D_RVB], vsrc = 4 * (src + nv4 + np4), vbytes = rvb ? 0 : nv * stride;
         if (!rvb && stride) voff = Math.ceil(voff / stride) * stride;
@@ -1412,7 +1410,7 @@ fn mulfloor(c: f32, w: f32) -> f32 {
           }
         }
         if (!rvb) { voff += (vbytes + 3) & ~3; ioff += 4 * ni; }
-        uoff += U_STEP;
+        uoff += (U_FIXED + 16 * nvc + 255) & ~255;
         stats.draws++;
       } else if (op === GPU_FXAA) {
         if (PROF) {   // the draws on this target after the scene, and how many of them test or write depth
@@ -1435,13 +1433,16 @@ fn mulfloor(c: f32, w: f32) -> f32 {
           if (!fxaaTmp || fxaaTmp.width !== rt.w || fxaaTmp.height !== rt.h) {
             doom(fxaaTmp);
             fxaaTmp = device.createTexture({ size: [rt.w, rt.h], format: 'rgba8unorm', usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING });
+            fxaaView = fxaaTmp.createView();
+            fxaaBg = null;
           }
           enc.copyTextureToTexture({ texture: rt.tex }, { texture: fxaaTmp }, [rt.w, rt.h]);
           const fp = getFxaaPipe();
+          if (!fxaaBg) fxaaBg = device.createBindGroup({ layout: fp.getBindGroupLayout(0),
+            entries: [{ binding: 0, resource: fxaaView }, { binding: 1, resource: fxaaSamp }] });
           const p = enc.beginRenderPass({ timestampWrites: tsw('fxaa'), colorAttachments: [{ view: rt.view, loadOp: 'load', storeOp: 'store' }] });
           p.setPipeline(fp);
-          p.setBindGroup(0, device.createBindGroup({ layout: fp.getBindGroupLayout(0),
-            entries: [{ binding: 0, resource: fxaaTmp.createView() }, { binding: 1, resource: fxaaSamp }] }));
+          p.setBindGroup(0, fxaaBg);
           p.draw(3);
           p.end();
         }
@@ -1473,10 +1474,15 @@ fn mulfloor(c: f32, w: f32) -> f32 {
         if (SHARP < 0) enc.copyTextureToTexture({ texture: t.tex }, { texture: dst }, [w[a + 1], w[a + 2]]);
         else {
           const cp = getCasPipe();
+          let bg = casBgs.get(t.view);
+          if (!bg) {
+            bg = device.createBindGroup({ layout: cp.getBindGroupLayout(0),
+              entries: [{ binding: 0, resource: t.view }, { binding: 1, resource: { buffer: casU } }] });
+            casBgs.set(t.view, bg);
+          }
           const p = enc.beginRenderPass({ timestampWrites: tsw('cas'), colorAttachments: [{ view: dst.createView(), loadOp: 'clear', storeOp: 'store' }] });
           p.setPipeline(cp);
-          p.setBindGroup(0, device.createBindGroup({ layout: cp.getBindGroupLayout(0),
-            entries: [{ binding: 0, resource: t.view }, { binding: 1, resource: { buffer: casU } }] }));
+          p.setBindGroup(0, bg);
           p.draw(3);
           p.end();
         }
@@ -1521,6 +1527,7 @@ fn mulfloor(c: f32, w: f32) -> f32 {
     }
     stats.pipes = newPipes; newPipes = 0;
     stats.hd = packed;
+    stats.uniKb = uoff >> 10;
     return stats;
   }
 
@@ -1571,7 +1578,7 @@ fn mulfloor(c: f32, w: f32) -> f32 {
         if (s.present) presents++;
         if (s.present && steerLog) { const p = presents; device.queue.onSubmittedWorkDone().then(() =>
           report(`page present ${p} start ${t.toFixed(1)} done ${performance.now().toFixed(1)}`)); }
-        if (frames <= 3 || frames % 300 === 0) report(`gpu.js: frame ${frames}: ${s.clears} clears, ${s.draws} draws, present ${s.present}` +
+        if (frames <= 3 || frames % 300 === 0) report(`gpu.js: frame ${frames}: ${s.clears} clears, ${s.draws} draws, uni ${s.uniKb} KB, present ${s.present}` +
           (pack.size ? `, remaster ${packed} (${hdMs.toFixed(0)} ms)` : '') + (WARM ? `, warm ${warmMade}/${warmList.length}` : '') + gpuReport() + apiReport());
         if (frames % 300 === 0) hdMs = 0;
         Atomics.store(h, box + 1, k);

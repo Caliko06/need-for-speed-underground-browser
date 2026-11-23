@@ -52,6 +52,7 @@ enum { T_ID = 0, T_AU, T_AV, T_MAG, T_MIN, T_MIP, T_TT, T_ANISO, D_TEXN };
 
 void gpu_cmd(int op, int n, const uint32_t *w);
 uint32_t *gpu_put(int op, int n);          // n zeroed words in the list for the caller to fill (valid until the next command)
+uint32_t *gpu_put_raw(int op, int n);      // n uninitialized words in the list (caller fills every word)
 void gpu_submit(void);                  // run or hand off the list, then start a new one (a frame or a part of one)
 void gpu_wait(void);                    // web: wait until the page is at most one part behind (call without the GIL)
 uint32_t gpu_pending(void);             // words in the list not handed off yet
