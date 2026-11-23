@@ -12,10 +12,9 @@
 #include <sys/stat.h>
 #include "host.h"
 
-// Tier policy is opt-in; Ultra-Lite always omits music, other tiers require RN_NOMUSIC=1.
+// Music is omitted only on explicit RN_NOMUSIC=1, every tier alike (OWNER 2026-11-13: never cut the music).
 int rn_nomusic(void) {
-    const char *tier = getenv("RN_TIER");
-    return rn_env("RN_NOMUSIC", 0) == 1 || (tier && !strcmp(tier, "ultralite"));
+    return rn_env("RN_NOMUSIC", 0) == 1;
 }
 static int omitted_music(const char *path) {
     const char *base = path;
