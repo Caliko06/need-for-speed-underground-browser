@@ -111,6 +111,8 @@ async function download(url, what) {
   // No WebGPU adapter (iOS 18 and older, Firefox on Android/Linux, old Android) or ?gl=1: WebGPU on WebGL 2 (web/webgpu_gl.js). It
   // replaces navigator.gpu and canvas.getContext('webgpu'), so it is loaded only here, never next to a working WebGPU.
   const webgl2 = RN_Q.get('gl') === '1' || !await navigator.gpu?.requestAdapter().catch(() => null);
+  // RN_S3TC (host/d3d9.c dxt_native): the page can sample BC1/2/3, so DXT textures stay compressed on the GPU. ?s3tc=0 turns it off.
+  let s3tc = RN_Q.get('s3tc') !== '0' && !webgl2 && !!(await navigator.gpu.requestAdapter().catch(() => null))?.features.has('texture-compression-bc');
   rnSetTier(rnDetectTier(!webgl2));
   line(`tier: ${RN_TIER} (${RN_TIERS.includes(RN_TIER_OVERRIDE) ? 'override' : 'auto'}, ${webgl2 ? 'WebGL 2' : 'WebGPU'}, RAM ${navigator.deviceMemory || '?'} GB, cores ${navigator.hardwareConcurrency || '?'})`);
   if (webgl2) {
@@ -118,6 +120,7 @@ async function download(url, what) {
     if ((RN_LOW_TIER || RN_APP.coarse) && !RN_SHARP_EXPLICIT) RN_Q.set('sharp', 'off');
     const probe = document.createElement('canvas').getContext('webgl2');
     if (!probe) { line('gpu.js: este navegador no tiene WebGPU ni WebGL 2', 'stop'); return; }
+    s3tc = RN_Q.get('s3tc') !== '0' && !!probe.getExtension('WEBGL_compressed_texture_s3tc');
     probe.getExtension('WEBGL_lose_context')?.loseContext(); // release the capability probe, never retain a second GL device
     await new Promise((ok, no) => document.head.appendChild(Object.assign(document.createElement('script'), { src: 'webgpu_gl.js' + (window.RN_V ? '?v=' + RN_V : ''), onload: ok, onerror: no })));
     navigator.gpu.gpu_js.canvas = document.getElementById('screen');
@@ -195,6 +198,7 @@ async function download(url, what) {
       }
       // Keep the renderer and host on the same tier; Ultra-Lite's budget cannot be undone by ?env=.
       m.ENV.RN_TIER = RN_TIER;
+      if (s3tc) m.ENV.RN_S3TC = '1';
       if (RN_TIER === 'ultralite') { m.ENV.RN_FPS = '30'; m.ENV.RN_LIMSLEEP = '1'; }
       // ?ai=0: rivals drive the shipped skill records, no nervous, clean or aggressive personalities (host/rivals.c). Read at each race.
       if (RN_Q.get('ai') === '0') m.ENV.RN_AI = '0';

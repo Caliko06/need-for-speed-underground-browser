@@ -294,6 +294,10 @@
       'rgba32float':         { format: GL.RGBA32F, unpack: GL.RGBA, type: GL.FLOAT, float: true, bpp: 16 },
       'depth32float':        { format: GL.DEPTH_COMPONENT32F, unpack: GL.DEPTH_COMPONENT, type: GL.FLOAT, float: true, bpp: 4, depth: true },
       'depth24plus':         { format: GL.DEPTH_COMPONENT24, unpack: GL.DEPTH_COMPONENT, type: GL.UNSIGNED_INT, float: true, bpp: 4, depth: true },
+      // WEBGL_compressed_texture_s3tc (the device enables it; gpu.js asks only when the adapter lists 'rn-s3tc'). bpp = bytes per 4x4 block.
+      'bc1-rgba-unorm':      { format: 0x83F1, compressed: true, float: true, bpp: 8 },    // COMPRESSED_RGBA_S3TC_DXT1_EXT
+      'bc2-rgba-unorm':      { format: 0x83F2, compressed: true, float: true, bpp: 16 },   // ..._DXT3_EXT
+      'bc3-rgba-unorm':      { format: 0x83F3, compressed: true, float: true, bpp: 16 },   // ..._DXT5_EXT
       'depth24plus-stencil8':{ format: GL.DEPTH24_STENCIL8, unpack: GL.DEPTH_STENCIL, type: GL.UNSIGNED_INT_24_8, float: true, bpp: 4, depth: true, stencil: true },
       'depth32float-stencil8':{ format: GL.DEPTH24_STENCIL8, unpack: GL.DEPTH_STENCIL, type: GL.UNSIGNED_INT_24_8, float: true, bpp: 4, depth: true, stencil: true },
    };
@@ -3795,6 +3799,18 @@ function pairedSampler(pipeline, index, bindGroup, texName) {
          const info = TEX_FORMAT_INFO[tex.desc.format];
          tex._ensureGl();
          const layout = dataLayout || {};
+         if (info.compressed) {   // whole blocks, tightly packed rows (RN: the page sends exactly the level's blocks)
+            const bw = Math.ceil(ext.width / 4), bh = Math.ceil(ext.height / 4);
+            const off = layout.offset || 0;
+            gl.bindTexture(tex._gl.target, tex._gl);
+            // WebGL: a size that is not a multiple of 4 must be the level's own size (WebGPU sends the physical 4x4 of a 2x2 level)
+            const lw = Math.max(1, tex.desc.size.width >> (dest.mipLevel || 0)), lh = Math.max(1, tex.desc.size.height >> (dest.mipLevel || 0));
+            gl.compressedTexSubImage2D(tex._gl.target, dest.mipLevel || 0, origin.x, origin.y, Math.min(ext.width, lw), Math.min(ext.height, lh),
+               info.format, new Uint8Array(data.buffer || data, (data.byteOffset || 0) + off, bw * bh * info.bpp));
+            markMipWritten(tex, dest.mipLevel);
+            gl.bindTexture(tex._gl.target, null);
+            return;
+         }
          const src = typedViewForTexel(info.type, data, layout.offset || 0);
          gl.bindTexture(tex._gl.target, tex._gl);
          gl.pixelStorei(GL.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
@@ -3858,6 +3874,7 @@ function pairedSampler(pipeline, index, bindGroup, texName) {
          gl.getExtension('EXT_color_buffer_float');
          gl.getExtension('EXT_color_buffer_half_float');
          gl.getExtension('EXT_texture_filter_anisotropic');
+         gl.getExtension('WEBGL_compressed_texture_s3tc');
          this._gl = gl;
          skipSameState(gl);
          gl.canvas.addEventListener('webglcontextlost', (e) => {
@@ -4060,9 +4077,12 @@ function pairedSampler(pipeline, index, bindGroup, texName) {
             const gl = makeGl(null, desc.powerPreference === 'undefined' ? 'default' : desc.powerPreference);
             if (!gl) return yes(null);
             const info = probeGlInfo(gl);
+            const s3tc = !!gl.getExtension('WEBGL_compressed_texture_s3tc');
             const lose = gl.getExtension('WEBGL_lose_context');
             if (lose) lose.loseContext();
-            yes(new GPUAdapter(info, desc, (canvas) => makeGl(canvas, desc.powerPreference === 'undefined' ? 'default' : desc.powerPreference)));
+            const ad = new GPUAdapter(info, desc, (canvas) => makeGl(canvas, desc.powerPreference === 'undefined' ? 'default' : desc.powerPreference));
+            if (s3tc) ad.features = new GPUSupportedFeatures(['rn-s3tc']);   // not 'texture-compression-bc': gpu.js would then load the BC7 pack
+            yes(ad);
          });
       }
       getPreferredCanvasFormat() { return 'rgba8unorm'; }
