@@ -35,7 +35,7 @@ for f in sorted(os.listdir("build/gen")):
     src, o = "build/gen/" + f, "build/dobj/" + f[:-2] + ".o"
     objs.append(o)
     if stale(o, src):
-        jobs.append(["clang", "-O1", "-w", "-Ihost", "-Ibuild/gen", "-fno-strict-aliasing", "-DRN_REF_QEMU5", "-c", src, "-o", o])
+        jobs.append(["clang", "-O1", "-w", "-Ihost", "-Ibuild/gen", "-fno-strict-aliasing", "-DRN_REF_QEMU5", "-DRN_STRICT_X87", "-c", src, "-o", o])
 running = []
 for j in jobs:
     while len(running) >= int(os.environ.get("RN_JOBS") or os.cpu_count()):   # RN_JOBS: the Mac allows at most 4
@@ -43,7 +43,7 @@ for j in jobs:
     running.append(subprocess.Popen(j))
 if any(p.wait() for p in running):
     sys.exit("compile failed")
-subprocess.run(["clang", "-O1", "-shared", "-w", "-Ihost", "-DRN_REF_QEMU5", "-o", "build/difftest.dylib", *objs,
+subprocess.run(["clang", "-O1", "-shared", "-w", "-Ihost", "-DRN_REF_QEMU5", "-DRN_STRICT_X87", "-o", "build/difftest.dylib", *objs,
                 "tools/recomp/difftest_rt.c", "host/cpu.c", "host/abk.c"], check=True)
 lib = ctypes.CDLL(os.path.abspath("build/difftest.dylib"))
 
@@ -209,7 +209,7 @@ if ONLY:
     code = f"void f_{entries[0]:x}(Ctx *);\n" + code     # a recursive entry calls the real one (difftest.dylib)
     open("build/gen/trace.c", "w").write('#include "rt.h"\nvoid (*rn_trace_cb)(Ctx *, uint32_t);\n'
                                          "static void rn_trace_step(Ctx *c, uint32_t a) { rn_trace_cb(c, a); }\n" + code)
-    subprocess.run(["clang", "-O1", "-shared", "-w", "-Ihost", "-o", "build/trace.dylib", "build/gen/trace.c",
+    subprocess.run(["clang", "-O1", "-shared", "-w", "-Ihost", "-DRN_STRICT_X87", "-o", "build/trace.dylib", "build/gen/trace.c",
                     "build/difftest.dylib"], check=True)
     tlib = ctypes.CDLL(os.path.abspath("build/trace.dylib"))
     CB = ctypes.CFUNCTYPE(None, ctypes.POINTER(Ctx), ctypes.c_uint32)

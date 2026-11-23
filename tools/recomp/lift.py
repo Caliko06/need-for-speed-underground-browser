@@ -40,6 +40,9 @@ FPU_CONST = {0xe8: "1.0", 0xe9: "3.321928094887362347870319429489390175864831393
              0xee: "0.0"}
 
 PROLOGUE = '#include "rt.h"\n'
+LOW = 0x10000       # host/rt.h: guest pages below never map
+# Instructions that move esp by a constant the block tracks (sp_move); any other esp write ends the block.
+SP_MOVES = {"push", "pop", "pushal", "popal", "pushfd", "popfd", "call", "ret", "add", "sub"}
 # Functions with a native body in host/native.h (nat_<addr>): the same operations in the same order. Native vs lifted on
 # random inputs: tools/recomp/natproof/run.sh (0x5c97cb, 0x5c85c1). RN_ONLY=<addr> difftest checks the lifted body only.
 # The lifted body stays as f_<addr>_lift for inputs outside the fast case.
@@ -141,6 +144,9 @@ class Lifter:
         self._cache = {}
         self.trace = False
         self.flag_abi = None
+        # Speed.exe's mapped image: a constant address inside it never faults (CHK_IMG, host/rt.h). None for ABK modules.
+        self.img_end = self.base + self.pe.OPTIONAL_HEADER.SizeOfImage
+        self.sp = None
         # Address-taken code: dwords in the data sections that point into .text (jump tables, vtables).
         self.addr_taken, self.addr_taken_aligned = set(), set()
         for sec in self.pe.sections:
@@ -164,6 +170,7 @@ class Lifter:
         self.md.detail = True
         self.funcs, self.iat, self._cache, self.trace = funcs, set(), {}, False
         self.flag_abi = None
+        self.img_end, self.sp = None, None     # relocated module: no CHK_IMG, and coalesce() decides the esp checks
         self.addr_taken, self.addr_taken_aligned = set(), set()
         return self
 
@@ -405,10 +412,51 @@ class Lifter:
     def at(self):
         return f"0x{self.i.address:x}"
 
+    def chk(self, mem, n):
+        """The bounds check of a memory operand at ea: CHK_IMG for a constant address inside Speed.exe's image, the
+        block's coalesced esp check for [esp+disp], else CHK."""
+        if mem.segment != x86.X86_REG_FS and not mem.index:
+            if not mem.base and self.img_end and LOW <= (mem.disp & 0xffffffff) and (mem.disp & 0xffffffff) + n <= self.img_end:
+                return f"CHK_IMG(ea,{n},{self.at()});"
+            if mem.base == x86.X86_REG_ESP and self.sp is not None:
+                return self.sp_acc(mem.disp, n)
+        return f"CHK(ea,{n},{self.at()});"
+
+    # --- esp check coalescing -----------------------------------------------
+    # In a straight-line block (no jump target, branch, call, ret, or esp write other than push/pop/add/sub imm), esp
+    # moves by constants only, so every stack access is [base + const]: one CHK_SP of their span at the block's start
+    # replaces the per-instruction checks (kept as CHK_STW for RN_STW builds, host/rt.h). A bad esp then faults at the
+    # block's first instruction instead of the access itself.
+    def sp_open(self):
+        self.sp = {"d": 0, "lo": None, "hi": None, "at": None, "idx": len(self.out)}
+        self.out.append("")
+
+    def sp_close(self):
+        sp, self.sp = self.sp, None
+        if sp and sp["lo"] is not None:
+            lo = sp["lo"] & 0xffffffff
+            self.out[sp["idx"]] = f"CHK_SP((uint32_t)(esp+0x{lo:x}u),{sp['hi'] - sp['lo']},{sp['at']});"
+
+    def sp_move(self, d):
+        if self.sp is not None:
+            self.sp["d"] += d
+
+    def sp_acc(self, off, n):
+        """Check of n bytes at esp+off (esp as it is now): recorded in the block, or a plain CHK outside one."""
+        sp = self.sp
+        if sp is None:
+            return f"CHK((uint32_t)(esp+0x{off & 0xffffffff:x}u),{n},{self.at()});" if off else f"CHK(esp,{n},{self.at()});"
+        a, b = sp["d"] + off, sp["d"] + off + n
+        if sp["lo"] is None:
+            sp["lo"], sp["hi"], sp["at"] = a, b, self.at()
+        sp["lo"], sp["hi"] = min(sp["lo"], a), max(sp["hi"], b)
+        e = f"(uint32_t)(esp+0x{off & 0xffffffff:x}u)" if off else "esp"
+        return f"CHK_STW({e},{n},{self.at()});"
+
     def addr(self, op):
         if op.size not in (1, 2, 4):
             raise Unsupported(f"{op.size}-byte operand")     # far pointers (m16:32), m64...
-        self.out.append(f"ea={self.ea(op.mem)}; CHK(ea,{op.size},{self.at()});")
+        self.out.append(f"ea={self.ea(op.mem)}; {self.chk(op.mem, op.size)}")
 
     def read(self, op, size=None):
         if op.type == x86.X86_OP_IMM:
@@ -494,7 +542,8 @@ class Lifter:
         nxt = self.i.address + self.i.size
         o = self.out
         inputs = STATUS if self.strict_flags else self.flag_abi.arguments(target, self.live_flags)
-        o.append(f"esp-=4; CHK(esp,4,{self.at()}); st(c,esp,0x{nxt:x}u,4); {self.save(inputs)}")
+        self.sp_move(-4)
+        o.append(f"esp-=4; {self.sp_acc(0, 4)} st(c,esp,0x{nxt:x}u,4); {self.save(inputs)}")
         o.append(f"f_{target:x}(c);" if target in self.lifted else f"rn_call(c,{target_c});")
         o.append(f"{self.load(self.live_flags)} if (c->halt) return; if (c->ret!=0x{nxt:x}u) TRAP({self.at()},\"return address changed\");")
 
@@ -545,6 +594,9 @@ class Lifter:
         if m == "lea":
             o.append(self.write(ops[0], self.ea(ops[1].mem)))
             return
+        if m in ("add", "sub") and ops[0].type == x86.X86_OP_REG and i.reg_name(ops[0].reg) == "esp" and ops[1].type == x86.X86_OP_IMM:
+            imm = ((ops[1].imm & 0xffffffff) ^ 0x80000000) - 0x80000000     # signed: `add esp,-8`
+            self.sp_move(imm if m == "add" else -imm)
         if m in ("add", "sub", "adc", "sbb", "and", "or", "xor", "cmp", "test"):
             b = self.read(ops[1], sz)
             o.append(f"t2={b};")
@@ -674,30 +726,36 @@ class Lifter:
             else:
                 n = ops[0].size
                 v = self.read(ops[0])
-            o.append(f"t1={v}; esp-={n}; CHK(esp,{n},{self.at()}); st(c,esp,t1,{n});")
+            self.sp_move(-n)
+            o.append(f"t1={v}; esp-={n}; {self.sp_acc(0, n)} st(c,esp,t1,{n});")
             return
         if m == "pop":
             n = ops[0].size
-            o.append(f"CHK(esp,{n},{self.at()}); t1=ld(c,esp,{n}); esp+={n};")
+            o.append(f"{self.sp_acc(0, n)} t1=ld(c,esp,{n}); esp+={n};")
+            self.sp_move(n)
             self.mem_dst(ops[0])
             o.append(self.write(ops[0], "t1"))
             return
         if m == "pushal":
-            o.append(f"t1=esp; esp-=32; CHK(esp,32,{self.at()}); " +
+            self.sp_move(-32)
+            o.append(f"t1=esp; esp-=32; {self.sp_acc(0, 32)} " +
                      " ".join(f"st(c,esp+{28 - 4 * k},{r if r != 'esp' else 't1'},4);" for k, r in enumerate(REG32)))
             return
         if m == "popal":
-            o.append(f"CHK(esp,32,{self.at()}); " +
+            o.append(f"{self.sp_acc(0, 32)} " +
                      " ".join(f"{r}=ld(c,esp+{28 - 4 * k},4);" for k, r in enumerate(REG32) if r != "esp") + " esp+=32;")
+            self.sp_move(32)
             return
         if m == "pushfd":
+            self.sp_move(-4)
             o.append(f"t1=(uint32_t)cf|2u|((uint32_t)pf<<2)|((uint32_t)af<<4)|((uint32_t)zf<<6)|((uint32_t)sf<<7)|0x200u|((uint32_t)df<<10)|((uint32_t)of<<11)|c->eflx; "
-                     f"esp-=4; CHK(esp,4,{self.at()}); st(c,esp,t1,4);")
+                     f"esp-=4; {self.sp_acc(0, 4)} st(c,esp,t1,4);")
             return
         if m == "popfd":
-            o.append(f"CHK(esp,4,{self.at()}); t1=ld(c,esp,4); esp+=4; " +
+            o.append(f"{self.sp_acc(0, 4)} t1=ld(c,esp,4); esp+=4; " +
                      self.flag_assign(cf="t1&1", pf="(t1>>2)&1", af="(t1>>4)&1", zf="(t1>>6)&1",
                                       sf="(t1>>7)&1", of="(t1>>11)&1") + "df=(t1>>10)&1; c->eflx=t1&0x240000u;")
+            self.sp_move(4)
             return
         if m == "lahf":
             o.append("eax=(eax&0xffff00ffu)|(((uint32_t)sf<<7|(uint32_t)zf<<6|(uint32_t)af<<4|(uint32_t)pf<<2|2u|(uint32_t)cf)<<8);")
@@ -761,14 +819,15 @@ class Lifter:
             return
         if m == "ret":
             imm = ops[0].imm if ops else 0
-            o.append(f"CHK(esp,4,{self.at()}); c->ret=ld(c,esp,4); esp+=4+{imm}; goto done;")
+            o.append(f"{self.sp_acc(0, 4)} c->ret=ld(c,esp,4); esp+=4+{imm}; goto done;")
             return
         if m == "call":
             op = ops[0]
             nxt = i.address + i.size
             if op.type == x86.X86_OP_IMM:
                 if op.imm == nxt:          # call $+5: pushes its own address
-                    o.append(f"esp-=4; CHK(esp,4,{self.at()}); st(c,esp,0x{nxt:x}u,4);")
+                    self.sp_move(-4)
+                    o.append(f"esp-=4; {self.sp_acc(0, 4)} st(c,esp,0x{nxt:x}u,4);")
                 else:
                     self.call_to(f"0x{op.imm:x}u", op.imm)
                 return
@@ -912,7 +971,7 @@ class Lifter:
               "fset(c,0,FSUB(*fr(c,0),v));", "fset(c,0,FSUB(v,*fr(c,0)));", "fset(c,0,FDIV(*fr(c,0),v));", "fset(c,0,FDIV(v,*fr(c,0)));"]
         if mod != 3:
             o.append(f"ea={self.ea(mem.mem)};")
-            ck = lambda n: f"CHK(ea,{n},{at});"
+            ck = lambda n: self.chk(mem.mem, n)
             if op in (0xd8, 0xdc):
                 n = 4 if op == 0xd8 else 8
                 o.append(f"{ck(n)} {{ double v={'ldfx' if n == 4 else 'lddx'}(c,ea); {ar[reg]} }}")
@@ -1187,7 +1246,8 @@ class Lifter:
         body, self.switches, bad = self.body(entry)
         targets = {entry}
         for a, i in body.items():
-            if i.group(CS_GRP_JUMP) and i.operands and i.operands[0].type == x86.X86_OP_IMM:
+            # loop/loope/loopne are not CS_GRP_JUMP in capstone; an overlapping decode stream is entered by `goto L<nxt>`.
+            if (i.group(CS_GRP_JUMP) or self.mnem(i)[1] in ("loop", "loope", "loopne")) and i.operands and i.operands[0].type == x86.X86_OP_IMM:
                 targets.add(i.operands[0].imm)
             targets.update(self.switches.get(a, []))
         self.labels = set(body) | bad
@@ -1208,16 +1268,23 @@ class Lifter:
         # RN_X87RUN=1: x87 runs (stack slots in locals). Opt-in: difftest-clean, but at load 11 they cut f_5d6f5d 4.7 -> 3.1 %
         # of the game thread, fx2 and the culling functions not at all, for +3.3 MB of wasm (build/bench/b4_x87.prof.txt).
         runs = not self.trace and os.environ.get("RN_X87RUN") == "1"
-        self.fs, self.uses_fs = None, False
+        # esp check coalescing (sp_open): not in a trace build (exact state per step) nor with x87 runs (fs_traps flushes
+        # the run only at checks inside the instruction it rewrites).
+        coal = not self.trace and not runs
+        self.fs, self.uses_fs, self.sp = None, False, None
         entered = targets | self.all_cases       # labels a jump can reach: the run state must be in the Ctx there
+        entered |= {a + i.size for a, i in body.items() if a + i.size in self.labels and next_label.get(a) != a + i.size}
         for a in order:
             i = body.get(a)
             if self.fs and a in entered:
                 self.out.append(self.fs_end())
+            if a in entered:
+                self.sp_close()
             self.out.append(f"L{a:x}:;")
             if self.trace:      # difftest RN_ONLY: report the state before every instruction
                 self.out.append(f"{{ {self.save()} rn_trace_step(c,0x{a:x}u); }}")
             if i is None:
+                self.sp_close()
                 self.out.append(self.fs_end() + f"TRAP(0x{a:x},\"cannot decode\");")
                 self.info["traps"].append("decode")
                 continue
@@ -1228,6 +1295,17 @@ class Lifter:
             if self.fs and (self.fs_barrier(i) or (0xd8 <= i.opcode[0] <= 0xdf and tpl is None)):
                 self.out.append(self.fs_end())
             flush = self.fs_flush()
+            pre, m = self.mnem(i)
+            # Ends the block before it: esp set to a value the lifter does not know (mov/lea/and esp, leave, pop esp...).
+            _, wr = i.regs_access()
+            sp_ok = coal and x86.X86_REG_SP not in wr and (x86.X86_REG_ESP not in wr or m in SP_MOVES and not (
+                m == "pop" and i.operands[0].type == x86.X86_OP_REG and i.reg_name(i.operands[0].reg) == "esp") and not (
+                m in ("add", "sub") and i.operands[1].type != x86.X86_OP_IMM))
+            if not sp_ok:
+                self.sp_close()
+            elif self.sp is None:
+                self.sp_open()
+            sp_keep = dict(self.sp) if self.sp else None
             mark = len(self.out)
             try:
                 if tpl is not None:
@@ -1237,6 +1315,8 @@ class Lifter:
                     self.emit(i)
             except (Unsupported, KeyError, IndexError) as x:
                 del self.out[mark:]
+                self.sp = sp_keep
+                self.sp_close()
                 name = (i.mnemonic + " " + i.op_str).strip().replace('"', "'")
                 self.out.append(f"TRAP(0x{a:x},\"not lifted: {name}\");")
                 self.info["traps"].append(str(x) if isinstance(x, Unsupported) else i.mnemonic)
@@ -1245,12 +1325,17 @@ class Lifter:
             if i.group(CS_GRP_CALL):
                 self.info["calls"] += 1
             nxt = a + i.size
-            pre, m = self.mnem(i)
             ends = i.group(CS_GRP_RET) or m == "jmp" or m in STOPS
+            # A branch, call, ret, loop or trap ends the block: the check must not cover a path not taken.
+            if not sp_ok or self.fs_barrier(i) or m in ("leave", "enter"):
+                self.sp_close()
             if not ends and nxt not in self.labels:
                 self.out.append(self.fs_end() + f"TRAP(0x{nxt:x},\"ran off the decoded body\");")
             elif not ends and next_label.get(a) != nxt:
                 self.out.append(self.fs_end() + f"goto L{nxt:x};")     # an overlapping decode stream starts in between
+            if not ends and next_label.get(a) != nxt or nxt not in self.labels:
+                self.sp_close()
+        self.sp_close()
         if self.fs:
             self.out.append(self.fs_end())
         regs = " ".join(f"uint32_t {r}=c->r[{k}];" for k, r in enumerate(REG32))
@@ -1266,7 +1351,7 @@ class Lifter:
                 "(void)ea;(void)t1;(void)t2;(void)res;(void)n;(void)k;(void)u;(void)w;\n"
                 # RN_COV build (build.py sets `cov`): one byte store per function ENTRY, direct calls and tail jumps included.
                 + (f"RN_COV(RNI_{entry:x});\n" if getattr(self, "cov", False) else "") +
-                f"goto L{entry:x};\n" + "\n".join(self.out) +
+                f"goto L{entry:x};\n" + "\n".join(x for x in self.out if x) +
                 f"\ndone: {self.save(self.return_flags)} return;\n"
                 f"trap: c->halt=1; {self.save(STATUS if self.strict_flags else 0)} return;\n}}\n")
         if nat:     # NATIVE: the native body first, the lifted one outside its fast case
