@@ -34,6 +34,8 @@ async function startGpu(M, canvas, report, onFrame) {
   const TS = adapter.features.has('timestamp-query');
   // texture-compression-bc (Apple and desktop GPUs have it): the remaster pack in BC7 (loadDds).
   const BC = adapter.features.has('texture-compression-bc');
+  // S3TC: DXT textures stay BC1/2/3 (host/d3d9.c RN_S3TC). The WebGL 2 shim has no texture-compression-bc, so it names its own feature.
+  const S3 = BC || adapter.features.has('rn-s3tc');
   const device = await adapter.requestDevice({ requiredFeatures: [...(TS ? ['timestamp-query'] : []), ...(BC ? ['texture-compression-bc'] : [])] });
   device.addEventListener('uncapturederror', e => report('webgpu: ' + e.error.message));
   // ?apicount=1 (debug): WebGPU calls per frame list, reported with the frame log (wraps the prototypes).
@@ -1272,10 +1274,12 @@ fn mulfloor(c: f32, w: f32) -> f32 {
         if (WARM) { els.sig = Array.from(w.subarray(a + 1, a + 2 + 2 * w[a + 1])).join(','); warmDecl.set(els.sig, w[a]); warmTry(); }
       } else if (op === GPU_TEXTURE) {
         doom(res.get(w[a])?.tex);
-        const tex = device.createTexture({ size: [w[a + 1], w[a + 2]], mipLevelCount: w[a + 3], format: 'rgba8unorm',
+        // word 4 (host dxt_native): 0 RGBA8, 1/2/3 = BC1/2/3 with the raw blocks sent by GPU_TEXDATA
+        const bcf = S3 ? [null, 'bc1-rgba-unorm', 'bc2-rgba-unorm', 'bc3-rgba-unorm'][w[a + 4]] : null;
+        const tex = device.createTexture({ size: [w[a + 1], w[a + 2]], mipLevelCount: w[a + 3], format: bcf || 'rgba8unorm',
           usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC });
         const own = tex.createView();
-        res.set(w[a], { tex, own, view: own, w: w[a + 1], h: w[a + 2], depth: false });
+        res.set(w[a], { tex, own, view: own, w: w[a + 1], h: w[a + 2], depth: false, bc: bcf ? (w[a + 4] === 1 ? 8 : 16) : 0 });
       } else if (op === GPU_CUBE) {
         // One texture, six layers: each face target draws into its layer, the stage samples the cube view.
         const e = w[a + 1], f0 = w[a + 2];
@@ -1294,9 +1298,16 @@ fn mulfloor(c: f32, w: f32) -> f32 {
         // queue.writeTexture runs before this frame's commands: a texture changed after a draw of the
         // same frame that used it would show its new texels in that draw (not seen yet).
         const t = res.get(w[a]), tw = w[a + 2], th = w[a + 3];
-        device.queue.writeTexture({ texture: t.tex, mipLevel: w[a + 1] }, u8.subarray(4 * (a + 4), 4 * (a + 4 + tw * th)),
-          { bytesPerRow: 4 * tw }, [tw, th]);
-        stats.texKb += tw * th >> 8;
+        if (t.bc) {   // raw blocks; a level under 4 px is one block row/column and its physical size is 4
+          const bw = (tw + 3) >> 2, bh = (th + 3) >> 2;
+          device.queue.writeTexture({ texture: t.tex, mipLevel: w[a + 1] }, u8.subarray(4 * (a + 4), 4 * (a + 4) + bw * bh * t.bc),
+            { bytesPerRow: bw * t.bc }, [bw * 4, bh * 4]);
+          stats.texKb += bw * bh * t.bc >> 10;
+        } else {
+          device.queue.writeTexture({ texture: t.tex, mipLevel: w[a + 1] }, u8.subarray(4 * (a + 4), 4 * (a + 4 + tw * th)),
+            { bytesPerRow: 4 * tw }, [tw, th]);
+          stats.texKb += tw * th >> 8;
+        }
       } else if (op === GPU_DRAW) {
         const rtId = w[a + D_RT], dsId = w[a + D_DS];
         const rt = res.get(rtId), ds = dsId ? res.get(dsId) : null;

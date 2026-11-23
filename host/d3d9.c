@@ -222,6 +222,17 @@ enum {
 #define F_DXT5 FOURCC('D', 'X', 'T', '5')
 
 static int is_dxt(uint32_t f) { return f == F_DXT1 || f == F_DXT2 || f == F_DXT3 || f == F_DXT4 || f == F_DXT5; }
+// RN_S3TC=1 (web/boot.js: the page can sample BC1/2/3): a DXT texture with level 0 a multiple of 4 stays compressed on the GPU.
+// Returns the GPU_TEXTURE format word: 0 = RGBA8 (CPU decode), 1 = BC1, 2 = BC2, 3 = BC3. DXT2/DXT4 (premultiplied) decode
+// exactly like DXT3/DXT5 today (decode_texels does not unpremultiply), so they map to the same BC format.
+static uint32_t dxt_native(uint32_t f, uint32_t w, uint32_t h) {
+    static int on = -1;
+    if (on < 0) on = getenv("RN_S3TC") != NULL;
+    if (!on || !is_dxt(f) || (w & 3) || (h & 3)) return 0;
+    return f == F_DXT1 ? 1 : (f == F_DXT2 || f == F_DXT3) ? 2 : 3;
+}
+// Upload counters (compressed vs decoded), logged once when the first race HUD appears.
+static uint64_t up_n[2], up_bytes[2], up_rgba_equiv;
 static int is_depth(uint32_t f) { return f >= F_D16_LOCKABLE && f <= F_D24FS8 && f != F_L16; }
 // Bits per pixel (per texel for DXT: 4 or 8). 0 = a format this adapter does not know.
 static int fmt_bits(uint32_t f) {
@@ -1497,7 +1508,7 @@ static uint32_t IDirect3DDevice9_CreateTexture(Ctx *c) {
         objs[top].container = tk;
         if (pool == POOL_DEFAULT || pool == POOL_MANAGED) vram_used += objs[top].size;
     }
-    if (!(usage & U_RENDERTARGET)) { uint32_t w4[4] = {tk, w, h, levels}; gpu_cmd(GPU_TEXTURE, 4, w4); }
+    if (!(usage & U_RENDERTARGET)) { uint32_t w5[5] = {tk, w, h, levels, dxt_native(f, w, h)}; gpu_cmd(GPU_TEXTURE, 5, w5); }
     st(c, out, g, 4);
     return D3D_OK;
 }
@@ -1621,6 +1632,18 @@ static void upload_level(Ctx *c, Obj *s) {
     Obj *t = obj_k(s->container);
     if (!t || t->iface != I_TEXTURE || (t->usage & U_RENDERTARGET)) return;
     uint32_t level = idx(s) - t->level0, n = s->w * s->h;
+    if (dxt_native(t->fmt, t->w, t->h)) {
+        // raw blocks, tightly packed rows: pitch = blocks per row x 8 or 16
+        uint32_t m = s->pitch * ((s->h + 3) / 4);
+        uint32_t *r = malloc(4u * 4 + m + 4);
+        r[0] = s->container; r[1] = level; r[2] = s->w; r[3] = s->h;
+        memcpy(r + 4, G(lock_mem(s)), m);
+        gpu_cmd(GPU_TEXDATA, (int)(4 + (m + 3) / 4), r);
+        free(r);
+        up_n[1]++; up_bytes[1] += m; up_rgba_equiv += 4ull * n;
+        flush_big();
+        goto key;
+    }
     uint32_t *w = malloc(4u * (4 + n));
     w[0] = s->container; w[1] = level; w[2] = s->w; w[3] = s->h;
     if (!decode_texels(s->fmt, (const uint8_t *)G(lock_mem(s)), s->pitch, s->w, s->h, w + 4)) {
@@ -1634,8 +1657,10 @@ static void upload_level(Ctx *c, Obj *s) {
         if (!seen[k]) { seen[k] = s->fmt; rn_log("d3d9 first texture of format %u (%ux%u)", s->fmt, s->w, s->h); break; }
     }
     gpu_cmd(GPU_TEXDATA, (int)(4 + n), w);
+    up_n[0]++; up_bytes[0] += 4ull * n;
     free(w);
     flush_big();
+key:
     // 32-bit textures too (rims, decals); a dynamic one is relocked each frame, so it is never a pack texture.
     if (level == 0 && (is_dxt(s->fmt) || ((s->fmt == F_A8R8G8B8 || s->fmt == F_X8R8G8B8) && !(t->usage & U_DYNAMIC)))) {
         // FNV-1a 64 of the level-0 blocks: the key of tools/remaster/index.py.
@@ -2805,7 +2830,8 @@ static uint32_t IDirect3DDevice9_DrawPrimitiveUP(Ctx *c) {
     int hud = race && (fen ? fen->hud : !menu), screen = race && fen && !fen->hud;
     rn_hud_on = hud;
     static int hud_seen;
-    if (hud && !hud_seen) { hud_seen = 1; rn_log("d3d9 race HUD %ux%u (track loaded, 0x77a90c = 0x6c9c3c, 3D scene drawn)", rt->w, rt->h); rn_fixedclock_start(c); }
+    if (hud && !hud_seen) { hud_seen = 1; rn_log("d3d9 race HUD %ux%u (track loaded, 0x77a90c = 0x6c9c3c, 3D scene drawn)", rt->w, rt->h);
+        rn_log("d3d9 tex uploads: %llu compressed (%llu KB, %llu KB as RGBA8) + %llu decoded RGBA8 (%llu KB); GPU saved %llu KB", (unsigned long long)up_n[1], (unsigned long long)(up_bytes[1] >> 10), (unsigned long long)(up_rgba_equiv >> 10), (unsigned long long)up_n[0], (unsigned long long)(up_bytes[0] >> 10), (unsigned long long)((up_rgba_equiv - up_bytes[1]) >> 10)); rn_fixedclock_start(c); }
     // GPU_FXAA dispatches the bridge's bloom, depth blur and FXAA passes (web/gpu.js).
     if (!tier_ultralite() && race && fxaa_frame != dev.frames) { fxaa_frame = dev.frames; uint32_t w1[8] = {rt->gpu}; psblur_vel(c, w1 + 1); gpu_cmd(GPU_FXAA, 8, w1); }
     // OWNER A/B for the 16:9 decision (build/evidence/1_hud.md): RN_HUD=edges (default) | 169 (the side groups stop at a centred
