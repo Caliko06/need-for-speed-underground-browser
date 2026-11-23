@@ -611,13 +611,26 @@ static void limiter_sleep(Ctx *c) {
 // only at 0x585b83) becomes 1/30. The limiter then adds the waited time to the frame dt (param_1 + wait = 1/30) and the
 // game turns dt into 1/60 s simulation ticks with a carried remainder ([0x73456c]; dt is clamped by [0x6f0894] = 3): two ticks a
 // frame, as on a PC that runs at 30 fps, so the game's speed and physics step stay the same. Set at the first clock read.
+static volatile int fps_req;   // 0 = nothing pending, else 30 or 60, applied on the game thread at the next clock read
 static void fps_init(Ctx *c) {
     static int done;
-    if (done) return;
-    done = 1;
-    const char *e = getenv("RN_FPS");
-    if (e && atoi(e) == 30) { st(c, 0x6f0890, 0x3d088889, 4); rn_log("RN_FPS=30: frame target [0x6f0890] = 1/30 s"); }
+    static uint32_t orig;   // the shipped [0x6f0890], saved before the first write so 60 restores it exactly
+    if (!done) {
+        done = 1;
+        const char *e = getenv("RN_FPS");
+        if (e && atoi(e) == 30) fps_req = 30;
+    }
+    int f = fps_req;
+    if (!f) return;
+    fps_req = 0;
+    if (!orig) orig = ld(c, 0x6f0890, 4);
+    st(c, 0x6f0890, f == 30 ? 0x3d088889 : orig, 4);
+    rn_log("fps target %d: [0x6f0890] = %08x", f, f == 30 ? 0x3d088889 : orig);
 }
+// LEVER rn_set_fps(30|60) from the page: same single reader as RN_FPS (flds 0x6f0890 at 0x585b83, limiter 0x585b40).
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE void rn_set_fps(int fps) { if (fps == 30 || fps == 60) fps_req = fps; }
+#endif
 static uint32_t QueryPerformanceCounter_(Ctx *c) { rn_telem.clock_calls++; clk_site(c); fps_init(c); limiter_sleep(c); gil_clock(); st64(c, ARG(0), game_now_us()); return 1; }
 static uint32_t QueryPerformanceFrequency_(Ctx *c) { st64(c, ARG(0), 1000000); return 1; }
 // The PC's clock runs on UTC: time zone "Greenwich Standard Time" (bias 0, no daylight saving),
@@ -1157,6 +1170,39 @@ const Api win32_apis[] = {
 const int win32_api_count = sizeof win32_apis / sizeof win32_apis[0];
 
 int rn_screen_w = 1920, rn_screen_h = 1080;
+static int boot_w, boot_h;
+static volatile uint32_t screen_req;   // pending size (w << 16 | h), 0 = none
+static void screen_set(Ctx *c) {
+    st(c, SCREEN_ADDR, rn_screen_w, 4); st(c, SCREEN_ADDR + 4, rn_screen_h, 4);
+    float s43 = 4.f * (float)rn_screen_h / (3.f * (float)rn_screen_w);
+    if (s43 > 1.f) s43 = 1.f;
+    float k[2] = {s43 / 320.f, s43};
+    memcpy(G(SCREEN_ADDR + 8), k, sizeof k);
+}
+// LEVER rn_request_screen(w, h) from the page: applied only inside IDirect3DDevice9_Reset (host/d3d9.c), which the game reaches
+// only from 0x40a510 (race unload tail 0x4494c4, options 0x40877e, device lost) after both read SCREEN_ADDR and ran 0x4086b0;
+// so the Reset sees the old size in the present parameters 0x71a96c (+0,+4) and the globals [0x701034]/[0x701038]. We rewrite those
+// before the Reset: the game then rebuilds every size-dependent object after it (0x401e50, 0x40a890, 0x40aa20, 0x40b340, 0x40cb80).
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE void rn_request_screen(int w, int h) {
+    w &= ~1; h &= ~1;
+    if (w < 400) w = 400;
+    if (h < 240) h = 240;
+    if (w > boot_w) w = boot_w;
+    if (h > boot_h) h = boot_h;
+    screen_req = (uint32_t)w << 16 | (uint32_t)h;
+}
+#endif
+void rn_screen_apply(Ctx *c, uint32_t pp) {
+    uint32_t r = screen_req;
+    screen_req = 0;
+    int w = (int)(r >> 16), h = (int)(r & 0xffff);
+    if (!r || (w == rn_screen_w && h == rn_screen_h)) return;
+    rn_screen_w = w; rn_screen_h = h;
+    screen_set(c);
+    st(c, pp, w, 4); st(c, pp + 4, h, 4); st(c, 0x701034, w, 4); st(c, 0x701038, h, 4);
+    rn_log("screen request applied at Reset: %dx%d", w, h);
+}
 
 void win32_init(Ctx *c, uint32_t image_size) {
     int sw, sh;
@@ -1164,11 +1210,8 @@ void win32_init(Ctx *c, uint32_t image_size) {
     if (scr && sscanf(scr, "%dx%d", &sw, &sh) == 2 && sw >= 400 && sh >= 240 && sw <= 7680 && sh <= 4320) {
         rn_screen_w = sw & ~1; rn_screen_h = sh & ~1;
     }
-    st(c, SCREEN_ADDR, rn_screen_w, 4); st(c, SCREEN_ADDR + 4, rn_screen_h, 4);
-    float s43 = 4.f * (float)rn_screen_h / (3.f * (float)rn_screen_w);
-    if (s43 > 1.f) s43 = 1.f;
-    float k[2] = {s43 / 320.f, s43};
-    memcpy(G(SCREEN_ADDR + 8), k, sizeof k);
+    boot_w = rn_screen_w; boot_h = rn_screen_h;
+    screen_set(c);
     const char *seed = getenv("RN_SEED");     // PATCH 0x4470f0: test-only fixed RNG seed (A/B vs Wine); 0 = the clock
     st(c, SCREEN_ADDR + 16, seed ? (uint32_t)strtoul(seed, NULL, 0) : 0, 4);
     st(c, SCREEN_ADDR + 20, getenv("RN_AUTOPILOT") != NULL, 4);   // PATCH 0x42d4b0: test-only, the AI drives the player
