@@ -36,7 +36,7 @@ window.rnReport = () => {
   const date = new Date().toISOString(), name = `nfsu-session-${date.replace(/[:.]/g, '-')}.json`;
   const blob = new Blob([JSON.stringify({ format: 'rn-session-2', url: location.origin + location.pathname + RN_SEARCH, date, ua: navigator.userAgent,
     screen: `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, saved: +secs(), state: RN_APP.state,
-    ...(telem ? telem.dump() : {}), log: allLog })], { type: 'application/json' });
+    ...(telem ? telem.dump() : {}), stats: window.rnStats ? window.rnStats.windows : [], log: allLog })], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 10000);
@@ -59,7 +59,7 @@ function crashSend(s) {
   crashSend.done = true;
   const cut = l => l.length > 300 ? l.slice(0, 300) + '...' : l;
   navigator.sendBeacon('/crash', new Blob([JSON.stringify({ format: 'rn-crash-1', v: window.RN_V || '', stop: cut(s), at: +secs(), state: RN_APP.state,
-    ua: navigator.userAgent, screen: `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, mem: navigator.deviceMemory || 0, cores: navigator.hardwareConcurrency || 0,
+    ua: navigator.userAgent, screen: `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, mem: navigator.deviceMemory || 0, perf: window.rnStats?.line() || '', cores: navigator.hardwareConcurrency || 0,
     head: allLog.filter(l => /gpu\.js: (adapter|WebGL)| mode: /.test(l)).slice(0, 4).map(cut), tail: allLog.slice(-40).map(cut) })], { type: 'application/json' }));
 }
 function line(s, cls) {
@@ -264,6 +264,7 @@ async function download(url, what) {
     }],
   });
   telem = startTelemetry(M, t0, s => line(s));
+  startStats(M);   // web/stats.js
   const onFrame = (s, t, ms) => { if (s.present && RN_APP.state === 'load') { if (!CURTAIN) arrive(); else if (!arrive.t) arrive.t = setTimeout(arrive, 45000); /* a trip that stalls must not leave the curtain down */ } telem?.frame?.(s, t, ms); };
   startGpu(M, document.getElementById('screen'), s => line(s, 'api'), onFrame).catch(e => line('gpu.js: ' + e.message, 'stop'));
   // RN_STEERLOG (host/input.c): also each key at the page and each present's GPU completion, on the page's clock
