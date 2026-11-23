@@ -58,8 +58,7 @@ def relocate(m, base, exe_u32):
     return d
 
 
-def lift_module(m, cb, funcs, lifted, exe_u32):
-    """C for one module at canonical base cb: (key, offsets of its functions, C text with names m<key>_<off>)."""
+def module_lifter(m, cb, funcs, exe_u32):
     blob = relocate(m, cb, exe_u32)
     end = cb + len(blob)
     entries, todo = set(), [cb + s for s in m["seeds"]]
@@ -72,7 +71,14 @@ def lift_module(m, cb, funcs, lifted, exe_u32):
         for i in body.values():
             if i.group(CS_GRP_CALL) and i.operands[0].type == x86.X86_OP_IMM and cb <= i.operands[0].imm < end:
                 todo.append(i.operands[0].imm)
-    L = Lifter.image(blob, cb, {**funcs, **{a: "call" for a in entries}})
+    return Lifter.image(blob, cb, {**funcs, **{a: "call" for a in entries}}), entries
+
+
+def lift_module(m, cb, funcs, lifted, exe_u32, flag_abi=None):
+    """C for one module at canonical base cb: (key, offsets of its functions, C text with names m<key>_<off>)."""
+    L, entries = module_lifter(m, cb, funcs, exe_u32)
+    L.flag_abi = flag_abi
+    end = cb + len(L.img)
     based = {cb + s for s in m["based"]}
     src = []
     for e in sorted(entries):
@@ -98,12 +104,13 @@ def lift_module(m, cb, funcs, lifted, exe_u32):
     return key, sorted(e - cb for e in entries), text.replace("M_", f"m{key}_")
 
 
-def c_source(funcs, lifted, exe_u32, root="game"):
+def c_source(funcs, lifted, exe_u32, root="game", flag_abi=None, mods=None):
     """build/gen/abk.c: every distinct module's functions and the table host/abk.c searches."""
-    mods = modules(root)
+    if mods is None:
+        mods = modules(root)
     bodies, rows, nfn = {}, [], 0
     for k, m in enumerate(mods):
-        key, offs, text = lift_module(m, CB0 + k * CB_STEP, funcs, lifted, exe_u32)
+        key, offs, text = lift_module(m, CB0 + k * CB_STEP, funcs, lifted, exe_u32, flag_abi)
         bodies.setdefault(key, (offs, text))
         rows.append((m, key, offs))
     out = ['#include "funcs.h"']

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Lift x86-32 functions of pc/Speed.exe to C.
 
-Each guest function becomes `void f_<addr>(Ctx *c)` (host/rt.h). Registers and flags are C locals,
-written back to the Ctx at calls and exits. Direct calls are C calls; indirect calls and jumps go
+Each guest function becomes `void f_<addr>(Ctx *c)` (host/rt.h). Registers and flags are C locals.
+Calls and exits write back registers and live flags to the Ctx. Indirect calls and jumps go
 through rn_call (address -> function). An instruction the lifter does not know becomes a TRAP that
 stops the game with its address and name when it runs. Nothing is guessed.
 """
@@ -19,10 +19,18 @@ LO8 = {"al": "eax", "cl": "ecx", "dl": "edx", "bl": "ebx"}
 HI8 = {"ah": "eax", "ch": "ecx", "dh": "edx", "bh": "ebx"}
 R16 = {"ax": "eax", "cx": "ecx", "dx": "edx", "bx": "ebx", "sp": "esp", "bp": "ebp", "si": "esi", "di": "edi"}
 FLAGS = ["cf", "zf", "sf", "of", "pf", "df", "af"]
+FLAG_BIT = {f: 1 << k for k, f in enumerate(f for f in FLAGS if f != "df")}
+CF, ZF, SF, OF, PF, AF = FLAG_BIT.values()
+STATUS = CF | ZF | SF | OF | PF | AF
+SAHF = STATUS & ~OF
+SHIFTS = ("shl", "sal", "shr", "sar", "shld", "shrd")
+ROTATES = ("rol", "ror", "rcl", "rcr")
+STOPS = ("hlt", "int3", "ud2", "iretd", "retf", "int", "int1", "into")
 
 COND = {"o": "of", "no": "!of", "b": "cf", "ae": "!cf", "e": "zf", "ne": "!zf", "be": "(cf||zf)",
         "a": "(!cf&&!zf)", "s": "sf", "ns": "!sf", "l": "(sf!=of)", "ge": "(sf==of)",
         "le": "(zf||sf!=of)", "g": "(!zf&&sf==of)", "p": "pf", "np": "!pf"}
+COND_FLAGS = {m: sum(FLAG_BIT[f] for f in set(re.findall(r"[a-z]+", expr))) for m, expr in COND.items()}
 PREFIXES = ("lock ", "rep ", "repe ", "repne ", "bnd ", "notrack ")
 STRING_OPS = {0xa4: "movs", 0xa5: "movs", 0xa6: "cmps", 0xa7: "cmps", 0xaa: "stos", 0xab: "stos",
               0xac: "lods", 0xad: "lods", 0xae: "scas", 0xaf: "scas"}
@@ -45,6 +53,75 @@ class Unsupported(Exception):
     pass
 
 
+class FlagABI:
+    """Solve Ctx flag demand at guest calls, tail calls and returns over the loaded program."""
+
+    def __init__(self, graphs):
+        self.inputs = dict.fromkeys(graphs, 0)
+        self.outputs = dict.fromkeys(graphs, 0)
+        self.indirect_in = self.indirect_out = 0
+        changed = True
+        while changed:
+            changed = False
+            for entry, graph in graphs.items():
+                live = self.liveness(entry, graph)
+                need = live.get(entry, 0)
+                if need != self.inputs[entry]:
+                    self.inputs[entry] = need
+                    self.indirect_in |= need
+                    changed = True
+                for addr, (_, _, succ, edge, target) in graph.items():
+                    if edge not in ("call", "tail"):
+                        continue
+                    need = self.successors(live, succ) if edge == "call" else self.returns(entry)
+                    if target in self.outputs:
+                        if need & ~self.outputs[target]:
+                            self.outputs[target] |= need
+                            changed = True
+                    elif need & ~self.indirect_out:
+                        self.indirect_out |= need
+                        changed = True
+            # Host APIs can make successive guest callbacks on the same Ctx.
+            if self.indirect_in & ~self.indirect_out:
+                self.indirect_out |= self.indirect_in
+                changed = True
+
+    def returns(self, entry):
+        return self.outputs[entry] | self.indirect_out
+
+    def arguments(self, target, result):
+        # rn_call can enter any lifted function or a host API that leaves flags untouched.
+        return self.inputs[target] if target in self.inputs else self.indirect_in | result
+
+    @staticmethod
+    def successors(live, succ):
+        need = 0
+        for addr in succ:
+            need |= live.get(addr, 0)   # a missing/decode-failed label traps
+        return need
+
+    def liveness(self, entry, graph):
+        """Live-in masks. Back edges and overlapping decode streams converge by union."""
+        live = {}
+        result = self.returns(entry)
+        changed = True
+        while changed:
+            changed = False
+            for addr, (read, kill, succ, edge, target) in reversed(graph.items()):
+                after = self.successors(live, succ)
+                if edge == "ret":
+                    after = result
+                elif edge == "call":
+                    after = self.arguments(target, after)
+                elif edge == "tail":
+                    after |= self.arguments(target, result)
+                before = read | (after & ~kill)
+                if before != live.get(addr, 0):
+                    live[addr] = before
+                    changed = True
+        return live
+
+
 class Lifter:
     def __init__(self, exe, funcs=None):
         self.pe = pefile.PE(exe)
@@ -63,6 +140,7 @@ class Lifter:
                 self.iat.add(i.address)
         self._cache = {}
         self.trace = False
+        self.flag_abi = None
         # Address-taken code: dwords in the data sections that point into .text (jump tables, vtables).
         self.addr_taken, self.addr_taken_aligned = set(), set()
         for sec in self.pe.sections:
@@ -85,6 +163,7 @@ class Lifter:
         self.md = Cs(CS_ARCH_X86, CS_MODE_32)
         self.md.detail = True
         self.funcs, self.iat, self._cache, self.trace = funcs, set(), {}, False
+        self.flag_abi = None
         self.addr_taken, self.addr_taken_aligned = set(), set()
         return self
 
@@ -161,7 +240,7 @@ class Lifter:
                     (negs.add if m == "neg" else negs.discard)({**LO8, **HI8, **R16}.get(r, r))
                 if m in ("call", "mul", "div", "imul", "idiv", "cdq", "lodsb", "lodsd"):
                     last_cmp.clear()
-                if i.group(CS_GRP_RET) or m in ("hlt", "int3", "ud2", "iretd", "retf", "int", "int1", "into"):
+                if i.group(CS_GRP_RET) or m in STOPS:
                     break
                 if i.group(CS_GRP_JUMP) or m in ("loop", "loope", "loopne", "jecxz"):
                     if op.type == x86.X86_OP_IMM:
@@ -214,6 +293,95 @@ class Lifter:
             if m.startswith(p):
                 pre, m = p.strip(), m[len(p):]
         return pre, m
+
+    @staticmethod
+    def flag_effect(i, pre, m):
+        """Reads and definite writes of the C templates. Undefined flags follow the existing lifter."""
+        if m in ("adc", "sbb"):
+            return CF, STATUS
+        if m in ("add", "sub", "cmp", "test", "and", "or", "xor", "neg", "xadd", "popfd"):
+            return 0, STATUS
+        if m in ("inc", "dec"):
+            return 0, STATUS & ~CF
+        if m in SHIFTS or m in ROTATES:
+            count = i.operands[-1] if len(i.operands) > 1 else None
+            # A register count can be zero, leaving the previous flags live.
+            writes = STATUS & ~AF if m in ("shld", "shrd") else STATUS if m in SHIFTS else CF | OF
+            if count is not None and (count.type != x86.X86_OP_IMM or not count.imm & 31):
+                writes = 0
+            return (CF if m in ("rcl", "rcr") else 0), writes
+        if m in ("imul", "mul"):
+            return 0, CF | OF
+        if m in ("clc", "stc", "bt", "bts", "btr", "btc"):
+            return 0, CF
+        if m == "cmc":
+            return CF, CF
+        if m == "pushfd":
+            return STATUS, 0
+        if m == "lahf":
+            return SAHF, 0
+        if m == "sahf":
+            return 0, SAHF
+        if m in ("fcomi", "fucomi", "fcomip", "fucomip"):
+            return 0, STATUS & ~AF
+        if i.opcode[0] in (0xa6, 0xa7, 0xae, 0xaf):
+            return 0, 0 if pre else STATUS   # REP can execute zero iterations
+        if m in ("loope", "loopne"):
+            return ZF, 0
+        if m.startswith("j"):
+            return COND_FLAGS.get(m[1:], 0), 0
+        if m.startswith("set"):
+            return COND_FLAGS.get(m[3:], 0), 0
+        return 0, 0
+
+    def case_labels(self, switches, labels):
+        return {t for tg in switches.values() for t in tg if t in labels} | (self.addr_taken & labels)
+
+    def flag_graph(self, entry, body, switches, bad, compact=False):
+        """Model the same edges as emit(), including the default tail of a computed jump."""
+        labels = body.keys() | bad
+        cases = self.case_labels(switches, labels)
+        targets = cases | {entry}
+        graph = {}
+        for a, i in body.items():
+            pre, m = self.mnem(i)
+            read, kill = self.flag_effect(i, pre, m)
+            nxt = a + i.size
+            succ, edge, target = (nxt,), None, None
+            if m == "ret":
+                succ, edge = (), "ret"
+            elif i.group(CS_GRP_RET) or m in STOPS:
+                succ = ()
+            elif m == "call":
+                op = i.operands[0]
+                if op.type != x86.X86_OP_IMM or op.imm != nxt:
+                    edge = "call"
+                    target = op.imm if op.type == x86.X86_OP_IMM else None
+            elif m == "jmp" or m in ("loop", "loope", "loopne", "jecxz") or (m.startswith("j") and m[1:] in COND):
+                op = i.operands[0]
+                succ = () if m == "jmp" else succ
+                if op.type != x86.X86_OP_IMM:
+                    succ, edge = tuple(cases), "tail"
+                elif op.imm in labels:
+                    succ += (op.imm,)
+                    targets.add(op.imm)
+                else:
+                    edge, target = "tail", op.imm
+            graph[a] = (read, kill, succ, edge, target)
+        if not compact:
+            return graph
+        # Keep one transfer per straight-line block for the whole-program fixpoint.
+        blocks = {}
+        start = None
+        for a, (read, kill, succ, edge, target) in graph.items():
+            if start is not None and a not in targets:
+                r, k, prev, boundary, _ = blocks[start]
+                if prev == (a,) and boundary is None:
+                    blocks[start] = (r | (read & ~k), k | kill, succ, edge, target)
+                    continue
+            start = a
+            blocks[start] = (read, kill, succ, edge, target)
+        return blocks
 
     def ea(self, mem):
         parts = []
@@ -281,48 +449,65 @@ class Lifter:
         if op.type == x86.X86_OP_MEM:
             self.addr(op)
 
-    @staticmethod
-    def zsp(M, S):
-        return f"zf=(res&0x{M:x}u)==0; sf=(res&0x{S:x}u)!=0; pf=par(res);"
+    def flag_assign(self, **values):
+        return "".join(f"{f}={v}; " for f, v in values.items() if self.live_flags & FLAG_BIT[f])
 
-    def arith(self, m, M, S):
-        if m in ("add", "xadd"):
-            return f"res=(t1+t2)&0x{M:x}u; af=((t1^t2^res)>>4)&1; cf=((uint64_t)t1+t2)>0x{M:x}u; of=((~(t1^t2))&(t1^res)&0x{S:x}u)!=0; " + self.zsp(M, S)
-        if m == "adc":
-            return f"res=(t1+t2+cf)&0x{M:x}u; af=((t1^t2^res)>>4)&1; cf=((uint64_t)t1+t2+cf)>0x{M:x}u; of=((~(t1^t2))&(t1^res)&0x{S:x}u)!=0; " + self.zsp(M, S)
-        if m in ("sub", "cmp"):
-            return f"res=(t1-t2)&0x{M:x}u; af=((t1^t2^res)>>4)&1; cf=t1<t2; of=((t1^t2)&(t1^res)&0x{S:x}u)!=0; " + self.zsp(M, S)
-        if m == "sbb":
-            return f"res=(t1-t2-cf)&0x{M:x}u; af=((t1^t2^res)>>4)&1; cf=(uint64_t)t1<(uint64_t)t2+cf; of=((t1^t2)&(t1^res)&0x{S:x}u)!=0; " + self.zsp(M, S)
-        opc = {"and": "&", "test": "&", "or": "|", "xor": "^"}[m]
-        return f"res=(t1{opc}t2)&0x{M:x}u; cf=0; of=0; af=0; " + self.zsp(M, S)
+    def mul_flags(self, expr):
+        return "".join(f"{f}=" for f in ("cf", "of") if self.live_flags & FLAG_BIT[f]) + expr + ";" \
+            if self.live_flags & (CF | OF) else ""
+
+    def zsp(self, M, S, repeat=False):
+        # Repeated CMPS/SCAS use the newly computed ZF for loop termination.
+        zf = f"zf=(res&0x{M:x}u)==0; " if repeat or self.live_flags & ZF else ""
+        return zf + self.flag_assign(sf=f"(res&0x{S:x}u)!=0", pf="par(res)")
+
+    def arith(self, m, M, S, repeat=False):
+        if m in ("add", "xadd", "adc"):
+            rhs = "t2+cf" if m == "adc" else "t2"
+            code = f"res=(t1+{rhs})&0x{M:x}u; "
+            code += self.flag_assign(af="((t1^t2^res)>>4)&1", cf=f"((uint64_t)t1+{rhs})>0x{M:x}u",
+                                     of=f"((~(t1^t2))&(t1^res)&0x{S:x}u)!=0")
+        elif m in ("sub", "cmp", "sbb"):
+            rhs = "t2-cf" if m == "sbb" else "t2"
+            code = f"res=(t1-{rhs})&0x{M:x}u; "
+            code += self.flag_assign(af="((t1^t2^res)>>4)&1",
+                                     cf="(uint64_t)t1<(uint64_t)t2+cf" if m == "sbb" else "t1<t2",
+                                     of=f"((t1^t2)&(t1^res)&0x{S:x}u)!=0")
+        else:
+            opc = {"and": "&", "test": "&", "or": "|", "xor": "^"}[m]
+            code = f"res=(t1{opc}t2)&0x{M:x}u; " + self.flag_assign(cf=0, of=0, af=0)
+        return code + self.zsp(M, S, repeat)
 
     # --- control transfer -------------------------------------------------
-    def save(self):
-        return " ".join(f"c->r[{k}]={r};" for k, r in enumerate(REG32)) + " " + " ".join(f"c->{f}={f};" for f in FLAGS)
+    @staticmethod
+    def ctx_flags(mask):
+        return (f for f in FLAGS if f == "df" or mask & FLAG_BIT[f])
 
-    def load(self):
-        return " ".join(f"{r}=c->r[{k}];" for k, r in enumerate(REG32)) + " " + " ".join(f"{f}=c->{f};" for f in FLAGS)
+    def save(self, mask=STATUS):
+        return " ".join(f"c->r[{k}]={r};" for k, r in enumerate(REG32)) + " " + " ".join(f"c->{f}={f};" for f in self.ctx_flags(mask))
 
-    def call_to(self, target_c, direct=None):
+    def load(self, mask):
+        return " ".join(f"{r}=c->r[{k}];" for k, r in enumerate(REG32)) + " " + " ".join(f"{f}=c->{f};" for f in self.ctx_flags(mask))
+
+    def call_to(self, target_c, target=None):
         """Call a guest/host address. target_c is a C expression already computed into t1 if indirect."""
         nxt = self.i.address + self.i.size
         o = self.out
-        o.append(f"esp-=4; CHK(esp,4,{self.at()}); st(c,esp,0x{nxt:x}u,4); {self.save()}")
-        o.append(f"f_{direct:x}(c);" if direct is not None else f"rn_call(c,{target_c});")
-        o.append(f"{self.load()} if (c->halt) return; if (c->ret!=0x{nxt:x}u) TRAP({self.at()},\"return address changed\");")
+        inputs = STATUS if self.strict_flags else self.flag_abi.arguments(target, self.live_flags)
+        o.append(f"esp-=4; CHK(esp,4,{self.at()}); st(c,esp,0x{nxt:x}u,4); {self.save(inputs)}")
+        o.append(f"f_{target:x}(c);" if target in self.lifted else f"rn_call(c,{target_c});")
+        o.append(f"{self.load(self.live_flags)} if (c->halt) return; if (c->ret!=0x{nxt:x}u) TRAP({self.at()},\"return address changed\");")
 
-    def tail(self, target_c, direct=None):
-        call = f"f_{direct:x}(c);" if direct is not None else f"rn_call(c,{target_c});"
-        return f"{{ {self.save()} {call} return; }}"
+    def tail(self, target_c, target=None):
+        inputs = STATUS if self.strict_flags else self.flag_abi.arguments(target, self.return_flags)
+        call = f"f_{target:x}(c);" if target in self.lifted else f"rn_call(c,{target_c});"
+        return f"{{ {self.save(inputs)} {call} return; }}"
 
     def jump(self, t, cond=None):
         if t in self.labels:   # a backward jump closes a loop: a preemption point (rt.h PREEMPT)
             s = f"{{ PREEMPT(); goto L{t:x}; }}" if t <= self.i.address else f"goto L{t:x};"
-        elif t in self.lifted:
-            s = self.tail(None, t)
         else:
-            s = self.tail(f"0x{t:x}u")
+            s = self.tail(f"0x{t:x}u", t)
         return f"if ({cond}) {s}" if cond else s
 
     # --- one instruction --------------------------------------------------
@@ -341,7 +526,6 @@ class Lifter:
         sz = ops[0].size if ops else 4
         M = (1 << (8 * sz)) - 1
         S = 1 << (8 * sz - 1)
-        ZSP = self.zsp(M, S)
 
         if op0 in STRING_OPS and len(i.opcode) and i.opcode[1] == 0:
             return self.string(i, pre, STRING_OPS[op0], 1 if op0 & 1 == 0 else (2 if i.prefix[2] == 0x66 else 4))
@@ -372,17 +556,16 @@ class Lifter:
         if m in ("inc", "dec", "neg", "not"):
             a = self.read(ops[0])
             o.append(f"t1={a};")
-            if m == "inc":
-                o.append(f"res=(t1+1)&0x{M:x}u; of=res==0x{S:x}u; af=((t1^res)>>4)&1; {ZSP}")
-            elif m == "dec":
-                o.append(f"res=(t1-1)&0x{M:x}u; of=t1==0x{S:x}u; af=((t1^res)>>4)&1; {ZSP}")
-            elif m == "neg":
-                o.append(f"res=(0u-t1)&0x{M:x}u; cf=t1!=0; of=t1==0x{S:x}u; af=((t1^res)>>4)&1; {ZSP}")
-            else:
-                o.append(f"res=(~t1)&0x{M:x}u;")
+            expr = {"inc": "t1+1", "dec": "t1-1", "neg": "0u-t1", "not": "~t1"}[m]
+            o.append(f"res=({expr})&0x{M:x}u;")
+            if m == "neg":
+                o.append(self.flag_assign(cf="t1!=0"))
+            if m != "not":
+                ov = "res" if m == "inc" else "t1"
+                o.append(self.flag_assign(of=f"{ov}==0x{S:x}u", af="((t1^res)>>4)&1") + self.zsp(M, S))
             o.append(self.write(ops[0], "res"))
             return
-        if m in ("shl", "sal", "shr", "sar", "rol", "ror", "rcl", "rcr"):
+        if m in ("shl", "sal", "shr", "sar") or m in ROTATES:
             n = self.read(ops[1]) if len(ops) > 1 else "1u"
             o.append(f"n=({n})&31u;")
             a = self.read(ops[0])
@@ -390,19 +573,33 @@ class Lifter:
             bits = 8 * sz
             o.append("if (n) {")
             if m in ("shl", "sal"):
-                o.append(f"res=(uint32_t)(((uint64_t)t1<<n)&0x{M:x}u); cf=n<={bits}?(int)((((uint64_t)t1)>>({bits}-n))&1):0; of=((res&0x{S:x}u)!=0)^cf; af=0; {ZSP}")
+                carry = f"n<={bits}?(int)((((uint64_t)t1)>>({bits}-n))&1):0"
+                of_carry = "cf" if self.live_flags & CF else f"({carry})"
+                o.append(f"res=(uint32_t)(((uint64_t)t1<<n)&0x{M:x}u); " +
+                         self.flag_assign(cf=carry, of=f"((res&0x{S:x}u)!=0)^{of_carry}", af=0))
             elif m == "shr":
-                o.append(f"res=(uint32_t)((uint64_t)t1>>n); cf=(int)(((uint64_t)t1>>(n-1))&1); of=(t1&0x{S:x}u)!=0; af=0; {ZSP}")
+                o.append("res=(uint32_t)((uint64_t)t1>>n); " +
+                         self.flag_assign(cf="(int)(((uint64_t)t1>>(n-1))&1)", of=f"(t1&0x{S:x}u)!=0", af=0))
             elif m == "sar":
-                o.append(f"res=(uint32_t)(((int64_t)(int{bits}_t)t1)>>n)&0x{M:x}u; cf=(int)((((int64_t)(int{bits}_t)t1)>>(n-1))&1); of=0; af=0; {ZSP}")
+                o.append(f"res=(uint32_t)(((int64_t)(int{bits}_t)t1)>>n)&0x{M:x}u; " +
+                         self.flag_assign(cf=f"(int)((((int64_t)(int{bits}_t)t1)>>(n-1))&1)", of=0, af=0))
             elif m == "rol":
-                o.append(f"k=n%{bits}; res=k?((t1<<k)|(t1>>({bits}-k)))&0x{M:x}u:t1; cf=res&1; of=((res&0x{S:x}u)!=0)^cf;")
+                o.append(f"k=n%{bits}; res=k?((t1<<k)|(t1>>({bits}-k)))&0x{M:x}u:t1; " +
+                         self.flag_assign(cf="res&1", of=f"((res&0x{S:x}u)!=0)^(res&1)"))
             elif m == "ror":
-                o.append(f"k=n%{bits}; res=k?((t1>>k)|(t1<<({bits}-k)))&0x{M:x}u:t1; cf=(res&0x{S:x}u)!=0; of=((res^(res<<1))&0x{S:x}u)!=0;")
-            elif m == "rcl":
-                o.append(f"res=t1; for (k=n%{bits + 1}; k; k--) {{ uint32_t hi=(res&0x{S:x}u)!=0; res=((res<<1)|cf)&0x{M:x}u; cf=hi; }} of=((res&0x{S:x}u)!=0)^cf;")
+                o.append(f"k=n%{bits}; res=k?((t1>>k)|(t1<<({bits}-k)))&0x{M:x}u:t1; " +
+                         self.flag_assign(cf=f"(res&0x{S:x}u)!=0", of=f"((res^(res<<1))&0x{S:x}u)!=0"))
             else:
-                o.append(f"of=((t1&0x{S:x}u)!=0)^cf; res=t1; for (k=n%{bits + 1}; k; k--) {{ uint32_t lo=res&1; res=(res>>1)|(cf?0x{S:x}u:0); cf=lo; }}")
+                # Carry is part of the rotated value even when the final CF is dead.
+                if m == "rcl":
+                    o.append(f"t2=cf; res=t1; for (k=n%{bits + 1}; k; k--) {{ uint32_t hi=(res&0x{S:x}u)!=0; res=((res<<1)|t2)&0x{M:x}u; t2=hi; }}")
+                    o.append(self.flag_assign(of=f"((res&0x{S:x}u)!=0)^t2", cf="t2"))
+                else:
+                    o.append(self.flag_assign(of=f"((t1&0x{S:x}u)!=0)^cf"))
+                    o.append(f"t2=cf; res=t1; for (k=n%{bits + 1}; k; k--) {{ uint32_t lo=res&1; res=(res>>1)|(t2?0x{S:x}u:0); t2=lo; }}")
+                    o.append(self.flag_assign(cf="t2"))
+            if m in SHIFTS:
+                o.append(self.zsp(M, S))
             o.append(self.write(ops[0], "res"))
             o.append("}")
             return
@@ -414,9 +611,10 @@ class Lifter:
             a = self.read(ops[0])
             o.append(f"t1={a}; if (n) {{")
             if m == "shld":
-                o.append(f"res=(t1<<n)|(t2>>(32-n)); cf=(t1>>(32-n))&1; of=((res^t1)&0x80000000u)!=0; {ZSP}")
+                o.append("res=(t1<<n)|(t2>>(32-n)); " + self.flag_assign(cf="(t1>>(32-n))&1"))
             else:
-                o.append(f"res=(t1>>n)|(t2<<(32-n)); cf=(t1>>(n-1))&1; of=((res^t1)&0x80000000u)!=0; {ZSP}")
+                o.append("res=(t1>>n)|(t2<<(32-n)); " + self.flag_assign(cf="(t1>>(n-1))&1"))
+            o.append(self.flag_assign(of="((res^t1)&0x80000000u)!=0") + self.zsp(M, S))
             o.append(self.write(ops[0], "res"))
             o.append("}")
             return
@@ -429,7 +627,7 @@ class Lifter:
                 o.append(f"n=({self.read(ops[1])})&{bits - 1}u;")
                 o.append(f"t1={self.read(ops[0])};")
                 dst = self.write(ops[0], "res")
-            o.append("cf=(t1>>n)&1;")
+            o.append(self.flag_assign(cf="(t1>>n)&1"))
             if m != "bt":
                 expr = {"bts": "t1|(1u<<n)", "btr": "t1&~(1u<<n)", "btc": "t1^(1u<<n)"}[m]
                 o.append(f"res={expr}; {dst}")
@@ -439,7 +637,8 @@ class Lifter:
             o.append(f"t2={b};")
             a = self.read(ops[1]) if len(ops) == 3 else self.read(ops[0])
             bits = 8 * sz
-            o.append(f"w=(int64_t)(int{bits}_t)({a})*(int64_t)(int{bits}_t)t2; cf=of=(w!=(int64_t)(int{bits}_t)w);")
+            o.append(f"w=(int64_t)(int{bits}_t)({a})*(int64_t)(int{bits}_t)t2; " +
+                     self.mul_flags(f"(w!=(int64_t)(int{bits}_t)w)"))
             o.append(self.write(ops[0], "(uint32_t)w"))
             return
         if m in ("mul", "imul", "div", "idiv"):
@@ -448,22 +647,22 @@ class Lifter:
             at = self.at()
             if sz == 4:
                 o.append({
-                    "mul": "u=(uint64_t)eax*t1; eax=(uint32_t)u; edx=(uint32_t)(u>>32); cf=of=edx!=0;",
-                    "imul": "w=(int64_t)(int32_t)eax*(int32_t)t1; eax=(uint32_t)w; edx=(uint32_t)((uint64_t)w>>32); cf=of=(w!=(int64_t)(int32_t)w);",
+                    "mul": "u=(uint64_t)eax*t1; eax=(uint32_t)u; edx=(uint32_t)(u>>32); " + self.mul_flags("edx!=0"),
+                    "imul": "w=(int64_t)(int32_t)eax*(int32_t)t1; eax=(uint32_t)w; edx=(uint32_t)((uint64_t)w>>32); " + self.mul_flags("(w!=(int64_t)(int32_t)w)"),
                     "div": f"u=((uint64_t)edx<<32)|eax; if (!t1 || u/t1>0xffffffffu) TRAP({at},\"divide error\"); eax=(uint32_t)(u/t1); edx=(uint32_t)(u%t1);",
                     "idiv": f"w=(int64_t)(((uint64_t)edx<<32)|eax); if (!t1) TRAP({at},\"divide error\"); {{ int64_t q=w/(int32_t)t1; if (q!=(int32_t)q) TRAP({at},\"divide error\"); eax=(uint32_t)q; edx=(uint32_t)(w%(int32_t)t1); }}",
                 }[m])
             elif sz == 2:
                 o.append({
-                    "mul": "u=(eax&0xffffu)*(uint64_t)t1; eax=(eax&0xffff0000u)|(uint32_t)(u&0xffff); edx=(edx&0xffff0000u)|(uint32_t)((u>>16)&0xffff); cf=of=(u>>16)!=0;",
-                    "imul": "w=(int64_t)(int16_t)eax*(int16_t)t1; eax=(eax&0xffff0000u)|(uint32_t)(w&0xffff); edx=(edx&0xffff0000u)|(uint32_t)((w>>16)&0xffff); cf=of=(w!=(int16_t)w);",
+                    "mul": "u=(eax&0xffffu)*(uint64_t)t1; eax=(eax&0xffff0000u)|(uint32_t)(u&0xffff); edx=(edx&0xffff0000u)|(uint32_t)((u>>16)&0xffff); " + self.mul_flags("(u>>16)!=0"),
+                    "imul": "w=(int64_t)(int16_t)eax*(int16_t)t1; eax=(eax&0xffff0000u)|(uint32_t)(w&0xffff); edx=(edx&0xffff0000u)|(uint32_t)((w>>16)&0xffff); " + self.mul_flags("(w!=(int16_t)w)"),
                     "div": f"u=((edx&0xffffu)<<16)|(eax&0xffffu); if (!t1 || u/t1>0xffffu) TRAP({at},\"divide error\"); eax=(eax&0xffff0000u)|(uint32_t)(u/t1); edx=(edx&0xffff0000u)|(uint32_t)(u%t1);",
                     "idiv": f"w=(int32_t)(((edx&0xffffu)<<16)|(eax&0xffffu)); if (!t1) TRAP({at},\"divide error\"); {{ int64_t q=w/(int16_t)t1; if (q!=(int16_t)q) TRAP({at},\"divide error\"); eax=(eax&0xffff0000u)|(uint32_t)(q&0xffff); edx=(edx&0xffff0000u)|(uint32_t)((w%(int16_t)t1)&0xffff); }}",
                 }[m])
             else:
                 o.append({
-                    "mul": "u=(eax&0xffu)*t1; eax=(eax&0xffff0000u)|(uint32_t)(u&0xffff); cf=of=(u>>8)!=0;",
-                    "imul": "w=(int8_t)eax*(int8_t)t1; eax=(eax&0xffff0000u)|(uint32_t)(w&0xffff); cf=of=(w!=(int8_t)w);",
+                    "mul": "u=(eax&0xffu)*t1; eax=(eax&0xffff0000u)|(uint32_t)(u&0xffff); " + self.mul_flags("(u>>8)!=0"),
+                    "imul": "w=(int8_t)eax*(int8_t)t1; eax=(eax&0xffff0000u)|(uint32_t)(w&0xffff); " + self.mul_flags("(w!=(int8_t)w)"),
                     "div": f"u=eax&0xffffu; if (!t1 || u/t1>0xffu) TRAP({at},\"divide error\"); eax=(eax&0xffff0000u)|(uint32_t)((u%t1)<<8)|(uint32_t)(u/t1);",
                     "idiv": f"w=(int16_t)eax; if (!t1) TRAP({at},\"divide error\"); {{ int64_t q=w/(int8_t)t1; if (q!=(int8_t)q) TRAP({at},\"divide error\"); eax=(eax&0xffff0000u)|(uint32_t)(((w%(int8_t)t1)&0xff)<<8)|(uint32_t)(q&0xff); }}",
                 }[m])
@@ -496,17 +695,22 @@ class Lifter:
                      f"esp-=4; CHK(esp,4,{self.at()}); st(c,esp,t1,4);")
             return
         if m == "popfd":
-            o.append(f"CHK(esp,4,{self.at()}); t1=ld(c,esp,4); esp+=4; cf=t1&1; pf=(t1>>2)&1; af=(t1>>4)&1; zf=(t1>>6)&1; sf=(t1>>7)&1; "
-                     "df=(t1>>10)&1; of=(t1>>11)&1; c->eflx=t1&0x240000u;")
+            o.append(f"CHK(esp,4,{self.at()}); t1=ld(c,esp,4); esp+=4; " +
+                     self.flag_assign(cf="t1&1", pf="(t1>>2)&1", af="(t1>>4)&1", zf="(t1>>6)&1",
+                                      sf="(t1>>7)&1", of="(t1>>11)&1") + "df=(t1>>10)&1; c->eflx=t1&0x240000u;")
             return
         if m == "lahf":
             o.append("eax=(eax&0xffff00ffu)|(((uint32_t)sf<<7|(uint32_t)zf<<6|(uint32_t)af<<4|(uint32_t)pf<<2|2u|(uint32_t)cf)<<8);")
             return
         if m == "sahf":
-            o.append("t1=(eax>>8)&0xffu; cf=t1&1; pf=(t1>>2)&1; af=(t1>>4)&1; zf=(t1>>6)&1; sf=(t1>>7)&1;")
+            o.append("t1=(eax>>8)&0xffu; " +
+                     self.flag_assign(cf="t1&1", pf="(t1>>2)&1", af="(t1>>4)&1", zf="(t1>>6)&1", sf="(t1>>7)&1"))
             return
         if m in ("clc", "stc", "cmc", "cld", "std"):
-            o.append({"clc": "cf=0;", "stc": "cf=1;", "cmc": "cf=!cf;", "cld": "df=0;", "std": "df=1;"}[m])
+            if m in ("cld", "std"):
+                o.append("df=1;" if m == "std" else "df=0;")
+            else:
+                o.append(self.flag_assign(cf={"clc": "0", "stc": "1", "cmc": "!cf"}[m]))
             return
         if m == "leave":
             o.append(f"esp=ebp; CHK(esp,4,{self.at()}); ebp=ld(c,esp,4); esp+=4;")
@@ -565,10 +769,8 @@ class Lifter:
             if op.type == x86.X86_OP_IMM:
                 if op.imm == nxt:          # call $+5: pushes its own address
                     o.append(f"esp-=4; CHK(esp,4,{self.at()}); st(c,esp,0x{nxt:x}u,4);")
-                elif op.imm in self.lifted:
-                    self.call_to(None, op.imm)
                 else:
-                    self.call_to(f"0x{op.imm:x}u")
+                    self.call_to(f"0x{op.imm:x}u", op.imm)
                 return
             o.append(f"t1={self.read(op)};")
             self.call_to("t1")
@@ -613,9 +815,9 @@ class Lifter:
         elif kind == "lods":
             step = f"CHK(esi,{n},{at}); t1=ld(c,esi,{n}); {wacc} esi+={d};"
         elif kind == "cmps":
-            step = f"CHK(esi,{n},{at}); CHK(edi,{n},{at}); t1=ld(c,esi,{n}); t2=ld(c,edi,{n}); esi+={d}; edi+={d}; " + self.arith("cmp", M, S)
+            step = f"CHK(esi,{n},{at}); CHK(edi,{n},{at}); t1=ld(c,esi,{n}); t2=ld(c,edi,{n}); esi+={d}; edi+={d}; " + self.arith("cmp", M, S, repeat=bool(pre))
         else:
-            step = f"CHK(edi,{n},{at}); t1={acc}; t2=ld(c,edi,{n}); edi+={d}; " + self.arith("cmp", M, S)
+            step = f"CHK(edi,{n},{at}); t1={acc}; t2=ld(c,edi,{n}); edi+={d}; " + self.arith("cmp", M, S, repeat=bool(pre))
         if not pre:
             o.append(step)
         elif kind in ("movs", "stos", "lods"):
@@ -800,8 +1002,13 @@ class Lifter:
             o.append("c->fsw&=~0x80ffu;" if modrm == 0xe2 else "finit(c);")
             return
         if op == 0xdb and reg in (5, 6) or op == 0xdf and reg in (5, 6):    # fucomi/fcomi(p): ZF PF CF
-            o.append(f"{{ double a=*fr(c,0), v=*fr(c,{k}); if (a!=a||v!=v) zf=pf=cf=1; else {{ zf=a==v; cf=a<v; pf=0; }} of=sf=0; }}" +
-                     (" fpop(c);" if op == 0xdf else ""))
+            if self.live_flags & (ZF | PF | CF):
+                ordered = self.flag_assign(zf="a==v", cf="a<v", pf=0)
+                unordered = self.flag_assign(zf=1, pf=1, cf=1)
+                o.append(f"{{ double a=*fr(c,0), v=*fr(c,{k}); if (a!=a||v!=v) {{ {unordered}}} else {{ {ordered}}} }}")
+            o.append(self.flag_assign(of=0, sf=0))
+            if op == 0xdf:
+                o.append("fpop(c);")
             return
         if op == 0xdf and modrm == 0xe0:
             o.append("eax=(eax&0xffff0000u)|fstsw(c);")
@@ -984,7 +1191,16 @@ class Lifter:
                 targets.add(i.operands[0].imm)
             targets.update(self.switches.get(a, []))
         self.labels = set(body) | bad
-        self.all_cases = {t for tg in self.switches.values() for t in tg if t in self.labels} | (self.addr_taken & self.labels)
+        self.all_cases = self.case_labels(self.switches, self.labels)
+        self.strict_flags = self.trace or os.environ.get("RN_STRICT_FLAGS") == "1" or self.flag_abi is None
+        self.live_flags = self.return_flags = STATUS
+        entry_flags, live_out = STATUS, {}
+        if not self.strict_flags:
+            graph = self.flag_graph(entry, body, self.switches, bad)
+            live = self.flag_abi.liveness(entry, graph)
+            entry_flags = live.get(entry, 0)
+            self.return_flags = self.flag_abi.returns(entry)
+            live_out = {a: self.flag_abi.successors(live, succ) for a, (_, _, succ, _, _) in graph.items()}
         self.info = {"calls": 0, "traps": [], "x87": 0}
         self.out = []
         order = sorted(self.labels)
@@ -1006,6 +1222,8 @@ class Lifter:
                 self.info["traps"].append("decode")
                 continue
             self.i = i
+            if not self.strict_flags:
+                self.live_flags = live_out[a]
             tpl = self.fs_static(i) if runs and 0xd8 <= i.opcode[0] <= 0xdf else None
             if self.fs and (self.fs_barrier(i) or (0xd8 <= i.opcode[0] <= 0xdf and tpl is None)):
                 self.out.append(self.fs_end())
@@ -1028,7 +1246,7 @@ class Lifter:
                 self.info["calls"] += 1
             nxt = a + i.size
             pre, m = self.mnem(i)
-            ends = i.group(CS_GRP_RET) or m in ("jmp", "hlt", "int3", "ud2", "iretd", "retf", "int", "int1", "into")
+            ends = i.group(CS_GRP_RET) or m == "jmp" or m in STOPS
             if not ends and nxt not in self.labels:
                 self.out.append(self.fs_end() + f"TRAP(0x{nxt:x},\"ran off the decoded body\");")
             elif not ends and next_label.get(a) != nxt:
@@ -1036,7 +1254,8 @@ class Lifter:
         if self.fs:
             self.out.append(self.fs_end())
         regs = " ".join(f"uint32_t {r}=c->r[{k}];" for k, r in enumerate(REG32))
-        flags = " ".join(f"int {f}=c->{f};" for f in FLAGS)
+        entry_fields = set(self.ctx_flags(entry_flags))
+        flags = " ".join(f"int {f}=c->{f};" if f in entry_fields else f"int {f};" for f in FLAGS)
         # restrict: guest memory (c->mem) never overlaps the Ctx, so a guest store does not make the compiler reload
         # c->mem, c->memsz, c->ftop and c->st[] (with -fno-strict-aliasing any byte store could alias them).
         if self.uses_fs:
@@ -1048,7 +1267,8 @@ class Lifter:
                 # RN_COV build (build.py sets `cov`): one byte store per function ENTRY, direct calls and tail jumps included.
                 + (f"RN_COV(RNI_{entry:x});\n" if getattr(self, "cov", False) else "") +
                 f"goto L{entry:x};\n" + "\n".join(self.out) +
-                f"\ndone: {self.save()} return;\ntrap: c->halt=1; {self.save()} return;\n}}\n")
+                f"\ndone: {self.save(self.return_flags)} return;\n"
+                f"trap: c->halt=1; {self.save(STATUS if self.strict_flags else 0)} return;\n}}\n")
         if nat:     # NATIVE: the native body first, the lifted one outside its fast case
             src += f'#include "native.h"\nvoid f_{entry:x}(Ctx *restrict c) {{ if (!nat_{entry:x}(c)) f_{entry:x}_lift(c); }}\n'
         return src
