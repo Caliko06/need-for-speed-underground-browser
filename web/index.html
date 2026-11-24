@@ -32,16 +32,18 @@ const RN_COARSE = matchMedia('(pointer: coarse)').matches;
 <meta property="og:image" content="https://nfsu.cc/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a web browser at nfsu.cc">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_MX">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Need for Speed Underground in your browser">
 <meta name="twitter:description" content="Play Need for Speed Underground (2003) in your browser, nothing to install. The full game. Keyboard, gamepad and touch.">
 <meta name="twitter:image" content="https://nfsu.cc/og.jpg">
+<meta name="twitter:image:alt" content="Need for Speed Underground (2003) running in a web browser at nfsu.cc">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "VideoGame", "name": "Need for Speed Underground (browser version)", "alternateName": ["NFSU", "NFS Underground online", "NFSU.cc"], "url": "https://nfsu.cc/", "image": "https://nfsu.cc/og.jpg", "description": "Play Need for Speed Underground (2003) in your browser, nothing to install. The full game. Keyboard, gamepad and touch.", "genre": ["Racing", "Arcade racing"], "gamePlatform": ["Web browser", "Chrome", "Edge", "Safari", "Firefox"], "applicationCategory": "Game", "operatingSystem": "Any (WebGPU browser)", "playMode": "SinglePlayer", "inLanguage": ["en", "es"], "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "subjectOf": {"@type": "SoftwareSourceCode", "name": "need-for-speed-underground-browser", "codeRepository": "https://github.com/Caliko06/need-for-speed-underground-browser", "programmingLanguage": ["C", "Python", "JavaScript"], "runtimePlatform": "WebAssembly"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://nfsu.cc/#website","name":"NFSU.cc","url":"https://nfsu.cc/","inLanguage":["en","es"],"description":"Play Need for Speed Underground (2003) free in your browser: static recompilation to WebAssembly with WebGPU and WebGL 2.","sameAs":["https://github.com/Caliko06/need-for-speed-underground-browser"]},{"@type":["VideoGame","WebApplication"],"@id":"https://nfsu.cc/#game","name":"Need for Speed Underground Online (Browser Version)","alternateName":["NFSU","NFSU1","NFS Underground online","Need for Speed Underground 2003 browser","NFSU.cc"],"url":"https://nfsu.cc/","image":"https://nfsu.cc/og.jpg","screenshot":["https://nfsu.cc/blog/img/olympic-city-world.webp","https://nfsu.cc/blog/img/olympic-city-drive.webp","https://nfsu.cc/blog/img/phone-touch.webp"],"description":"Play Need for Speed Underground (2003) free in your browser, nothing to install. Full game with Quick Race, Go Underground career, garage, tuning and original soundtrack. Keyboard, gamepad and touch.","genre":["Racing","Arcade racing","Street racing"],"gamePlatform":["Web browser","Chrome","Edge","Safari","Firefox","Android","iOS"],"applicationCategory":"GameApplication","operatingSystem":"Windows, macOS, Linux, Android, iOS","browserRequirements":"Requires WebAssembly, SharedArrayBuffer, and WebGPU or WebGL 2","playMode":"SinglePlayer","inLanguage":["en","es"],"isAccessibleForFree":true,"datePublished":"2026-11-16","dateModified":"2026-11-24","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"publisher":{"@type":"Organization","name":"NFSU.cc","url":"https://nfsu.cc/"},"isPartOf":{"@id":"https://nfsu.cc/#website"},"subjectOf":{"@type":"SoftwareSourceCode","name":"need-for-speed-underground-browser","codeRepository":"https://github.com/Caliko06/need-for-speed-underground-browser","url":"https://github.com/Caliko06/need-for-speed-underground-browser","programmingLanguage":["C","Python","JavaScript"],"runtimePlatform":"WebAssembly"}}]}</script>
 <style>
   :root { --bg: #0b0d10; --fg: #c9d1d9; --dim: #6e7681; --ok: #3fb950; --stop: #f85149; --api: #79c0ff; }
   html, body { margin: 0; background: var(--bg); color: var(--fg); font: 13px/1.45 ui-monospace, Menlo, monospace; }
@@ -68,6 +70,19 @@ const RN_COARSE = matchMedia('(pointer: coarse)').matches;
 </head>
 <body>
 <canvas id="screen" width="800" height="600"></canvas>
+<noscript>
+<main style="max-width:720px;margin:48px auto;padding:0 20px;font:16px/1.6 system-ui,sans-serif;color:#e6edf3">
+<h1>Need for Speed Underground Online (2003) — Play in Your Browser</h1>
+<p>NFSU.cc runs the original 2003 PC version of Need for Speed Underground free in a browser tab via static recompilation to WebAssembly (WebGPU with WebGL 2 fallback). Full game, Go Underground career, garage, tuning, and original soundtrack on keyboard, gamepad, and touch.</p>
+<p>JavaScript and WebAssembly are required to play. Explore the launcher and guides:</p>
+<ul>
+<li><a href="launcher.html">Open Launcher &amp; Settings</a></li>
+<li><a href="blog/en/index.html">English Guides (How to Play, Controls, Browsers &amp; Phones, Static Recompilation)</a></li>
+<li><a href="blog/es/index.html">Guías en Español (Cómo Jugar, Controles, Navegadores y Celulares, Recompilación Estática)</a></li>
+<li><a href="https://github.com/Caliko06/need-for-speed-underground-browser">Source Code on GitHub</a></li>
+</ul>
+</main>
+</noscript>
 <div id="panel">
 <header><b>Need for Speed Underground</b><span class="dim">Speed.exe traducido a WebAssembly · F2 cierra</span><span id="status">cargando…</span></header>
 <pre id="log"></pre>

@@ -11,7 +11,7 @@ from blog_dev import CODE, DEV, DEV_DATE, REPO
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 W = os.path.join(ROOT, "web")
 SITE = "https://nfsu.cc"
-DATE = "2026-11-16"          # first published
+DATE = "2026-11-24"          # last updated
 LANGS = ("en", "es")
 UI = {
     "en": dict(guides="Guides", play="Play", other="Español", home="NFSU.cc", more="More guides", cta="Play now", updated="Updated %s", dev="How it works", code="Code on GitHub", inrepo="In the repo:",
@@ -46,11 +46,11 @@ ARTICLES = [
                    es="NFSU.cc corre el juego original de PC de 2003 dentro de una pestaña del navegador. No hay nada que instalar ni cuenta que crear: abres la página, presionas Jugar y ya estás en el garaje."),
          body=dict(en="""
 <h2>What you need</h2>
-<p>A browser with WebGPU, which is the graphics system the page draws with:</p>
+<p>A modern browser with <b>WebGPU</b> (fastest) or <b>WebGL 2</b> (automatic fallback on older GPUs and phones):</p>
 <ul>
-<li><b>Chrome or Edge 113 or newer</b>, on a computer or on Android 12 and up.</li>
-<li><b>Safari 26 or newer</b> on a Mac, an iPhone or an iPad.</li>
-<li><b>Firefox 141 or newer</b> on Windows, or 145 and up on a Mac with Apple Silicon.</li>
+<li><b>Chrome or Edge</b> on Windows, macOS, Linux, or Android (WebGPU on 113+ / Android 12+, WebGL 2 fallback on older devices).</li>
+<li><b>Safari</b> on Mac, iPhone, or iPad (WebGPU on Safari 26+, WebGL 2 fallback on earlier versions).</li>
+<li><b>Firefox</b> on Windows, macOS, or Linux (WebGPU on 141+ Windows / 145+ Apple Silicon, WebGL 2 fallback elsewhere).</li>
 </ul>
 <p>A keyboard is enough. A gamepad works as soon as you plug it in, and phones get buttons on the screen. The details are in <a href="[[controls]]">the controls guide</a>. The project is built and tested mostly on Chrome, so that is the safest pick if something looks wrong elsewhere.</p>
 <h2>Start in three steps</h2>
@@ -69,17 +69,26 @@ ARTICLES = [
 <p>Profiles and progress are stored in your own browser, not on a server. That means they stay on this device and in this browser, and clearing the site's data erases them. In the launcher, Options has a Saves group with <b>Save a backup</b>, which downloads everything as one file, and <b>Restore a backup</b>, which loads it again, also on another computer.</p>
 <h2>If it does not start</h2>
 <ul>
-<li><b>"This browser has no WebGPU"</b>: update the browser, or use Chrome or Edge.</li>
+<li><b>Opened inside Instagram, TikTok or another in-app browser</b>: tap the menu and choose "Open in Chrome" or "Open in Safari" so the browser allows shared memory.</li>
 <li><b>It runs slowly</b>: set Quality to Low in the launcher (no effects, 30 fps, 1280 pixels wide). <a href="[[devices]]">The performance guide</a> explains each option.</li>
 <li><b>No sound</b>: browsers keep a page silent until your first click or key press. Check the Volume row in the launcher too.</li>
 </ul>
+<h2>Frequently asked questions</h2>
+<h3>Is NFSU.cc an emulator or a remake?</h3>
+<p>Neither. It is a static recompilation of the original 2003 PC executable (<code>Speed.exe</code>) to WebAssembly, so the physics, AI rivals, menus and career progression are the original game's own code.</p>
+<h3>Does it include the original soundtrack?</h3>
+<p>Yes. Every song from the 2003 PC soundtrack is included and streams as you play.</p>
+<h3>Does it work on Android and iPhone?</h3>
+<p>Yes. Phones and tablets automatically use a lighter 448 MB WebAssembly build, Original 2003 graphics, 30 fps and on-screen touch controls. On iPhone, add the page to your Home Screen for full screen.</p>
+<h3>Is it free and do I need an account?</h3>
+<p>It is free, with no account and nothing to install. Saves stay locally in your browser and can be exported as a backup file at any time.</p>
 """, es="""
 <h2>Qué necesitas</h2>
-<p>Un navegador con WebGPU, que es el sistema de gráficos con el que dibuja la página:</p>
+<p>Un navegador moderno con <b>WebGPU</b> (más rápido) o <b>WebGL 2</b> (respaldo automático en GPUs y celulares más viejos):</p>
 <ul>
-<li><b>Chrome o Edge 113 o más nuevo</b>, en computadora o en Android 12 en adelante.</li>
-<li><b>Safari 26 o más nuevo</b> en Mac, iPhone o iPad.</li>
-<li><b>Firefox 141 o más nuevo</b> en Windows, o 145 en adelante en una Mac con Apple Silicon.</li>
+<li><b>Chrome o Edge</b> en Windows, macOS, Linux o Android (WebGPU en 113+ / Android 12+, respaldo WebGL 2 en equipos anteriores).</li>
+<li><b>Safari</b> en Mac, iPhone o iPad (WebGPU en Safari 26+, respaldo WebGL 2 en versiones anteriores).</li>
+<li><b>Firefox</b> en Windows, macOS o Linux (WebGPU en 141+ Windows / 145+ Apple Silicon, respaldo WebGL 2 en el resto).</li>
 </ul>
 <p>Con el teclado basta. Un mando funciona en cuanto lo conectas y los celulares reciben botones en la pantalla. Los detalles están en <a href="[[controls]]">la guía de controles</a>. El proyecto se construye y se prueba sobre todo en Chrome, así que es la opción más segura si algo se ve raro en otro navegador.</p>
 <h2>Empieza en tres pasos</h2>
@@ -98,10 +107,19 @@ ARTICLES = [
 <p>Los perfiles y el progreso se guardan en tu propio navegador, no en un servidor. Por eso se quedan en este dispositivo y en este navegador, y borrar los datos del sitio las elimina. En el launcher, Opciones tiene un grupo Partidas con <b>Guardar copia</b>, que descarga todo en un archivo, y <b>Restaurar copia</b>, que lo vuelve a cargar, también en otra computadora.</p>
 <h2>Si no arranca</h2>
 <ul>
-<li><b>"Este navegador no tiene WebGPU"</b>: actualiza el navegador, o usa Chrome o Edge.</li>
+<li><b>Lo abriste dentro de Instagram, TikTok u otra app</b>: toca el menú y elige "Abrir en Chrome" o "Abrir en Safari" para que el navegador permita memoria compartida.</li>
 <li><b>Va lento</b>: pon Calidad en Baja en el launcher (sin efectos, 30 fps, 1280 pixeles de ancho). <a href="[[devices]]">La guía de rendimiento</a> explica cada opción.</li>
 <li><b>No hay sonido</b>: los navegadores mantienen la página en silencio hasta tu primer clic o tecla. Revisa también la fila Volumen del launcher.</li>
 </ul>
+<h2>Preguntas frecuentes</h2>
+<h3>¿NFSU.cc es un emulador o un remake?</h3>
+<p>Ninguno de los dos. Es una recompilación estática del ejecutable original de PC de 2003 (<code>Speed.exe</code>) a WebAssembly, así que la física, los rivales, los menús y el modo carrera son el código del propio juego.</p>
+<h3>¿Trae el soundtrack original completo?</h3>
+<p>Sí. Incluye todas las canciones originales del juego de PC de 2003.</p>
+<h3>¿Funciona en Android y iPhone?</h3>
+<p>Sí. Los celulares y tabletas cargan automáticamente un build ligero de 448 MB en WebAssembly, gráficos Original 2003, 30 fps y controles táctiles en pantalla. En iPhone, agrégalo a la pantalla de inicio para jugar a pantalla completa.</p>
+<h3>¿Es gratis y pide cuenta?</h3>
+<p>Es gratis, sin cuenta y sin instalar nada. Tus partidas se guardan en tu navegador y puedes descargar un respaldo cuando quieras.</p>
 """)),
 
     # Sources: keys web/binds.js BIND_KEYS (game table 0x702c98) and web/pad.js header; Backspace = the menus' Back (table 0x7032d8 row 0x17);
@@ -163,16 +181,16 @@ ARTICLES = [
                    es="Qué navegadores y dispositivos corren Need for Speed Underground en nfsu.cc, qué reciben los celulares y qué cambia cada nivel de calidad y opción de rendimiento."),
          alt=dict(en="Need for Speed Underground on a phone screen with touch buttons over the picture", es="Need for Speed Underground en la pantalla de un celular con botones táctiles sobre la imagen"),
          cap=dict(en="On a phone the page adds touch buttons and starts with the lightest settings.", es="En un celular la página agrega botones táctiles y arranca con los ajustes más ligeros."),
-         lead=dict(en="The game needs one thing from your device: a browser with WebGPU. After that, the launcher measures your machine and picks a quality level, and you can change every part of it.",
-                   es="El juego le pide una sola cosa a tu dispositivo: un navegador con WebGPU. Después, el launcher mide tu equipo y elige un nivel de calidad, y tú puedes cambiar cada parte."),
+         lead=dict(en="The game draws with WebGPU when available and automatically falls back to WebGL 2 on older browsers and phones. On desktop, the launcher measures your machine and picks a quality level, and you can change every part of it.",
+                   es="El juego dibuja con WebGPU cuando está disponible y cambia automáticamente a WebGL 2 en navegadores y celulares más viejos. En computadora, el launcher mide tu equipo y elige un nivel de calidad, y tú puedes cambiar cada parte."),
          body=dict(en="""
 <h2>Supported browsers</h2>
 <ul>
-<li><b>Chrome and Edge</b> 113 or newer, on a computer and on Android 12 and up.</li>
-<li><b>Safari</b> 26 or newer, on Mac, iPhone and iPad.</li>
-<li><b>Firefox</b> 141 or newer on Windows, 145 or newer on a Mac with Apple Silicon.</li>
+<li><b>Chrome and Edge</b> on Windows, macOS, Linux and Android (WebGPU on 113+ / Android 12+, automatic WebGL 2 fallback on older devices).</li>
+<li><b>Safari</b> on Mac, iPhone and iPad (WebGPU on Safari 26+, automatic WebGL 2 fallback on earlier versions).</li>
+<li><b>Firefox</b> on Windows, macOS and Linux (WebGPU on 141+ Windows / 145+ Apple Silicon, WebGL 2 fallback elsewhere).</li>
 </ul>
-<p>If the browser has no WebGPU the page says so instead of loading. Most of the testing happens on Chrome on a computer; other browsers and phones are newer ground, so expect rough edges there.</p>
+<p>If you open a link inside Instagram, TikTok or another in-app browser, choose "Open in Chrome" or "Open in Safari": in-app WebViews often block shared memory (COOP/COEP). Most testing happens on Chrome on desktop.</p>
 <h2>The four quality levels</h2>
 <p>On your first visit the launcher times how fast your machine draws its 3D menu and sets a level for you. You can change it in the Quality row.</p>
 <ul>
@@ -197,11 +215,11 @@ ARTICLES = [
 """, es="""
 <h2>Navegadores compatibles</h2>
 <ul>
-<li><b>Chrome y Edge</b> 113 o más nuevo, en computadora y en Android 12 en adelante.</li>
-<li><b>Safari</b> 26 o más nuevo, en Mac, iPhone y iPad.</li>
-<li><b>Firefox</b> 141 o más nuevo en Windows, 145 o más nuevo en una Mac con Apple Silicon.</li>
+<li><b>Chrome y Edge</b> en Windows, macOS, Linux y Android (WebGPU en 113+ / Android 12+, respaldo automático WebGL 2 en equipos anteriores).</li>
+<li><b>Safari</b> en Mac, iPhone y iPad (WebGPU en Safari 26+, respaldo automático WebGL 2 en versiones anteriores).</li>
+<li><b>Firefox</b> en Windows, macOS y Linux (WebGPU en 141+ Windows / 145+ Apple Silicon, respaldo WebGL 2 en el resto).</li>
 </ul>
-<p>Si el navegador no tiene WebGPU, la página lo dice en lugar de cargar. Casi todas las pruebas se hacen en Chrome en computadora; otros navegadores y los celulares son terreno más nuevo, así que ahí puede haber detalles.</p>
+<p>Si abres el enlace dentro de Instagram, TikTok u otra app, elige "Abrir en Chrome" o "Abrir en Safari": los WebViews integrados suelen bloquear la memoria compartida (COOP/COEP). La mayoría de las pruebas se hacen en Chrome de escritorio.</p>
 <h2>Los cuatro niveles de calidad</h2>
 <p>En tu primera visita el launcher mide qué tan rápido dibuja tu equipo su menú en 3D y te pone un nivel. Puedes cambiarlo en la fila Calidad.</p>
 <ul>
@@ -287,12 +305,16 @@ def url(lang, name):
     return "%s/blog/%s/%s.html" % (SITE, lang, name)
 
 
-def page(lang, name, names, title, desc, pic, h1, inner, ld):
+def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=None, og_alt=None):
     """names = {lang: file name} of this page in every language (hreflang)."""
     u = UI[lang]
     alts = "".join('<link rel="alternate" hreflang="%s" href="%s">\n' % (l, url(l, names[l])) for l in LANGS)
     alts += '<link rel="alternate" hreflang="x-default" href="%s">\n' % url("en", names["en"])
     other = "es" if lang == "en" else "en"
+    og_url_img = og_img or (SITE + "/og.jpg")
+    alt_txt = e(og_alt or title)
+    art_meta = (f'<meta property="article:published_time" content="{date}">\n'
+                f'<meta property="article:modified_time" content="{date}">\n') if date else ""
     return f"""<!doctype html>
 <html lang="{lang}">
 <head>
@@ -304,14 +326,20 @@ def page(lang, name, names, title, desc, pic, h1, inner, ld):
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{url(lang, name)}">
 {alts}<meta name="robots" content="index, follow, max-image-preview:large">
-<meta property="og:type" content="article">
+<meta property="og:type" content="{'website' if name == 'index' else 'article'}">
 <meta property="og:site_name" content="NFSU.cc">
 <meta property="og:url" content="{url(lang, name)}">
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
-<meta property="og:image" content="{SITE}/og.jpg">
+<meta property="og:image" content="{og_url_img}">
+<meta property="og:image:alt" content="{alt_txt}">
 <meta property="og:locale" content="{'en_US' if lang == 'en' else 'es_MX'}">
-<meta name="twitter:card" content="summary_large_image">
+<meta property="og:locale:alternate" content="{'es_MX' if lang == 'en' else 'en_US'}">
+{art_meta}<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(title)}">
+<meta name="twitter:description" content="{e(desc)}">
+<meta name="twitter:image" content="{og_url_img}">
+<meta name="twitter:image:alt" content="{alt_txt}">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="stylesheet" href="../blog.css">
@@ -349,7 +377,21 @@ def figure(a, lang, n=""):
 
 HEIGHT = {"olympic-city-world.webp": 700, "bayview-palms.webp": 703, "bayview-race.webp": 703, "world-map.webp": 850, "phone-touch.webp": 462, "olympic-city-drive.webp": 703}
 BACK = ["olympic-city-drive.webp", "olympic-city-world.webp"]   # behind the sheet: a street picture that is not the one shown in the text
-ORG = {"@type": "Organization", "name": "NFSU.cc", "url": SITE + "/"}
+ORG = {"@type": "Organization", "name": "NFSU.cc", "url": SITE + "/", "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"}}
+PLAY_FAQ = {
+    "en": [
+        ("Is NFSU.cc an emulator or a remake?", "Neither. It is a static recompilation of the original 2003 PC executable (Speed.exe) to WebAssembly, so the physics, AI rivals, menus and career progression are the original game's own code."),
+        ("Does it include the original soundtrack?", "Yes. Every song from the 2003 PC soundtrack is included and streams as you play."),
+        ("Does it work on Android and iPhone?", "Yes. Phones and tablets automatically use a lighter 448 MB WebAssembly build, Original 2003 graphics, 30 fps and on-screen touch controls. On iPhone, add the page to your Home Screen for full screen."),
+        ("Is it free and do I need an account?", "It is free, with no account and nothing to install. Saves stay locally in your browser and can be exported as a backup file at any time."),
+    ],
+    "es": [
+        ("¿NFSU.cc es un emulador o un remake?", "Ninguno de los dos. Es una recompilación estática del ejecutable original de PC de 2003 (Speed.exe) a WebAssembly, así que la física, los rivales, los menús y el modo carrera son el código del propio juego."),
+        ("¿Trae el soundtrack original completo?", "Sí. Incluye todas las canciones originales del juego de PC de 2003."),
+        ("¿Funciona en Android y iPhone?", "Sí. Los celulares y tabletas cargan automáticamente un build ligero de 448 MB en WebAssembly, gráficos Original 2003, 30 fps y controles táctiles en pantalla. En iPhone, agrégalo a la pantalla de inicio para jugar a pantalla completa."),
+        ("¿Es gratis y pide cuenta?", "Es gratis, sin cuenta y sin instalar nada. Tus partidas se guardan en tu navegador y puedes descargar un respaldo cuando quieras."),
+    ],
+}
 pages = []          # (lang, name, names) for the sitemap
 for lang in LANGS:
     os.makedirs(os.path.join(W, "blog", lang), exist_ok=True)
@@ -389,29 +431,38 @@ for lang in LANGS:
                 {"@type": "ListItem", "position": 2, "name": u["guides"], "item": url(lang, "index")},
                 {"@type": "ListItem", "position": 3, "name": a["title"][lang], "item": url(lang, names[lang])}]}]
               + ([{"@type": "SoftwareSourceCode", "name": "need-for-speed-underground-browser", "codeRepository": REPO, "url": REPO, "programmingLanguage": ["C", "Python", "JavaScript"],
-                   "runtimePlatform": "WebAssembly", "description": "Static recompilation of Need for Speed Underground (2003, PC) to WebAssembly."}] if a.get("dev") else [])}
-        open(os.path.join(W, "blog", lang, names[lang] + ".html"), "w", encoding="utf-8").write(page(lang, names[lang], names, a["title"][lang], a["desc"][lang], next(b for b in BACK if b not in (a["img"], a.get("img2"))), a["title"][lang], inner, ld))
+                   "runtimePlatform": "WebAssembly", "description": "Static recompilation of Need for Speed Underground (2003, PC) to WebAssembly."}] if a.get("dev") else [])
+              + ([{"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": ans}} for q, ans in PLAY_FAQ[lang]]}] if a["key"] == "play" else [])}
+        open(os.path.join(W, "blog", lang, names[lang] + ".html"), "w", encoding="utf-8").write(page(lang, names[lang], names, a["title"][lang], a["desc"][lang], next(b for b in BACK if b not in (a["img"], a.get("img2"))), a["title"][lang], inner, ld, date=date, og_alt=a["alt"][lang]))
         pages.append((lang, names[lang], names))
 
 BY_SLUG = {a["slug"][l]: a for a in ARTICLES for l in LANGS}
-# sitemap: the game's address and every guide, each with its language twins
+# sitemap: the game's address and every guide, each with its language twins + x-default
 sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
       "<url><loc>%s/</loc><lastmod>%s</lastmod></url>" % (SITE, DATE)]
 for lang, name, names in pages:
-    sm.append("<url><loc>%s</loc><lastmod>%s</lastmod>%s</url>" % (url(lang, name), DEV_DATE if name != "index" and BY_SLUG[name].get("dev") else (DEV_DATE if name == "index" else DATE), "".join(
-        '<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, names[l])) for l in LANGS)))
+    lm = DEV_DATE if name != "index" and BY_SLUG[name].get("dev") else DATE
+    links = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, names[l])) for l in LANGS)
+    links += '<xhtml:link rel="alternate" hreflang="x-default" href="%s"/>' % url("en", names["en"])
+    sm.append("<url><loc>%s</loc><lastmod>%s</lastmod>%s</url>" % (url(lang, name), lm, links))
 sm.append("</urlset>")
 open(os.path.join(W, "sitemap.xml"), "w", encoding="utf-8").write("\n".join(sm) + "\n")
 
-# robots: pages, scripts and pictures stay open (search engines render the launcher); only the big game data is closed
+# robots: pages, scripts and pictures stay open (search engines render the launcher); heavy data & manifests stay closed
 open(os.path.join(W, "robots.txt"), "w", encoding="utf-8").write("""User-agent: *
 Allow: /
 Disallow: /game/
+Disallow: /data-chunks/
 Disallow: /pc/
 Disallow: /remaster/
 Disallow: /world/
-Disallow: /out/speed.wasm
+Disallow: /out/
 Disallow: /diag.html
+Disallow: /launcher_b/index.html
+Disallow: /game-files.json
+Disallow: /data-chunks.json
+Disallow: /manifest.json
+Disallow: /seed_save.json
 
 Sitemap: %s/sitemap.xml
 """ % SITE)

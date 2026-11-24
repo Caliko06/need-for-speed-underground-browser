@@ -18,12 +18,20 @@
 <meta property="og:title" content="Cómo funciona: un juego de Windows de 2003 recompilado a WebAssembly">
 <meta property="og:description" content="NFSU.cc no es un emulador ni un remake. El programa original de Need for Speed Underground se tradujo a WebAssembly y sus llamadas a Windows y DirectX se reconstruyeron sobre WebGPU.">
 <meta property="og:image" content="https://nfsu.cc/og.jpg">
+<meta property="og:image:alt" content="Un coche manejando por Olympic City en la versión de navegador de Need for Speed Underground">
 <meta property="og:locale" content="es_MX">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="article:published_time" content="2026-11-24">
+<meta property="article:modified_time" content="2026-11-24">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cómo funciona: un juego de Windows de 2003 recompilado a WebAssembly">
+<meta name="twitter:description" content="NFSU.cc no es un emulador ni un remake. El programa original de Need for Speed Underground se tradujo a WebAssembly y sus llamadas a Windows y DirectX se reconstruyeron sobre WebGPU.">
+<meta name="twitter:image" content="https://nfsu.cc/og.jpg">
+<meta name="twitter:image:alt" content="Un coche manejando por Olympic City en la versión de navegador de Need for Speed Underground">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="stylesheet" href="../blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "Cómo funciona: un juego de Windows de 2003 recompilado a WebAssembly", "description": "NFSU.cc no es un emulador ni un remake. El programa original de Need for Speed Underground se tradujo a WebAssembly y sus llamadas a Windows y DirectX se reconstruyeron sobre WebGPU.", "inLanguage": "es", "datePublished": "2026-11-16", "dateModified": "2026-11-16", "image": "https://nfsu.cc/blog/img/olympic-city-drive.webp", "mainEntityOfPage": "https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guías", "item": "https://nfsu.cc/blog/es/index.html"}, {"@type": "ListItem", "position": 3, "name": "Cómo funciona: un juego de Windows de 2003 recompilado a WebAssembly", "item": "https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "Cómo funciona: un juego de Windows de 2003 recompilado a WebAssembly", "description": "NFSU.cc no es un emulador ni un remake. El programa original de Need for Speed Underground se tradujo a WebAssembly y sus llamadas a Windows y DirectX se reconstruyeron sobre WebGPU.", "inLanguage": "es", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "image": "https://nfsu.cc/blog/img/olympic-city-drive.webp", "mainEntityOfPage": "https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guías", "item": "https://nfsu.cc/blog/es/index.html"}, {"@type": "ListItem", "position": 3, "name": "Cómo funciona: un juego de Windows de 2003 recompilado a WebAssembly", "item": "https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html"}]}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-world.webp)">
 <header class="top">
@@ -40,7 +48,7 @@
 <article>
 <h1>Cómo funciona: un juego de Windows de 2003 recompilado a WebAssembly</h1>
 <p class="lead">Lo que corre en tu pestaña es el código del propio juego de 2003. No se reescribió ni se emula: el programa se tradujo una sola vez, por adelantado, a algo que un navegador puede ejecutar.</p>
-<p class="date"><time datetime="2026-11-16">Actualizado el 16 de noviembre de 2026</time></p>
+<p class="date"><time datetime="2026-11-24">Actualizado el 24 de noviembre de 2026</time></p>
 <figure><img src="../img/olympic-city-drive.webp" alt="Un coche manejando por Olympic City en la versión de navegador de Need for Speed Underground" width="1000" height="703" fetchpriority="high"><figcaption>El mismo código de física, rivales y HUD de 2003, ahora corriendo como WebAssembly.</figcaption></figure>
 <h2>Recompilación estática</h2>
 <p>El juego de PC es un programa de Windows, Speed.exe, hecho de código máquina para procesadores Intel de 32 bits. Una herramienta lee ese programa y escribe la misma lógica otra vez en WebAssembly, el formato de código portátil que los navegadores ejecutan casi a velocidad nativa. A esto se le llama recompilación estática: la traducción ocurre antes de que abras la página, no mientras juegas.</p>

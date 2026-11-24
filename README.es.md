@@ -14,7 +14,7 @@
 
 [English](README.md) · **Español**
 
-[Jugar](#jugar) · [Qué trae](#qué-trae) · [Por qué funciona](#por-qué-funciona) · [Guías](#guías) · [Mapa del repo](#mapa-del-repo)
+[Jugar](#jugar) · [Qué trae](#qué-trae) · [Por qué funciona](#por-qué-funciona) · [Guías](#guías) · [Preguntas frecuentes](#preguntas-frecuentes) · [Mapa del repo](#mapa-del-repo)
 
 </div>
 
@@ -28,7 +28,7 @@
 
 | Juego | Versiones | Dispositivos | Controles | Música |
 |---|---|---|---|---|
-| El juego de 2003 completo: carrera rápida, la carrera Go Underground, garage y tuning, Olympic City de noche | **Original 2003**, como salió, o **Remaster**, con bloom, bordes suavizados y pintura más nítida. <kbd>F4</kbd> cambia | Computadoras, Android, iPhone y iPad. Los celulares arrancan ligeros: Original, 30 fps | Teclado, mando, táctil. Se reasignan en el launcher | El soundtrack completo, todas las canciones |
+| El juego de 2003 completo: carrera rápida, la carrera Go Underground, garage y tuning, Olympic City de noche | **Original 2003**, como salió, o **Remaster**, con bloom, bordes suavizados y pintura más nítida. <kbd>F4</kbd> cambia | Computadoras, Android, iPhone y iPad (WebGPU + respaldo automático WebGL 2; build ligero de 448 MB en celulares) | Teclado, mando, táctil. Se reasignan en el launcher | El soundtrack completo, todas las canciones |
 
 <table>
 <tr>
@@ -76,6 +76,13 @@ Los cambios al juego son parches pequeños en [`tools/recomp/patches_*.py`](tool
 |---|---|---|---|
 | **Cómo corre** | [Cómo corre en el navegador](https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html) | [Recompilación estática](https://nfsu.cc/blog/es/recompilacion-estatica-x86-a-webassembly.html) | [DirectX 9 y Windows sobre WebGPU](https://nfsu.cc/blog/es/directx-9-y-windows-sobre-webgpu.html) |
 | **Dentro del juego** | [Leer el binario](https://nfsu.cc/blog/es/herramientas-ingenieria-inversa-ghidra-hopper-rea.html) | [Agentes de IA sobre el binario](https://nfsu.cc/blog/es/ingenieria-inversa-de-un-juego-con-agentes-de-ia.html) | [Todas las guías](https://nfsu.cc/blog/es/index.html) |
+
+## Preguntas frecuentes
+
+- **¿Es un emulador o un remake?** Ninguno de los dos. `Speed.exe` (PC, 2003, x86) se recompila estáticamente por adelantado a WebAssembly, así que la física, los rivales, los menús y la carrera son el código original del juego.
+- **¿Requiere WebGPU?** No. Usa WebGPU cuando está disponible y cambia automáticamente a WebGL 2 (`web/webgpu_gl.js`) en navegadores y celulares más viejos.
+- **¿Trae el soundtrack original?** Sí, incluye todas las canciones del lanzamiento de PC de 2003.
+- **¿Dónde se guardan las partidas?** Localmente en tu navegador (`IndexedDB`), con respaldo y restauración en un archivo desde el launcher.
 
 ## Mapa del repo
 

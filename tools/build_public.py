@@ -13,6 +13,12 @@ W, D = os.path.join(ROOT, "web"), os.path.join(ROOT, "dist")
 LINK_DIRS = ["launcher", "launcher_b", "blog"]   # launcher_b = the 3D street behind launcher.html (web/launcher.html:69); blog = the guides (tools/build_blog.py)
 PAGES = ["index.html", "launcher.html"]
 FLAG = "<script>window.RN_PUBLIC=1;window.RN_V='%s'</script>\n"
+# Cloudflare Web Analytics (site_tag a959350109f94f4792f86eb22e9edbda): R2 Custom Domain does not auto-inject the
+# beacon into static HTML objects, so build_public.py injects it into dist/ HTML only (never local dev).
+RUM_TAG = (
+    '<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+    'crossorigin="anonymous" data-cf-beacon=\'{"token":"9c74a71e1cea4daf87eee38be6c1f339"}\'></script>\n'
+)
 
 
 def version():
@@ -40,6 +46,7 @@ for n in sorted(os.listdir(W)):
             # module scripts and the style sheet too: launcher.css and launcher_b/ sit under the 1-day cache rule (tools/upload_r2.sh)
             s = re.sub(r'(<script (?:type="module" )?src="[^"?]+)"', r'\1?v=%s"' % V, s)
             s = re.sub(r'(<link rel="stylesheet" href="[^"?]+)"', r'\1?v=%s"' % V, s)
+            s = s.replace("</body>", RUM_TAG + "</body>", 1)
             open(os.path.join(D, n), "w", encoding="utf-8").write(s)
         else:
             shutil.copy2(p, os.path.join(D, n))
@@ -50,6 +57,14 @@ def clone(src, dst):
 for n in LINK_DIRS:
     if os.path.isdir(os.path.join(W, n)):
         clone(os.path.join(W, n), os.path.join(D, n))
+# Inject Cloudflare Web Analytics into every public blog HTML page (APFS clone is CoW, so rewriting dist/blog/** is isolated).
+for root, _, ns in os.walk(os.path.join(D, "blog")):
+    for n in ns:
+        if n.endswith(".html"):
+            bp = os.path.join(root, n)
+            bs = open(bp, encoding="utf-8").read()
+            if "beacon.min.js" not in bs and "</body>" in bs:
+                open(bp, "w", encoding="utf-8").write(bs.replace("</body>", RUM_TAG + "</body>", 1))
 # remaster/ (opt-in): the index lists web/gpu.js:165-168 reads by default and every file they name; the world pack
 # (index_world*.tsv, ?worldhd=1 only, no launcher toggle) stays out: 680 MB.
 R = os.path.join(W, "remaster")

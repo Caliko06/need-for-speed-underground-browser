@@ -14,7 +14,7 @@
 
 **English** · [Español](README.es.md)
 
-[Play](#play) · [What you get](#what-you-get) · [Why it works](#why-it-works) · [Guides](#guides) · [Repo map](#repo-map)
+[Play](#play) · [What you get](#what-you-get) · [Why it works](#why-it-works) · [Guides](#guides) · [FAQ](#faq) · [Repo map](#repo-map)
 
 </div>
 
@@ -28,7 +28,7 @@
 
 | Game | Versions | Devices | Controls | Music |
 |---|---|---|---|---|
-| The whole 2003 game: Quick Race, Go Underground career, garage and tuning, Olympic City at night | **Original 2003**, as it shipped, or **Remaster**, with bloom, edge smoothing and sharper paint. <kbd>F4</kbd> switches | Computers, Android, iPhone and iPad. Phones start light: Original, 30 fps | Keyboard, gamepad, touch. Rebind in the launcher | The full soundtrack, every song |
+| The whole 2003 game: Quick Race, Go Underground career, garage and tuning, Olympic City at night | **Original 2003**, as it shipped, or **Remaster**, with bloom, edge smoothing and sharper paint. <kbd>F4</kbd> switches | Computers, Android, iPhone and iPad (WebGPU + automatic WebGL 2 fallback; 448 MB lite build on phones) | Keyboard, gamepad, touch. Rebind in the launcher | The full soundtrack, every song |
 
 <table>
 <tr>
@@ -76,6 +76,13 @@ Changes to the game are small patches in [`tools/recomp/patches_*.py`](tools/rec
 |---|---|---|---|
 | **How it runs** | [How it runs in a browser](https://nfsu.cc/blog/en/how-need-for-speed-underground-runs-in-a-browser-webassembly.html) | [Static recompilation](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) |
 | **Inside the game** | [Reading the binary](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) | [AI agents on the binary](https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html) | [All guides](https://nfsu.cc/blog/en/index.html) |
+
+## FAQ
+
+- **Is this an emulator or a remake?** Neither. `Speed.exe` (2003 PC, x86) is statically recompiled ahead of time into WebAssembly, so physics, AI rivals, menus, and career progression are the original game's code.
+- **Does it require WebGPU?** No. WebGPU is used when available, with an automatic WebGL 2 fallback (`web/webgpu_gl.js`) for older browsers and phones.
+- **Does it include the original soundtrack?** Yes, every song from the 2003 PC release is included.
+- **Where are saves stored?** Locally in your browser (`IndexedDB`), with one-click backup and restore in the launcher.
 
 ## Repo map
 

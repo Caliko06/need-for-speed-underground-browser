@@ -1,0 +1,40 @@
+# NFSU.cc — Need for Speed Underground (2003) in Your Browser
+
+> Play the original 2003 PC version of Need for Speed Underground free in a browser tab at https://nfsu.cc/ — no download, no install, no emulator.
+
+NFSU.cc is a static recompilation of the original 2003 Windows executable (`Speed.exe`, 13,764 x86 functions lifted to C and compiled to WebAssembly) with a browser host layer replacing Windows, DirectX 9 (via WebGPU with automatic WebGL 2 fallback), DirectInput (keyboard, gamepad, touch), and DirectSound (Web Audio). It includes the full game (Quick Race, Go Underground career, garage and tuning, Olympic City at night, full original soundtrack) in both **Original 2003** and **Remaster** modes.
+
+## Play & Entry Points
+
+- [Play Need for Speed Underground Online](https://nfsu.cc/): Main entry point (opens the launcher on desktop, launches directly with touch controls on phones and tablets).
+- [Launcher & Settings](https://nfsu.cc/launcher.html): Quality presets (Low / Medium / High / Ultra), Original 2003 vs Remaster, controls remapping, and local save backup/restore.
+- [Source Code on GitHub](https://github.com/Caliko06/need-for-speed-underground-browser): Static recompiler (`tools/recomp/`), browser host (`host/`, `web/`), reverse engineering census (`census/`), and system notes (`docs/re/`).
+
+## Player Guides (English)
+
+- [All English Guides](https://nfsu.cc/blog/en/index.html)
+- [How to Play Need for Speed Underground Online](https://nfsu.cc/blog/en/play-need-for-speed-underground-online.html): Requirements, first load size (~32 MB), Original vs Remaster, local saves, and FAQ.
+- [Controls: Keyboard, Gamepad and Phone](https://nfsu.cc/blog/en/need-for-speed-underground-controls-keyboard-gamepad-phone.html): Full key map, Xbox/PlayStation gamepad layout, remapping, and touch controls.
+- [Browsers, Phones and Performance Settings](https://nfsu.cc/blog/en/browsers-phones-performance-settings.html): WebGPU and WebGL 2 browser support, phone lite build (448 MB WASM), and quality options.
+
+## Technical Deep Dives (English)
+
+- [How It Runs in a Browser (WebAssembly)](https://nfsu.cc/blog/en/how-need-for-speed-underground-runs-in-a-browser-webassembly.html)
+- [Static Recompilation: x86 to WebAssembly](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html)
+- [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html)
+- [Hosting a 2 GB Game on Cloudflare R2](https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html)
+- [Reading the Binary: Ghidra, Hopper, REA](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html)
+- [Reverse Engineering a Game with AI Agents](https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html)
+
+## Guías en Español
+
+- [Todas las guías en español](https://nfsu.cc/blog/es/index.html)
+- [Cómo jugar Need for Speed Underground online](https://nfsu.cc/blog/es/jugar-need-for-speed-underground-online.html)
+- [Controles: teclado, mando y celular](https://nfsu.cc/blog/es/controles-need-for-speed-underground-teclado-mando-celular.html)
+- [Navegadores, celulares y ajustes de rendimiento](https://nfsu.cc/blog/es/navegadores-celulares-ajustes-rendimiento.html)
+- [Cómo corre en el navegador (WebAssembly)](https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html)
+- [Recompilación estática x86 a WebAssembly](https://nfsu.cc/blog/es/recompilacion-estatica-x86-a-webassembly.html)
+- [DirectX 9 y Windows sobre WebGPU](https://nfsu.cc/blog/es/directx-9-y-windows-sobre-webgpu.html)
+- [Alojar un juego de 2 GB en Cloudflare R2](https://nfsu.cc/blog/es/alojar-un-juego-de-2-gb-en-cloudflare-r2-tiempo-de-carga.html)
+- [Herramientas de ingeniería inversa: Ghidra, Hopper, REA](https://nfsu.cc/blog/es/herramientas-ingenieria-inversa-ghidra-hopper-rea.html)
+- [Ingeniería inversa de un juego con agentes de IA](https://nfsu.cc/blog/es/ingenieria-inversa-de-un-juego-con-agentes-de-ia.html)

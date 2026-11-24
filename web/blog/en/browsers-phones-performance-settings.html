@@ -18,12 +18,20 @@
 <meta property="og:title" content="Browsers, phones and performance settings">
 <meta property="og:description" content="Which browsers and devices run Need for Speed Underground at nfsu.cc, what phones get, and what each quality level and performance option changes.">
 <meta property="og:image" content="https://nfsu.cc/og.jpg">
+<meta property="og:image:alt" content="Need for Speed Underground on a phone screen with touch buttons over the picture">
 <meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_MX">
+<meta property="article:published_time" content="2026-11-24">
+<meta property="article:modified_time" content="2026-11-24">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Browsers, phones and performance settings">
+<meta name="twitter:description" content="Which browsers and devices run Need for Speed Underground at nfsu.cc, what phones get, and what each quality level and performance option changes.">
+<meta name="twitter:image" content="https://nfsu.cc/og.jpg">
+<meta name="twitter:image:alt" content="Need for Speed Underground on a phone screen with touch buttons over the picture">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="stylesheet" href="../blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "Browsers, phones and performance settings", "description": "Which browsers and devices run Need for Speed Underground at nfsu.cc, what phones get, and what each quality level and performance option changes.", "inLanguage": "en", "datePublished": "2026-11-16", "dateModified": "2026-11-16", "image": "https://nfsu.cc/blog/img/phone-touch.webp", "mainEntityOfPage": "https://nfsu.cc/blog/en/browsers-phones-performance-settings.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/"}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://nfsu.cc/blog/en/index.html"}, {"@type": "ListItem", "position": 3, "name": "Browsers, phones and performance settings", "item": "https://nfsu.cc/blog/en/browsers-phones-performance-settings.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "Browsers, phones and performance settings", "description": "Which browsers and devices run Need for Speed Underground at nfsu.cc, what phones get, and what each quality level and performance option changes.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "image": "https://nfsu.cc/blog/img/phone-touch.webp", "mainEntityOfPage": "https://nfsu.cc/blog/en/browsers-phones-performance-settings.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://nfsu.cc/blog/en/index.html"}, {"@type": "ListItem", "position": 3, "name": "Browsers, phones and performance settings", "item": "https://nfsu.cc/blog/en/browsers-phones-performance-settings.html"}]}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-drive.webp)">
 <header class="top">
@@ -39,16 +47,16 @@
 <p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Guides</a></p>
 <article>
 <h1>Browsers, phones and performance settings</h1>
-<p class="lead">The game needs one thing from your device: a browser with WebGPU. After that, the launcher measures your machine and picks a quality level, and you can change every part of it.</p>
-<p class="date"><time datetime="2026-11-16">Updated November 16, 2026</time></p>
+<p class="lead">The game draws with WebGPU when available and automatically falls back to WebGL 2 on older browsers and phones. On desktop, the launcher measures your machine and picks a quality level, and you can change every part of it.</p>
+<p class="date"><time datetime="2026-11-24">Updated November 24, 2026</time></p>
 <figure><img src="../img/phone-touch.webp" alt="Need for Speed Underground on a phone screen with touch buttons over the picture" width="1000" height="462" fetchpriority="high"><figcaption>On a phone the page adds touch buttons and starts with the lightest settings.</figcaption></figure>
 <h2>Supported browsers</h2>
 <ul>
-<li><b>Chrome and Edge</b> 113 or newer, on a computer and on Android 12 and up.</li>
-<li><b>Safari</b> 26 or newer, on Mac, iPhone and iPad.</li>
-<li><b>Firefox</b> 141 or newer on Windows, 145 or newer on a Mac with Apple Silicon.</li>
+<li><b>Chrome and Edge</b> on Windows, macOS, Linux and Android (WebGPU on 113+ / Android 12+, automatic WebGL 2 fallback on older devices).</li>
+<li><b>Safari</b> on Mac, iPhone and iPad (WebGPU on Safari 26+, automatic WebGL 2 fallback on earlier versions).</li>
+<li><b>Firefox</b> on Windows, macOS and Linux (WebGPU on 141+ Windows / 145+ Apple Silicon, WebGL 2 fallback elsewhere).</li>
 </ul>
-<p>If the browser has no WebGPU the page says so instead of loading. Most of the testing happens on Chrome on a computer; other browsers and phones are newer ground, so expect rough edges there.</p>
+<p>If you open a link inside Instagram, TikTok or another in-app browser, choose "Open in Chrome" or "Open in Safari": in-app WebViews often block shared memory (COOP/COEP). Most testing happens on Chrome on desktop.</p>
 <h2>The four quality levels</h2>
 <p>On your first visit the launcher times how fast your machine draws its 3D menu and sets a level for you. You can change it in the Quality row.</p>
 <ul>
