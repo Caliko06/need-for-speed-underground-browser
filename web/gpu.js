@@ -38,6 +38,16 @@ async function startGpu(M, canvas, report, onFrame) {
   const S3 = BC || adapter.features.has('rn-s3tc');
   const device = await adapter.requestDevice({ requiredFeatures: [...(TS ? ['timestamp-query'] : []), ...(BC ? ['texture-compression-bc'] : [])] });
   device.addEventListener('uncapturederror', e => report('webgpu: ' + e.error.message));
+  // Chrome <131 and iOS 26.0.1 WebGPU reject 'unorm8x4-bgra' in createRenderPipeline; probe once and swizzle D3DCOLOR in VS if absent.
+  let hasBgraVtx = !!navigator.gpu.gpu_js;
+  if (!hasBgraVtx) {
+    try {
+      const m = device.createShaderModule({ code: '@vertex fn vs(@location(0) c: vec4f) -> @builtin(position) vec4f { return c; } @fragment fn fs() -> @location(0) vec4f { return vec4f(0.0); }' });
+      device.createRenderPipeline({ layout: 'auto', vertex: { module: m, entryPoint: 'vs', buffers: [{ arrayStride: 4, attributes: [{ shaderLocation: 0, offset: 0, format: 'unorm8x4-bgra' }] }] }, fragment: { module: m, entryPoint: 'fs', targets: [{ format: 'rgba8unorm' }] } });
+      hasBgraVtx = true;
+    } catch {}
+    if (!hasBgraVtx) report('gpu.js: unorm8x4-bgra unsupported, swizzling D3DCOLOR in VS');
+  }
   // ?apicount=1 (debug): WebGPU calls per frame list, reported with the frame log (wraps the prototypes).
   const apiN = {};
   if (RN_Q.get('apicount') === '1') {
@@ -794,6 +804,7 @@ struct U { rect: vec4f, par: vec4f, zz: vec4f, tint: vec4f };
       warmRemember(vs, ps, decl, stride, sc, w, hdr, tail);
     }
     const attributes = [];
+    let bgraMask = 0;
     for (let k = 0; k < 16; k++) {
       const inp = vs.inputs[k];
       if (!inp) continue;
@@ -801,13 +812,25 @@ struct U { rect: vec4f, par: vec4f, zz: vec4f, tint: vec4f };
       const e = decl.find(e => e.stream === 0 && e.usage === usage && e.index === index);
       if (!e) fail(`vs input v${k} (usage ${usage}/${index}) not in the declaration`);
       if (!VFMT[e.type]) fail(`vertex element type ${e.type}`);
-      attributes.push({ shaderLocation: k, offset: e.offset, format: VFMT[e.type] });
+      const fmtStr = !hasBgraVtx && e.type === 4 ? (bgraMask |= 1 << k, 'unorm8x4') : VFMT[e.type];
+      attributes.push({ shaderLocation: k, offset: e.offset, format: fmtStr });
+    }
+    let vsMod = vs.module;
+    if (bgraMask) {
+      vs._bgra ??= new Map();
+      vsMod = vs._bgra.get(bgraMask);
+      if (!vsMod) {
+        let code = vs.code;
+        for (let k = 0; k < 16; k++) if (bgraMask & (1 << k)) code = code.replace(new RegExp(`\\bi\\.v${k}\\b`, 'g'), `i.v${k}.bgra`);
+        vsMod = device.createShaderModule({ code });
+        vs._bgra.set(bgraMask, vsMod);
+      }
     }
     const topoStr = topo === 4 ? 'triangle-list' : topo === 5 ? 'triangle-strip' : fail(`topology ${topo}`);
     const cullStr = cull === 3 ? 'back' : cull === 2 ? 'front' : 'none';
     const st = { compare: 'always' };
     const desc = { layout: drawLayout(ps.texMask),
-      vertex: { module: vs.module, entryPoint: 'main', buffers: [{ arrayStride: stride, attributes }] },
+      vertex: { module: vsMod, entryPoint: 'main', buffers: [{ arrayStride: stride, attributes }] },
       fragment: { module: ps.module, entryPoint: 'main',
         targets: [{ format: 'rgba8unorm', blend: blendState(w, hdr), writeMask: cwrite & 15 }] },
       // D3D9 front faces are clockwise on screen; CULL_CCW (the default) culls the back ones.
@@ -1261,7 +1284,7 @@ fn mulfloor(c: f32, w: f32) -> f32 {
         module.getCompilationInfo().then(info => {
           for (const m of info.messages) if (m.type === 'error') report(`gpu.js: shader ${id}: ${m.message} (line ${m.lineNum})`);
         });
-        const sh = { kind, module, inputs: Array.from(w.subarray(a + 4, a + 20)), texMask: w[a + 20] };
+        const sh = { kind, module, code: hasBgraVtx ? null : text, inputs: Array.from(w.subarray(a + 4, a + 20)), texMask: w[a + 20] };
         shaders.set(id, sh);
         stats.shaders++;
         if (WARM) { sh.h = hash53(text); warmShader.set(sh.h, id); warmTry(); }
@@ -1521,9 +1544,9 @@ fn mulfloor(c: f32, w: f32) -> f32 {
           }
           profFrames++;
         }
-        tsBuf.unmap(); tsq.free.push(tsBuf);
+        try { tsBuf.unmap(); tsq.free.push(tsBuf); } catch {}
         gpuDone.push(Number(ns) / 1e6);
-      });
+      }).catch(() => {});
     }
     stats.pipes = newPipes; newPipes = 0;
     stats.hd = packed;
@@ -1560,9 +1583,17 @@ fn mulfloor(c: f32, w: f32) -> f32 {
       if (!tick()) return;
       if (hold && presents >= hold) { await new Promise(f => setTimeout(f, 100)); continue; }
       const h = M.HEAP32, seq = Atomics.load(h, box);
-      const r = Atomics.load(h, box + 1) < seq ? { async: false } : Atomics.waitAsync(h, box, seq);
-      if (WD) WD[1] = r.async ? 4 : 5;
-      if (r.async) await r.value; else await yieldTask();
+      if (Atomics.load(h, box + 1) < seq) {
+        if (WD) WD[1] = 5;
+        await yieldTask();
+      } else if (typeof Atomics.waitAsync === 'function') {
+        const r = Atomics.waitAsync(h, box, seq);
+        if (WD) WD[1] = r.async ? 4 : 5;
+        if (r.async) await r.value; else await yieldTask();
+      } else {
+        if (WD) WD[1] = 4;
+        await new Promise(f => setTimeout(f, 1));
+      }
     }
   }
   function tick() {

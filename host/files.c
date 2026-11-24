@@ -88,11 +88,20 @@ static int game_rel(const char *gpath, char *rel, size_t n) {
 // Index of game/ from /game-files.json: lower-case path -> [real path, size]; directories too.
 EM_JS(double, web_lookup, (const char *rel, char *real, int realsz), {
     if (!Module.rnIndex) {
-        var x = new XMLHttpRequest();
-        x.open('GET', '/game-files.json', false);
-        x.send();
+        var x, list = null, waits = [300, 1000, 2000, 4000];
+        for (var t = 0; ; t++) {
+            try {
+                x = new XMLHttpRequest();
+                x.open('GET', '/game-files.json', false);
+                x.send();
+                if (x.status === 200) { list = JSON.parse(x.responseText); break; }
+                err('files: /game-files.json: HTTP ' + x.status + ', try ' + (t + 1));
+            } catch (e) { err('files: /game-files.json: ' + e.message + ', try ' + (t + 1)); }
+            if (t === waits.length) return -1;
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, waits[t]);
+        }
         var files = new Map(), dirs = new Set();
-        for (const [p, n] of JSON.parse(x.responseText)) {
+        for (const [p, n] of list) {
             var low = p.toLowerCase();
             files.set(low, [p, n]);
             var parts = low.split('/');
@@ -129,10 +138,15 @@ EM_JS(int, web_read, (const char *real, double off, uint8_t *dst, int n), {
     // Exact read pieces, independently HTTP-gzipped by tools/data_chunks.py. Unlisted reads keep Range.
     // Each worker has its own Module; even prefetch workers load the small index once.
     if (!Module.rnDataChunks) {
-        var index = new XMLHttpRequest();
-        index.open('GET', '/data-chunks.json', false);
-        index.send();
-        Module.rnDataChunks = index.status === 200 ? JSON.parse(index.responseText) : {};
+        try {
+            var index = new XMLHttpRequest();
+            index.open('GET', '/data-chunks.json', false);
+            index.send();
+            Module.rnDataChunks = index.status === 200 ? JSON.parse(index.responseText) : {};
+        } catch (e) {
+            err('files: /data-chunks.json: ' + e.message);
+            Module.rnDataChunks = {};
+        }
     }
     var chunk = Module.rnDataChunks[path + ':' + off + ':' + n];
     for (var t = 0; ; t++) {

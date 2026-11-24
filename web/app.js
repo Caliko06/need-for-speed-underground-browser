@@ -32,6 +32,7 @@ const RN_APP = (() => {
     [/se perdió la GPU/, 'El navegador soltó la tarjeta gráfica (pasa al dejar la página mucho rato en segundo plano).'],
     [/out of memory|Out of memory|memoria|OOM/, 'Este dispositivo no tiene memoria libre suficiente para el juego. Cierra otras pestañas y apps.'],
     [/descarga|Failed to fetch|NetworkError|Load failed/, 'No se pudo descargar el juego. Revisa tu conexión.'],
+    [/: ExitProcess\(0\)/, 'Saliste del juego. Toca Recargar para volver a jugar.'],
   ];
 
   const css = document.createElement('style');
@@ -83,7 +84,8 @@ const RN_APP = (() => {
           : `intent://${location.host}${location.pathname}${location.search}#Intent;scheme=https;package=com.android.chrome;end`;
         b.textContent = ios ? 'Abrir en Safari' : 'Abrir en Chrome';
         b.onclick = () => { location.href = to; };
-        if (!sessionStorage.rnJump) { sessionStorage.rnJump = 1; location.href = to; }
+        let jumped = false; try { jumped = !!sessionStorage.rnJump; if (!jumped) sessionStorage.rnJump = 1; } catch {}
+        if (!jumped) location.href = to;
         r.textContent = 'Copiar enlace';
         r.onclick = () => navigator.clipboard?.writeText(location.origin + '/').then(() => { r.textContent = 'Enlace copiado'; }, () => {});
       }

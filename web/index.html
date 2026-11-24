@@ -8,7 +8,8 @@
 // chose (sessionStorage rn_q: the launcher's JUGAR, the in-game panel, web/mode.js) stays in the game. ?fast=1 without go=1 too.
 const RN_COARSE = matchMedia('(pointer: coarse)').matches;
 { const p = new URLSearchParams(location.search);
-  if (!location.search && !RN_COARSE && sessionStorage.getItem('rn_q') === null || p.get('fast') === '1' && p.get('go') !== '1') location.replace('launcher.html'); }
+  let rnQ = null; try { rnQ = sessionStorage.getItem('rn_q'); } catch {}
+  if (!location.search && !RN_COARSE && rnQ === null || p.get('fast') === '1' && p.get('go') !== '1') location.replace('launcher.html'); }
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
@@ -78,7 +79,8 @@ const RN_COARSE = matchMedia('(pointer: coarse)').matches;
 // RN_SEARCH = the switches of this visit: this tab's choice (sessionStorage rn_q, written by the launcher's Jugar, web/overlay.js and the
 // mode switch in web/mode.js), else on a computer the saved launcher choice (the mode itself comes from storage, web/mode.js).
 // Phones and tablets start light with nothing saved (web/mode.js RN_PHONE). A query typed in the address still wins (tests, tools/webcheck.mjs).
-const RN_SEARCH = location.search || '?' + (sessionStorage.getItem('rn_q') ?? (RN_COARSE ? '' : RN_LAUNCH.query(RN_LAUNCH.load()).split('&').filter(x => x !== 'play=1' && !x.startsWith('mode=')).join('&')));
+let rnSavedQ = null; try { rnSavedQ = sessionStorage.getItem('rn_q'); } catch {}
+const RN_SEARCH = location.search || '?' + (rnSavedQ ?? (RN_COARSE ? '' : RN_LAUNCH.query(RN_LAUNCH.load()).split('&').filter(x => x !== 'play=1' && !x.startsWith('mode=')).join('&')));
 </script>
 <script src="mode.js"></script>
 <script src="app.js"></script>

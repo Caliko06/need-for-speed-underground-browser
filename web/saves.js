@@ -80,7 +80,7 @@
         for (const [n, f] of puts) seen.set(n, f.sig);
         for (const n of dels) seen.delete(n);
       };
-      all().then(async files => {
+      Promise.race([all(), new Promise((_, no) => setTimeout(() => no(new Error('IndexedDB timeout (4s)')), 4000))]).then(async files => {
         const stored = new Set(files.keys());
         // An empty browser store starts from a save: on the dev server (tools/serve.py) the OWNER's save/ folder, so :5180 keeps
         // his profiles; on the public build web/seed_save.json, the profile FULL the game made itself (tools/webcheck.mjs typed

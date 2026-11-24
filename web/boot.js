@@ -76,7 +76,7 @@ function line(s, cls) {
   log.appendChild(d);
   while (log.childElementCount > DOM_LOG_MAX) log.firstElementChild.remove();
   // A 'stop' line (missing WebGPU, COOP/COEP, a lost GPU) ends the session: the gate says why (web/app.js), F2 opens this log.
-  if (cls === 'stop' || /^STOP/.test(s)) { crashSend(s); if (memTick) { clearInterval(memTick); memTick = 0; } status.textContent = 'detenido a los ' + ((performance.now() - t0) / 1000).toFixed(2) + ' s'; status.className = 'stop'; RN_APP.set('stop', s); }
+  if (cls === 'stop' || /^STOP/.test(s)) { if (!/: ExitProcess\(0\)/.test(s)) crashSend(s); if (memTick) { clearInterval(memTick); memTick = 0; } status.textContent = 'detenido a los ' + ((performance.now() - t0) / 1000).toFixed(2) + ' s'; status.className = 'stop'; RN_APP.set('stop', s); }
   // The launcher's curtain (?fast=1 with ?start=, web/index.html) lifts on arrival: the main menu, or the screen after the main menu (career).
   else if (CURTAIN && RN_APP.state === 'load') {
     if (/flow fe .*MU_Main_PC\.fng/.test(s)) { if (DEST === 'menu') arrive(); else main = true; }
@@ -94,8 +94,20 @@ RN_APP.on((s, from) => {
   if (s === 'stop' && memTick) { clearInterval(memTick); memTick = 0; }
 });
 // A download whose bytes are counted on the gate. Compressed transfers have no usable total, so it shows megabytes.
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function download(url, what) {
-  const r = await fetch(url + (window.RN_V ? '?v=' + RN_V : ''));   // RN_V: tools/build_public.py, a new address per build
+  const full = url + (window.RN_V ? '?v=' + RN_V : '');   // RN_V: tools/build_public.py, a new address per build
+  const waits = [500, 1500];
+  let r;
+  for (let i = 0; ; i++) {
+    try {
+      r = await fetch(full);
+      if (r.ok || (r.status < 500 && r.status !== 429) || i === waits.length) break;
+    } catch (e) {
+      if (i === waits.length) throw e;
+    }
+    await sleep(waits[i]);
+  }
   if (!r.ok) throw new Error(`descarga de ${url}: HTTP ${r.status}`);
   let n = 0, mb = -1;
   const count = new TransformStream({ transform(c, ctl) {
@@ -104,6 +116,21 @@ async function download(url, what) {
     ctl.enqueue(c);
   } });
   return new Response(r.body.pipeThrough(count), { headers: { 'Content-Type': r.headers.get('Content-Type') || 'application/octet-stream' } });
+}
+async function loadScript(src) {
+  const full = src + (window.RN_V ? '?v=' + RN_V : '');
+  const waits = [500, 1500];
+  for (let i = 0; ; i++) {
+    const s = document.createElement('script');
+    try {
+      await new Promise((ok, no) => { s.src = full; s.onload = ok; s.onerror = () => no(new Error(`Load failed: ${src}`)); document.head.appendChild(s); });
+      return;
+    } catch (e) {
+      s.remove();
+      if (i === waits.length) throw e;
+      await sleep(waits[i]);
+    }
+  }
 }
 (async () => {
   // check: what the game cannot run without, before any download (the wasm is 70 MB).
@@ -122,7 +149,7 @@ async function download(url, what) {
     if (!probe) { line('gpu.js: este navegador no tiene WebGPU ni WebGL 2', 'stop'); return; }
     s3tc = RN_Q.get('s3tc') !== '0' && !!probe.getExtension('WEBGL_compressed_texture_s3tc');
     probe.getExtension('WEBGL_lose_context')?.loseContext(); // release the capability probe, never retain a second GL device
-    await new Promise((ok, no) => document.head.appendChild(Object.assign(document.createElement('script'), { src: 'webgpu_gl.js' + (window.RN_V ? '?v=' + RN_V : ''), onload: ok, onerror: no })));
+    await loadScript('webgpu_gl.js');
     navigator.gpu.gpu_js.canvas = document.getElementById('screen');
     if (RN_Q.get('glerr') === '1') navigator.gpu.gpu_js.errs = {};   // GL errors per command kind (web/webgpu_gl.js submit)   // the device's GL context is the page's canvas (no copy per frame)
     line('gpu.js: WebGL 2 (sin WebGPU)');
@@ -131,7 +158,6 @@ async function download(url, what) {
   if (window.RN_HOLD) await window.RN_HOLD;       // ?fast=1: scene B draws first (web/index.html)
   // Speed.exe downloads in parallel with speed.wasm (or speed_lite.wasm on lite/ultralite).
   const wantLite = RN_TIER === 'lite' || RN_TIER === 'ultralite';
-  const loadScript = src => new Promise((ok, no) => document.head.appendChild(Object.assign(document.createElement('script'), { src: src + (window.RN_V ? '?v=' + RN_V : ''), onload: ok, onerror: no })));
   let wasmUrl = 'out/speed.wasm';
   if (wantLite) {
     try { await loadScript('out/speed_lite.js'); wasmUrl = 'out/speed_lite.wasm'; line('wasm: speed_lite (640 MB)'); }
@@ -151,8 +177,21 @@ async function download(url, what) {
     onAbort: what => line('STOP wasm abort: ' + what),
     // The 70 MB module compiles while it downloads, as Emscripten's own loader does, with the bytes counted on the gate.
     instantiateWasm: (imports, done) => {
-      Promise.all([exeP, download(wasmUrl, 'Descargando').then(r => WebAssembly.instantiateStreaming(r, imports))])
-        .then(([e, w]) => { exe = e; RN_APP.say('Arrancando…'); done(w.instance, w.module); }, e => line('STOP wasm: ' + e.message));
+      const loadWasm = async () => {
+        const waits = [500, 1500];
+        for (let i = 0; ; i++) {
+          try {
+            const r = await download(wasmUrl, 'Descargando');
+            return await WebAssembly.instantiateStreaming(r, imports);
+          } catch (e) {
+            if (i < waits.length) { await sleep(waits[i]); continue; }
+            const r = await download(wasmUrl, 'Descargando');
+            return await WebAssembly.instantiate(await r.arrayBuffer(), imports);
+          }
+        }
+      };
+      Promise.all([exeP, loadWasm()])
+        .then(([e, w]) => { exe = e; RN_APP.say('Arrancando…'); done(w.instance, w.module); }, e => line('STOP wasm: ' + (e && e.message || e), 'stop'));
       return {};
     },
     preRun: [m => {
@@ -283,7 +322,7 @@ async function download(url, what) {
   startTouch(input);                        // web/touch.js: the touch overlay (coarse pointer or ?touch=1) into the same ring
   startNameKeys(input);                     // web/namekeys.js: on-screen keys for the profile name (touch devices)
   startTune(M);
-  startAudio(M, s => line(s)).catch(e => line('audio.js: ' + e.message, 'stop'));
+  startAudio(M, s => line(s)).catch(e => { line('audio.js: ' + (e && e.message || e), 'dim'); toast(RN_TR('Sin audio en este navegador')); });
   window.RN_M = M;                          // for checks from the console or tools/webcheck.mjs
   // The loading line: megabytes the prefetch has brought of what it was asked (host/files.c rn_load, KB), while the curtain or the gate is up.
   const loadTick = setInterval(() => {

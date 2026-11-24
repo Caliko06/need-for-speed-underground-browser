@@ -57,7 +57,7 @@ registerProcessor('rn-ring', Ring);`;
 async function startAudio(M, log) {
   const ctx = new AudioContext({ sampleRate: 44100 });
   window.RN_ACTX = ctx;
-  if (navigator.userActivation?.hasBeenActive) ctx.resume();   // a key before the game booted (the launcher cover, web/index.html ?fast=1)
+  if (navigator.userActivation?.hasBeenActive) ctx.resume().catch(() => {});   // a key before the game booted (the launcher cover, web/index.html ?fast=1)
   const url = URL.createObjectURL(new Blob([AUDIO_WORKLET], { type: 'text/javascript' }));
   await ctx.audioWorklet.addModule(url);
   const node = new AudioWorkletNode(ctx, 'rn-ring', { numberOfInputs: 0, outputChannelCount: [2] });
@@ -68,12 +68,12 @@ async function startAudio(M, log) {
   const vol = RN_Q.get('mute') === '1' ? 0 : Math.max(0, Math.min(100, Number(RN_Q.get('vol') ?? 100) || 0)) / 100;
   if (vol < 1) { const g = ctx.createGain(); g.gain.value = vol * vol; g.connect(out); out = g; }   // squared: an even-sounding slider
   node.connect(out);
-  const resume = () => { if (RN_APP.state !== 'paused' && ctx.state !== 'running') ctx.resume(); };
+  const resume = () => { if (RN_APP.state !== 'paused' && ctx.state !== 'running') ctx.resume().catch(() => {}); };
   addEventListener('keydown', resume, true);
   addEventListener('mousedown', resume, true);
   addEventListener('touchend', resume, true);            // iOS only unlocks audio from touchend / click, not touchstart
   addEventListener('click', resume, true);
   // web/app.js: silent while paused (hidden page, phone upright); back on 'run' (iOS suspends it by itself when the tab hides)
-  RN_APP.on(s => { if (s === 'paused') ctx.suspend(); else if (s === 'run') resume(); });
+  RN_APP.on(s => { if (s === 'paused') ctx.suspend().catch(() => {}); else if (s === 'run') resume(); });
   return ctx;
 }
