@@ -30,7 +30,7 @@ const RN_APP = (() => {
     [/WebGPU no disponible/, 'Tu navegador no tiene WebGPU. Funciona en Chrome o Edge 113+ (computadora y Android 12+), Safari 26+ (Mac, iPhone, iPad) y Firefox 141+ (Windows) o 145+ (Mac Apple Silicon).'],
     [/sin adaptador/, 'WebGPU está apagado o la tarjeta gráfica de este equipo no es compatible.'],
     [/se perdió la GPU/, 'El navegador soltó la tarjeta gráfica (pasa al dejar la página mucho rato en segundo plano).'],
-    [/out of memory|Out of memory|memoria|OOM/, 'Este dispositivo no tiene memoria libre suficiente para el juego. Cierra otras pestañas y apps.'],
+    [/out of memory|could not allocate memory|memoria|OOM/i, 'Este dispositivo no tiene memoria libre suficiente para el juego. Cierra otras pestañas y apps.'],
     [/descarga|Failed to fetch|NetworkError|Load failed/, 'No se pudo descargar el juego. Revisa tu conexión.'],
     [/: ExitProcess\(0\)/, 'Saliste del juego. Toca Recargar para volver a jugar.'],
   ];

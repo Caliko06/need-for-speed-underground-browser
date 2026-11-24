@@ -229,6 +229,7 @@ int main(int argc, char **argv) {
             st(c, base + iat + 4 * k, host_addr_of(dll, name), 4);
         }
     }
+    free(pe);
 
     win32_init(c, image_size);
     threads_init(c);

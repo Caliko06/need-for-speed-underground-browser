@@ -224,7 +224,7 @@ def compile_web():
     # main() runs in a worker (PROXY_TO_PTHREAD) so guest threads and waits may block.
     subprocess.run(["emcc", "-O2", "-pthread", "-Ihost", f"-I{GEN}", *(["-DRN_STW"] if stw else []),
                     *(["-DRN_LITE_WASM"] if lite else []), *HOST, *objs, "-o", f"web/out/{output}.js",
-                    f"-sINITIAL_MEMORY={640 if lite else 896}MB", "-sSTACK_SIZE=4MB",
+                    f"-sINITIAL_MEMORY={448 if lite else 896}MB", "-sSTACK_SIZE=4MB",
                     f"-sDEFAULT_PTHREAD_STACK_SIZE={2 if lite else 4}MB",
                     "-sPROXY_TO_PTHREAD=1", f"-sPTHREAD_POOL_SIZE={7 if lite else 9}", "-sEXIT_RUNTIME=1",
                     "-sMODULARIZE=1", "-sEXPORT_NAME=Speed", "-sEXPORTED_RUNTIME_METHODS=FS,ENV,HEAPU8,HEAP32,HEAPU32,HEAPF64",

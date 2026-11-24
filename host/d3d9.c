@@ -931,7 +931,11 @@ static void hand_off(void) {
     pace_sleep();
     gil_acquire();
 }
+#ifdef RN_LITE_WASM
+static void flush_big(void) { if (gpu_pending() > (1u << 20)) hand_off(); }
+#else
 static void flush_big(void) { if (gpu_pending() > (4u << 20)) hand_off(); }
+#endif
 
 // RN_DRAWS=<min frame>: census of the indexed draws of the first frame at or after it that has >= 300 of them (a race frame):
 // who calls, which shaders/declaration/textures. Logged at its Present.
@@ -2466,7 +2470,7 @@ static int is_car_vs(uint32_t id) { const Obj *o = obj_k(id); for (int k = 0; k 
 static int is_bone_vs(uint32_t id) { const Obj *o = obj_k(id); for (int k = 0; k < nbone_vs; k++) if (o && bone_vs_obj[k] == o) return 1; return 0; }
 // fail: cs_smooth said no for this key (drawn as authored, not retried every frame). On the web an entry's vertices and
 // indices are resident GPU buffers SMOOTH_GPU + 2 * slot (+1), uploaded once when the entry is made.
-typedef struct { uint64_t key; uint8_t *vb; uint32_t nvert; uint16_t *idx; uint32_t nidx; int fail; } SmoothEnt;
+typedef struct { uint64_t key; uint8_t *vb; uint32_t nvert; uint16_t *idx; uint32_t nidx; int fail; uint8_t resident; } SmoothEnt;
 #define SMOOTH_GPU 0x40000000u
 #define SMOOTH_N 1024  // the cars' draws plus the NIS people's; WORLD's 30 cars passed 700, and with 256 a part in use was evicted and smoothed again
 #define SMOOTH_PROBE 8 // an entry lives within 8 slots of key % SMOOTH_N, so a car draw looks at 8 entries, not all
@@ -2563,7 +2567,7 @@ static int smooth_draw(Ctx *c, uint32_t base, uint32_t stride, uint32_t vmin, ui
     }
     key = fnv64b(key, &lv, sizeof lv) ^ ((uint64_t)vmin << 32 | stride);
     SmoothEnt *ent = NULL;
-    for (int k = 0; k < SMOOTH_PROBE; k++) { SmoothEnt *e = &smooth_cache[(key + (uint64_t)k) % SMOOTH_N]; if (e->key == key && (e->vb || e->fail)) { ent = e; break; } }
+    for (int k = 0; k < SMOOTH_PROBE; k++) { SmoothEnt *e = &smooth_cache[(key + (uint64_t)k) % SMOOTH_N]; if (e->key == key && (e->vb || e->resident || e->fail)) { ent = e; break; } }
     if (ent && ent->fail) return 0;
     if (!ent) {
         float *v5 = malloc((size_t)nvert * 5 * sizeof *v5);
@@ -2591,10 +2595,10 @@ static int smooth_draw(Ctx *c, uint32_t base, uint32_t stride, uint32_t vmin, ui
         int ok = !bad && cs_smooth(&in, &out, lv);
         free(v5); free(nr);
         ent = &smooth_cache[(key + (uint64_t)(smooth_next % SMOOTH_PROBE)) % SMOOTH_N];
-        for (int k = 0; k < SMOOTH_PROBE; k++) { SmoothEnt *e = &smooth_cache[(key + (uint64_t)k) % SMOOTH_N]; if (!e->vb && !e->fail) { ent = e; break; } }
+        for (int k = 0; k < SMOOTH_PROBE; k++) { SmoothEnt *e = &smooth_cache[(key + (uint64_t)k) % SMOOTH_N]; if (!e->vb && !e->resident && !e->fail) { ent = e; break; } }
         smooth_next++;
         free(ent->vb); free(ent->idx);
-        ent->vb = NULL; ent->idx = NULL; ent->key = key; ent->fail = !ok;
+        ent->vb = NULL; ent->idx = NULL; ent->key = key; ent->fail = !ok; ent->resident = 0;
         if (!ok) { free(ix); return 0; }
         ent->vb = malloc((size_t)out.nverts * stride);
         for (int k = 0; k < out.nverts; k++) {
@@ -2627,6 +2631,7 @@ static int smooth_draw(Ctx *c, uint32_t base, uint32_t stride, uint32_t vmin, ui
                 free(w);
             }
             flush_big();
+            free(ent->vb); free(ent->idx); ent->vb = NULL; ent->idx = NULL; ent->resident = 1;
         }
     }
     if (resident_on()) {

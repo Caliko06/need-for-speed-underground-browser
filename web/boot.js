@@ -160,7 +160,7 @@ async function loadScript(src) {
   const wantLite = RN_TIER === 'lite' || RN_TIER === 'ultralite';
   let wasmUrl = 'out/speed.wasm';
   if (wantLite) {
-    try { await loadScript('out/speed_lite.js'); wasmUrl = 'out/speed_lite.wasm'; line('wasm: speed_lite (640 MB)'); }
+    try { await loadScript('out/speed_lite.js'); wasmUrl = 'out/speed_lite.wasm'; line('wasm: speed_lite (448 MB)'); }
     catch { await loadScript('out/speed.js'); line('wasm: speed_lite missing, fallback speed'); }
   } else {
     await loadScript('out/speed.js');
@@ -171,7 +171,8 @@ async function loadScript(src) {
   exeP.catch(() => {});
   // Game files are read on demand by the game thread (host/files.c), not loaded here.
   status.textContent = 'corriendo'; status.className = 'run';
-  const M = await Speed({
+  let M;
+  try { M = await Speed({
     arguments: ['/pc/Speed.exe', '/game'],
     print: s => line(s), printErr: s => line(s, 'dim'),
     onAbort: what => line('STOP wasm abort: ' + what),
@@ -310,7 +311,7 @@ async function loadScript(src) {
       const look = RN_Q.get('carlook');
       if (look !== null) m.ENV.RN_CARLOOK = look;
     }],
-  });
+  }); } catch (e) { line('STOP wasm memory: ' + (e && e.message || e), 'stop'); return; }
   telem = startTelemetry(M, t0, s => line(s));
   startStats(M);   // web/stats.js
   startQuality(M, line, !webgl2);   // web/quality.js
@@ -337,6 +338,6 @@ async function loadScript(src) {
   memTick = setInterval(() => {
     if (RN_APP.state === 'stop') { clearInterval(memTick); memTick = 0; return; }
     const v = [0, 1, 2].map(k => M._rn_mem_mb(k)), key = v.map(x => x >> 4).join();
-    if (key !== memLast) { memLast = key; line(`mem: wasm break ${v[0]} MB (guest 384 untouched until used), guest heap ${v[1]} MB, guest virtual ${v[2]} MB`); }
+    if (key !== memLast) { memLast = key; line(`mem: wasm break ${v[0]} MB (guest ${wasmUrl.includes('lite') ? 256 : 384} untouched until used), guest heap ${v[1]} MB, guest virtual ${v[2]} MB`); }
   }, 2000);
 })();

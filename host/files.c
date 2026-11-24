@@ -306,7 +306,7 @@ static uint64_t cap(void) {
 #ifdef RN_LITE_WASM
         int mb = 32;
 #else
-        int mb = 256;
+        int mb = 128;
 #endif
         if (e && atoi(e) > 0) mb = atoi(e);
         if (ultralite() && mb > 16) mb = 16;
