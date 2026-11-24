@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Feel patch plan — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Base: feel_candidates, the archived feel notes (not published) (OWNER complaints), camera.md,">
+<link rel="canonical" href="https://nfsu.cc/re/feel_patch_plan.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/feel_patch_plan.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Feel patch plan — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Base: feel_candidates, the archived feel notes (not published) (OWNER complaints), camera.md,">
+<meta property="og:url" content="https://nfsu.cc/re/feel_patch_plan.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Feel patch plan — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Base: feel_candidates, the archived feel notes (not published) (OWNER complaints), camera.md,">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Feel patch plan", "description": "Base: feel_candidates, the archived feel notes (not published) (OWNER complaints), camera.md,", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/feel_patch_plan.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Feel patch plan", "item": "https://nfsu.cc/re/feel_patch_plan.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Driving &amp; Physics</p>
+<article>
+<h1>Feel patch plan</h1>
+<div class="badges">
+  <span class="badge">Driving &amp; Physics</span>
+  <span class="badge accent">32 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="feel_patch_plan.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/feel_patch_plan.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Base: <code>feel_candidates</code>, the archived feel notes (not published) (OWNER complaints), <code>camera.md</code>, <code>camera_chase.md</code>, <code>blur.md</code>. Nothing in this plan was built or run: every byte below was read from <code>pc/Speed.exe</code> and checked with the same <code>old</code> test <code>patches.apply()</code> uses (script run, 11/11 match). The look and the numbers are expectations, not measurements; the probe is what turns them into numbers.</p>
+<h2 id="the-probe-default-off">The probe (default OFF)</h2>
+<p><code>host/feellog.c</code>, called from <code>IDirect3DDevice9_Present</code> next to <code>ai_tel</code>. Enabled with <code>RN_FEELLOG=1</code>; with the env unset it returns on its first line, so every build keeps it at zero cost.</p>
+<ul><li><code>FEEL</code> every 30 frames: speed m/s and mph, camera mover mode (<code>9000</code>), the POV code the mover uses, the chase row that resolves</li></ul>
+<p>to it (<code>row</code> + its <code>dist</code> / <code>h</code> from the car&#x27;s <code>CarTypeInfo</code>), the FOV word for that POV in degrees (from <code>0x6fbdf4</code>, the table FEEL-C3 edits), nitrous, and which row set is live.</p>
+<ul><li><code>FEEL A</code> once per standing start: 0-60 and 0-100 mph, counted on the Present clock (60/s, the limiter is 1:1). A run that stays</li></ul>
+<p>under 100 mph for 20 s logs what it got and ends.</p>
+<p>Grep <code>FEEL</code> in the page log. Flip a candidate, rebuild, run one Free Run with a standing start and compare the two lines.</p>
+<h2 id="candidates-tools-recomp-patches-py-feel-candidat">Candidates (<code>tools/recomp/patches.py</code>, <code>FEEL_CANDIDATES</code>, all <code>when=lambda: False</code>)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Symptom</th><th>Patch</th><th>Expected number</th><th>Risk</th></tr></thead><tbody><tr><td>C1</td><td>Blur too strong</td><td>Copy the shared double 4.0 (<code>0x6cc9d8</code>) to free <code>.data</code> <code>0x707fd0</code> as 1.0; repoint the four <code>fmul qword</code> operands at <code>0x40cfb9</code>, <code>0x40cfda</code>, <code>0x40cfed</code>, <code>0x40cffb</code></td><td>Second-pass edge reach / 4 (the &quot;~15 s to ~4 s of travel&quot; smear in <code>feel_candidates</code> 1); same weight, so the frame gets directional instead of soupy. Probe: no number changes, this is a look patch</td><td>Low. <code>0x6cc9d8</code> is shared by <code>0x438b60</code> and <code>0x606110</code>, which is why it is copied. The four operands are stack locals of the blur chain; no other reader</td></tr><tr><td>C2</td><td>Lamp halos (&quot;astigmatism&quot;, also stopped)</td><td>Flare weight 1.0 → 0.6 at both lamp flare draws: <code>0x544ff8</code> (into <code>0x5447c0</code>) and <code>0x54502e</code> (into <code>0x544e90</code>), <code>push 0x3f800000</code> → <code>push 0x3e99999a</code></td><td>Still-lamp radiance 0.6x at the source; with the existing add colour 1.5x (<code>0x707fcc</code>) a still lamp lands at 0.9x its own flare instead of 1.5x. Trail length unchanged</td><td>Medium-low. Dims the star, every headlight flare and the garage lamps, not only the halo; the OWNER asked on 2026-10-26 for the aura around moving lights back, so this can read as too dim</td></tr><tr><td>C3</td><td>Camera low/flat at speed, car small</td><td>FOV table <code>0x6fbdf4</code> POV 0, 1, 4: <code>0x32dc</code> (71.5°) → <code>0x2ee0</code> (65.9°)</td><td>Car 1/tan(32.95°)/1/tan(35.75°) = <b>1.11x bigger</b> on screen; vertical view 64.4° → 59.1°, horizontal 96.0° → 90.0° at 16:9. Probe: <code>fov &lt;word&gt; (… deg)</code> shows 71.5 → 65.9</td><td>Medium. Speed.exe has no speed term for eye distance, height or pitch (<code>camera_chase.md</code>), so this enlarges the car at rest too, and the front end reads the same table: the garage cover car grows</td></tr><tr><td>C4</td><td>Acceleration too fast (~2.7 s 0-60)</td><td><code>jne 0x474d51</code> → nop nop at <code>0x474d47</code>, so the drivetrain setup <code>0x474d40</code> always takes the 1.0 at <code>0x6cc7bc</code> instead of <code>car+0x404</code> (gate <code>0x6ffe54</code> is 1, no writer)</td><td>Removes the per-frame power/drag/grip scale. If the player&#x27;s <code>car+0x404</code> is 1.0, 0-60 is unchanged (<code>FEEL A</code> says so); the delta it does show is what the scale was worth. Reference: shipped 3.63 s stock, 2.9-3.3 s with the OWNER&#x27;s parts</td><td>Medium. Applies to the player and every rival; rivals lose their multiplier. <code>0x6cc7bc</code> is a shared float and is only read here, never edited</td></tr></tbody></table></div>
+<h2 id="already-patched-do-not-propose-again">Already patched (do not propose again)</h2>
+<ul><li>Blur: ramp <code>0x702a38</code> = 0.1-25 m/s, cap <code>0x702a40</code> = 0.26 (weight 0.39), NOS black-screen blend fix <code>0x40d615</code> / <code>0x40d2a2</code>.</li><li>Halos: the light-streak add colour <code>0x707fcc</code> = 1.5 per channel (was R 2.0 / G 2.4 / B 3.4 shipped); the decay is the shipped one.</li><li>Camera: projection caves <code>0x40debb</code> / <code>0x40deec</code> / <code>0x40dcdb</code> (PS2 vertical view, 16:9 cap), widescreen 2D <code>0x40bf09..</code>,</li></ul>
+<p>cube 512 px <code>0x702a84</code>, reflection 0.7x <code>0x707fc4</code>, LOD lock <code>0x56e0d2</code>, autopilot camera <code>0x42d87e</code>.</p>
+<ul><li>Acceleration: nothing patched. <code>0x735ec1</code> (unlock byte) is ruled out: front-end readers only, it marks parts bought, it does not</li></ul>
+<p>install them. The 2.7 s is the shipped formula with weight L3 / turbo L1 / tires L3 (<code>re_accel</code>).</p>
+<h2 id="not-in-this-plan">Not in this plan</h2>
+<ul><li>Port-side knobs that would confound an A/B: <code>?chasecam=1</code> (distance x1.12, height x0.90), <code>?nitrocam=1</code>, <code>?speedfov=10</code>,</li></ul>
+<p><code>?bloom</code> (the wide glow when stopped is <code>web/gpu.js:357</code>, there is no x86 bloom). Turn them off before judging C2 or C3.</p>
+<ul><li>Original mode is not the shipped game: every <code>PATCHES</code> entry has <code>when=lambda: True</code>, so it runs the same caves. The shipped</li></ul>
+<p>reference is the Wine exe (<code>tools/wine/mkexe.py</code>).</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

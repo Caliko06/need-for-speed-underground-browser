@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Jump camera: trigger, camera, return, and why it was missing — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Tools: G = Ghidra export census/ghidra/decomp_0x401000_0x4a6800.c, D = bytes of the unpatched exe (python struct, tools/recomp/asm.py),">
+<link rel="canonical" href="https://nfsu.cc/re/camera_jump.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/camera_jump.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Jump camera: trigger, camera, return, and why it was missing — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Tools: G = Ghidra export census/ghidra/decomp_0x401000_0x4a6800.c, D = bytes of the unpatched exe (python struct, tools/recomp/asm.py),">
+<meta property="og:url" content="https://nfsu.cc/re/camera_jump.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Jump camera: trigger, camera, return, and why it was missing — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Tools: G = Ghidra export census/ghidra/decomp_0x401000_0x4a6800.c, D = bytes of the unpatched exe (python struct, tools/recomp/asm.py),">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Jump camera: trigger, camera, return, and why it was missing", "description": "Tools: G = Ghidra export census/ghidra/decomp_0x401000_0x4a6800.c, D = bytes of the unpatched exe (python struct, tools/recomp/asm.py),", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/camera_jump.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Jump camera: trigger, camera, return, and why it was missing", "item": "https://nfsu.cc/re/camera_jump.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Camera Systems</p>
+<article>
+<h1>Jump camera: trigger, camera, return, and why it was missing</h1>
+<div class="badges">
+  <span class="badge">Camera Systems</span>
+  <span class="badge accent">55 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="camera_jump.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/camera_jump.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Tools: G = Ghidra export <code>census/ghidra/decomp_0x401000_0x4a6800.c</code>, D = bytes of the unpatched exe (python struct, <code>tools/recomp/asm.py</code>), H = our host code read. Earlier work: <code>re_jumpcam</code> (same chain, runtime logs of 2026-10-28). Not run in the pod this time (the game does not run there yet): the new facts below are from code and bytes, the Mac must confirm with a jump.</p>
+<h2 id="the-chain-v-g-d">The chain (V, G+D)</h2>
+<ol><li><code>0x426930</code> (per car, every frame; the jump test runs when <code>frame % 8 == 3</code>). Input: <code>car+0x3cc</code> = wheels on the ground (0..4),</li></ol>
+<p><code>car+0x3d4</code> = speed (m/s), level x = option byte <code>[0x78a3fa]</code> (0x80 in a normal game).</p>
+<ol><li>Fires only if no special camera is running (<code>ctrl+0x60</code> not 6 or 7), <code>[0x7361e8] == 0</code>, all wheels in the air (<code>car+0x3cc == 0</code>),</li></ol>
+<p><code>ctrl+0x4ac == 0</code> and speed &gt; curve <code>0x7062fc</code>. Curves are piecewise linear (x, y) pairs read by <code>0x583f20</code> (D):</p>
+<ul><li>speed <code>0x7062fc</code>: 50 m/s at x=0 to 5 m/s at x=255. At x=128: <b>27.4 m/s (99 km/h)</b>.</li><li><code>0x706314</code>: 4.0 to 0.5 (look-ahead seconds fed to the flight predictor <code>0x429cf0</code>).</li><li>min height <code>0x7062cc</code>: 2.5 to 0.5. At x=128: <b>1.5 m</b>. Min distance <code>0x7062e4</code>: 2.5 to 0.5, at x=128: <b>1.5 m</b>.</li></ul>
+<ol><li>The predictor <code>0x429cf0</code> returns max height and distance of the flight. If both are above the curves, <code>0x42c4b0()</code> must return non-zero</li></ol>
+<p>(it builds the camera spline from the driver&#x27;s route; fails if the route has fewer than 5 nodes over 75 m, see <code>re_jumpcam</code>), then <b><code>0x426930</code> calls <code>0x42da40(mode 6, 0, 1, 1)</code></b> (call at <code>0x426dd7</code> region; the call to <code>0x42c4b0</code> at <code>0x426dd7</code> is the one our cave replaces).</p>
+<ol><li><code>0x42da40</code> mode 6: slow motion <code>0x420050(0.4, 8.0 s)</code> (<code>[0x6b7ab0]</code>, <code>[0x6b7a74]</code>), camera mover <b>type 0xf</b> (TrackCar, update <code>0x485c00</code>) through</li></ol>
+<p><code>0x42c6d0(ctrl, 0xf, 1)</code>, <code>ctrl+0x60 = 6</code>, <code>[0x73654c] = 1</code>. Cooldown: 5 s per mode (<code>[0x6b7a88]</code>). Refusals: see <code>re_jumpcam</code>.</p>
+<ol><li>The shot (<code>0x485c00</code>, G): the eye is a point of the route spline (<code>mover+0x410..0x428</code>, segment chosen by the car&#x27;s progress), the target is the</li></ol>
+<p>car (<code>mover+0x438</code> car, position <code>+0x60</code>); FOV <code>mover[0x1c]+0xc4</code> is set here from the distance (<code>0x564db0</code>), <code>+0xbc = [0x6b6cd0]</code>. No wall sweep is run on this eye (the push-out <code>0x4838e0</code> has two call sites in the export, neither inside <code>0x485c00</code>, which calls <code>0x483860</code> and <code>0x485b90</code> instead).</p>
+<ol><li>Back to the chase: while <code>ctrl+0x60</code> is 6 or 7, <code>0x426930</code> calls <code>0x42ddc0(ctrl, 1)</code> when the car touches down: if <code>car+0x38 == 1</code>, with all 4 wheels down and</li></ol>
+<p>0.5 s (<code>[0x6b7ba4]</code>) after <code>car+0x4c8</code>; otherwise as soon as one wheel touches (<code>car+0x3cc &gt; 0</code>). <code>0x42ddc0</code> clears <code>[0x73654c]</code>, <code>ctrl+0x60 = 0</code>, restores time, and <code>0x42c450</code> calls the default camera <code>0x42c670</code> (type 0x11, the chase). The mode-7 shot (landing view, mover 0x10) follows through the same gates.</p>
+<h2 id="why-it-did-not-show-in-our-build-v-h">Why it did not show in our build (V, H)</h2>
+<ul><li><b>Cause: our own patch.</b> <code>PATCH 0x426dd7</code> and <code>0x4662e0</code> (cave <code>0x5567e3</code>) send the <code>0x42c4b0</code> question to <code>host/free.c free_jumpcam</code>, which returned 0</li></ul>
+<p>in free mode (Free Run and WORLD, <code>live</code>). With 0 the jump shot is refused every time, so the chase stayed. That was added on 2026-10-28 because the spline eye sits inside buildings in the city. Circuits and Quick Race always ran the original call.</p>
+<ul><li>Not the cause (checked in code): <code>?chasecam</code> and <code>?nitrocam</code> only rewrite CarTypeInfo rows <code>[[car+0xc]+0xb50]</code>, read by mover 0x11; mover 0xf</li></ul>
+<p>does not read them. <code>PATCH 0x42d87e</code> only changes the autopilot&#x27;s camera type (0x12 to 0x11). <code>fov_frame</code> writes the FOV table, which mover 0xf does not read (it sets its own FOV at <code>+0xc4</code>).</p>
+<ul><li>The same cave also feeds the crash camera (<code>0x465d00</code>, call <code>0x4662e0</code>): it came back too.</li></ul>
+<h2 id="the-fix-and-its-exit-updated-2026-10-31">The fix and its exit (updated 2026-10-31)</h2>
+<p><code>free_jumpcam</code> runs the original call in free mode too (the switch <code>?jumpcam</code> / <code>RN_JUMPCAM</code> is deleted: the OWNER wants the jump cam, 2026-10-30) and then the route check below. A race and <code>RN_FREE=0</code> stay the exact original call.</p>
+<h2 id="correction-cam-0-span-1-in-mode-6-is-normal-v-ca">Correction: <code>cam 0 span -1</code> in mode 6 is normal (V, capstone on pc/Speed.exe)</h2>
+<ul><li>The old <code>JC</code> comment said <code>span -1</code> means the last <code>0x42c4b0</code> call failed. Wrong during modes 6 and 7. <code>0x42c4b0</code> sets <code>ctrl+0x5c4</code> = route clone</li></ul>
+<p>(+4 count, +8 node pointers), <code>ctrl+0x5c8</code> = k (the node nearest the car), <code>ctrl+0x5cc</code> = first node 75 m or more past k. <code>0x42da40</code> mode 6 runs <code>0x42c6d0(ctrl, 0xf, 1)</code>; then <code>0x42dd11</code> always calls <code>0x42c640</code>, which frees the clone and sets <code>5c4 = 0</code>, <code>5c8 = 5cc = -1</code>. So the log line sees <code>cam 0 span -1</code> for the whole shot. Only a refusal at the time of the call shows as a missing jump cam.</p>
+<ul><li><code>host/d3d9.c jumpcam_log</code> now also prints <code>eye</code> (<code>ctrl+0x560..0x568</code>), <code>fov</code> (the word at <code>[[ctrl+0x27c]+0x1c]+0xc4</code>: <code>ctrl+0x27c</code> is the active</li></ul>
+<p>mover, <code>0x42c6bd</code>; <code>mover+0x1c</code> is its camera view, written by <code>TrackCarCameraMover__Update</code> at <code>0x485fee..0x485ff1</code>) and <code>rp</code> (<code>car+0x810</code>, copied at <code>0x42cb34</code>).</p>
+<h2 id="the-eye-is-fixed-and-the-city-blocks-it-v-capsto">The eye is fixed, and the city blocks it (V, capstone)</h2>
+<ul><li>Case <code>0xf</code> of <code>0x42c6d0</code> (<code>0x42ca9b..0x42d0a0</code>) takes the eye node e = <code>[5cc] - 2</code> if <code>[5cc] - k &gt;= 5</code>, else <code>[5cc]</code>. The eye is one point at a road</li></ul>
+<p>edge of node e: <code>0x5a7270(out, node+0x58, vt[+0xc](lane) - 2.0, lane)</code> (left, <code>0x42cd24</code>) or <code>0x5a7270(out, node+0x58, vt[+8](lane) + 2.0, lane)</code> (right, <code>0x42cd4d</code>), <code>2.0</code> is <code>[0x6b7aac]</code>, lane = driver <code>vt[+0x1c](0)</code> clamped at 0 (<code>0x42cae9</code>). Node vtable <code>0x6c8f5c</code>: <code>+8 = 0x5a7ac0</code>, <code>+0xc = 0x5a7a10</code>, both return a float in st(0). The edge first tried is the one less far ahead along <code>car+0x70..0x78</code> (<code>0x42cdb1..0x42ce3c</code>). The eye is then raised to the ground + 1 (<code>GroundQuery__FindSurfaceBelow</code>) and stays there for the whole shot (about 3 s). FOV is constant, no wall check.</p>
+<ul><li>The game has a portal test: <code>0x457300</code> (eax = first node, ecx = route; stack: car position pointer, eye pointer, last node; the caller pops) checks that</li></ul>
+<p>the car -&gt; eye segment crosses the cross-section <code>[node+0x20, node+0x3c]</code> (<code>0x5a7270</code> at lateral <code>node+0x20</code> and <code>node+0x3c</code>, lane 0) of every node from k to e-1, with the 2D segment test <code>0x457180</code> on x and y. If it fails, the game switches to the other road edge (<code>0x42cf12</code>) and uses it <b>without testing it</b>. In a city, 80 to 100 m along a road that bends, both edges are behind buildings. That is the bug.</p>
+<h2 id="the-route-check-h-host-free-c-free-jumpcam">The route check (H, <code>host/free.c free_jumpcam</code>)</h2>
+<ul><li>After the original call, in free mode: for e from the game&#x27;s eye node down to k+1, <code>eye_check</code> places the eye exactly as above, runs <code>0x457300</code> on the</li></ul>
+<p>edge the game takes first and, if it fails, on the other edge; e is accepted when one passes and the edge used is 30 m or more from the car (2D).</p>
+<ul><li>Taking e: <code>[5cc] = e</code> if e - k &lt;= 4 (then <code>[5cc] - k &lt; 5</code> gives e), else <code>[5cc] = e + 2</code>. This never goes past the original <code>[5cc]</code>. Lower limit: e &gt;= k+1</li></ul>
+<p>(the portal range k..e-1 is empty below that and <code>0x457300</code> answers 0). Node k+2, which the case reads for the second point (<code>0x42cdc6</code>), stays valid because the original call guaranteed <code>[5cc] - k &gt;= 4</code>.</p>
+<ul><li>Nothing qualifies: <code>0x42c640</code> (reads esi only) frees the clone and the answer is 0, so the chase camera stays.</li><li>One line per query in free mode, in build/web.log: <code>JCPICK f&lt;frame&gt; k &lt;k&gt; end &lt;5cc now&gt; eye &lt;e or -1&gt; of orig &lt;e0&gt; dist &lt;m&gt; clear|refused</code>.</li></ul>
+<p><code>eye == orig</code> and <code>clear</code>: the game&#x27;s own eye was fine. <code>eye</code> lower than <code>orig</code>: the eye was moved closer. <code>refused</code>: no clear eye, chase camera stays. Read it together with <code>JC ... eye .. fov .. rp ..</code> of the same jump.</p>
+<ul><li>Not run in the pod (no game files): the Mac must confirm with jumps in WORLD. Exit: if the OWNER is happy with the shots, nothing more to delete; if</li></ul>
+<p><code>refused</code> is frequent, the next step is a wall sweep on the eye of <code>0x485c00</code> (the push-out <code>0x4838e0</code> takes a car collision cache, so it only works near the car).</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

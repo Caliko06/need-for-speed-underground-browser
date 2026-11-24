@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Hosting: Cloudflare R2 behind nfsu.cc — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Nothing below runs without the OWNER&#x27;s go for that upload.">
+<link rel="canonical" href="https://nfsu.cc/re/hosting.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/hosting.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Hosting: Cloudflare R2 behind nfsu.cc — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Nothing below runs without the OWNER&#x27;s go for that upload.">
+<meta property="og:url" content="https://nfsu.cc/re/hosting.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hosting: Cloudflare R2 behind nfsu.cc — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Nothing below runs without the OWNER&#x27;s go for that upload.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Hosting: Cloudflare R2 behind nfsu.cc", "description": "Nothing below runs without the OWNER's go for that upload.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/hosting.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Hosting: Cloudflare R2 behind nfsu.cc", "item": "https://nfsu.cc/re/hosting.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Assets, Runtime &amp; Shipping</p>
+<article>
+<h1>Hosting: Cloudflare R2 behind nfsu.cc</h1>
+<div class="badges">
+  <span class="badge">Assets, Runtime &amp; Shipping</span>
+  
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="hosting.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/hosting.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Nothing below runs without the OWNER&#x27;s go for that upload.</p>
+<div class="tbl-wrap"><table><thead><tr><th>Step</th><th>Who</th><th>What</th></tr></thead><tbody><tr><td>1 Account + domain</td><td>OWNER</td><td>Cloudflare account; buy the domain (Cloudflare Registrar sells at cost) so its DNS is already on Cloudflare</td></tr><tr><td>2 Bucket</td><td>OWNER or us with his token</td><td>R2 bucket, e.g. <code>nfsu</code>; Settings &gt; Custom Domains &gt; <code>play.&lt;domain&gt;</code> (a test address first, row 6)</td></tr><tr><td>3 Token</td><td>OWNER</td><td>R2 &gt; Manage API tokens &gt; Object Read &amp; Write on that bucket; <code>rclone config</code> remote <code>r2</code> (provider Cloudflare)</td></tr><tr><td>4 Upload</td><td>us, after his go</td><td><code>python3 tools/build_public.py &amp;&amp; tools/upload_r2.sh nfsu</code> (~2 GB, speed.wasm sent as brotli, 70 -&gt; 11.1 MB)</td></tr><tr><td>5 Rules on the zone</td><td>us or OWNER</td><td>below</td></tr><tr><td>6 Check</td><td>us</td><td><code>crossOriginIsolated</code> true, a race reached from the domain, Range answers 206 on game/Tracks/STREAML1RA.BUN</td></tr></tbody></table></div>
+<h2 id="zone-rules-dashboard-rules">Zone rules (dashboard &gt; Rules)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Rule</th><th>Match</th><th>Action</th><th>Why</th></tr></thead><tbody><tr><td>Response header transform</td><td>hostname eq play.&lt;domain&gt;</td><td>set <code>Cross-Origin-Opener-Policy: same-origin</code>, <code>Cross-Origin-Embedder-Policy: require-corp</code>, <code>Cross-Origin-Resource-Policy: same-origin</code></td><td>SharedArrayBuffer (game threads); same three as tools/static_server.py and dist/_headers</td></tr><tr><td>URL rewrite</td><td>path eq <code>/</code></td><td>rewrite to <code>/index.html</code></td><td>R2 serves no index page</td></tr><tr><td>Cache rule</td><td>hostname eq play.&lt;domain&gt;</td><td>eligible for cache, edge TTL 1 day</td><td>fewer R2 reads (Class B: 10 M/month free, then $0.36/M; a cold visit to the menu is 108 requests, <a href="public_pack.html">public_pack</a>)</td></tr></tbody></table></div>
+<h2 id="cost-third-party-guides-2026-confirm-on-cloudfla">Cost (third-party guides, 2026; confirm on Cloudflare&#x27;s page)</h2>
+<p>Storage $0.015/GB-month, 10 GB free; egress free; so ~2 GB fits the free tier. Unknown until live: Range through the cache, Safari/iOS. | Redirect rule (live 2026-11-15) | host eq www.nfsu.cc | 301 to concat(&quot;https://nfsu.cc&quot;, path), query kept | www gave 525 |</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Native Original / Remaster menu button — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="OWNER 2026-11-14: add a seventh main-menu button in both modes. This is the sole permitted addition to Original&#x27;s shipped menu. No shipped action is relabelled.">
+<link rel="canonical" href="https://nfsu.cc/re/mode_menu.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/mode_menu.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Native Original / Remaster menu button — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="OWNER 2026-11-14: add a seventh main-menu button in both modes. This is the sole permitted addition to Original&#x27;s shipped menu. No shipped action is relabelled.">
+<meta property="og:url" content="https://nfsu.cc/re/mode_menu.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Native Original / Remaster menu button — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="OWNER 2026-11-14: add a seventh main-menu button in both modes. This is the sole permitted addition to Original&#x27;s shipped menu. No shipped action is relabelled.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Native Original / Remaster menu button", "description": "OWNER 2026-11-14: add a seventh main-menu button in both modes. This is the sole permitted addition to Original's shipped menu. No shipped action is relabelled.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/mode_menu.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Native Original / Remaster menu button", "item": "https://nfsu.cc/re/mode_menu.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Menus, Garage &amp; Career Flow</p>
+<article>
+<h1>Native Original / Remaster menu button</h1>
+<div class="badges">
+  <span class="badge">Menus, Garage &amp; Career Flow</span>
+  <span class="badge accent">19 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="mode_menu.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/mode_menu.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>OWNER 2026-11-14: add a seventh main-menu button in both modes. This is the sole permitted addition to Original&#x27;s shipped menu. No shipped action is relabelled.</p>
+<div class="tbl-wrap"><table><thead><tr><th>Address / data</th><th>Evidence and use</th></tr></thead><tbody><tr><td><code>0x4b309b</code></td><td><code>Screen_MU_Main_PC</code> ctor tail, after package initialization; original <code>mov [0x748f75],dl</code> retained by cave <code>0x797640</code>. objdump + Hopper <code>sub_4b2c33</code> (<code>ev_d551896b782bf50c24cef5f5550038e5280f4285740833ff39e6978b16903884</code>).</td></tr><tr><td><code>0x4f65d0</code></td><td>Loaded-package lookup, EAX name -&gt; package. Calls <code>0x4f3f90</code> with registry <code>0x746104</code>, then reads node <code>+0x18</code>. objdump + Ghidra <code>FUN_004f65d0</code>. The active-package list is populated after the main ctor returns; first runtime run proved it is too early there.</td></tr><tr><td><code>0x5009a0</code></td><td>FEString virtual Clone(bool), ECX source, ret 4. Clone STATISTICS (<code>0xf20e404a</code>) with false; base <code>0x4fec30</code> assigns a unique instance id and duplicates scripts/messages. objdump + REA/Hopper (<code>ev_3a183b5e349d5c2b86436faaf1bfa02149d4d66033c8f468ca6a1744a9dba32f</code>).</td></tr><tr><td><code>0x5013a0</code>, <code>0x5017d0</code></td><td><code>Butn</code> count becomes package <code>+0x88</code>, pointer array <code>+0x84</code>; loader fills it for flag <code>0x10000000</code>. Object list count/head/tail <code>+0x3c/+0x40/+0x44</code>, sibling next/prev <code>+4/+8</code>. objdump + Ghidra/Hopper.</td></tr><tr><td><code>0x4ff030</code>, <code>0x5001b0</code>, <code>0x4fcb20</code></td><td>Position uses parameter slots 7..9. Frames stride <code>0x38</code>, target slot byte <code>+7</code>, position kind <code>4</code>, inline Y <code>+0x1c</code>, subsequent key Y <code>+0x14</code>. Shared key wrappers at frame <code>+0x28</code> are resolved and copied with <code>0x4fcb20</code> before moving tracks. objdump + Ghidra/Hopper (<code>ev_e3cceead77090312cd3b7ea40a4476d53538c182a946d1c322fa73a7dd2a3cb9</code>).</td></tr><tr><td><code>0x4f68a0</code></td><td>EAX object, cdecl format string sets custom text using <code>0x4f6780</code>. Target label comes from browser mode passed as <code>RN_MODE</code>. objdump + REA/Hopper (<code>ev_b0a19e000c501c2d6d6a8125ed673527c8a5587d0c6164a56a90ce5b5258cc79</code>).</td></tr><tr><td><code>0x4b33db</code></td><td>Main accept message <code>0x0c407210</code> already passed transition guard. Cave <code>0x797660</code> recognizes reserved object hash <code>0x5f524e4d</code>, calls host slot <code>0x130d8</code>, exits through <code>0x4b3769</code>. Others retain original <code>cmp eax,0xa936c3a2</code> and branch flags. objdump + REA/Hopper <code>0x4b3240</code>.</td></tr></tbody></table></div>
+<p>Implementation: <code>host/mode_menu.c</code>, <code>tools/recomp/patches_mode_menu.py</code>. Clone inserted below STATISTICS; CUSTOMIZE, OPTIONS and Online/WORLD move down one 42-unit row. JS <code>window.rnSwitchMode</code> is shared with second F4; stores <code>rn_mode</code>, changes any URL mode override to the chosen mode and reloads the page.</p>
+<p>Prior art: <a href="https://github.com/nlgxzef/NFSU2Unlimiter/blob/master/FEPackage.h" rel="noopener">NFSU2Unlimiter FEPackage.h</a>, virtual object cloning followed by linked-list insertion. UG1 offsets above are independently verified, not copied from UG2.</p>
+<p>Validation (FACT): <code>RN_JOBS=4 .venv/bin/python tools/recomp/build.py web</code> passed. Two headless launches on 5183 / CDP 9384, muted. Run 1 was stopped after identifying the premature active-list lookup. Run 2 took 116.1 s; entered Original with seven buttons and <code>MODO REMASTER</code>, then ArrowDown twice + Enter reached the new accept handler. CDP observed <code>RN_MODE=remaster</code>, <code>localStorage.rn_mode=remaster</code>, URL <code>mode=remaster</code>, and a fresh boot. After Enter on the profile screen the new menu logged <code>MODO ORIGINAL</code>, seven buttons. Final inspected screenshot: <code>web/plan/shots/mode_button.png</code> (1280x900).</p>
+<p>Known limitation (FACT): the new entry accepts keyboard navigation but does not inherit the native focus highlight artwork; focusing it shows the shipped placeholder <code>RACE MODE DESCRIPTION</code>. The six original highlight backgrounds retain their shipped positions while their lower three labels move down. These cosmetic differences are visible; they are not claimed fixed. UNKNOWN: Remaster -&gt; Original acceptance, double-F4 after refactor, mouse/touch/gamepad, real display. No third run was made.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87 — NFSU.cc Devlog | NFSU.cc</title>
+<meta name="description" content="How we cut generated C/WebAssembly overhead across 13,764 lifted x86 functions from Speed.exe using liveness-based flag pruning, stack-pointer check coalescing, and differential testing.">
+<link rel="canonical" href="https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87 — NFSU.cc Devlog">
+<meta property="og:description" content="How we cut generated C/WebAssembly overhead across 13,764 lifted x86 functions from Speed.exe using liveness-based flag pruning, stack-pointer check coalescing, and differential testing.">
+<meta property="og:url" content="https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-23">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87 — NFSU.cc Devlog">
+<meta name="twitter:description" content="How we cut generated C/WebAssembly overhead across 13,764 lifted x86 functions from Speed.exe using liveness-based flag pruning, stack-pointer check coalescing, and differential testing.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87", "description": "How we cut generated C/WebAssembly overhead across 13,764 lifted x86 functions from Speed.exe using liveness-based flag pruning, stack-pointer check coalescing, and differential testing.", "inLanguage": "en", "datePublished": "2026-11-23", "dateModified": "2026-11-23", "url": "https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "Static Recompilation, x86, WebAssembly, Compilers, Difftest"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87", "item": "https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Devlog</a></p>
+<article>
+<h1>Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87</h1>
+<p class="lead">Naive x86-to-C static recompilation spends most of its CPU budget updating EFLAGS nobody reads and bounds-checking ESP on every push and pop. Here is how tools/recomp/lift.py eliminates both while staying verified by difftest.py.</p>
+<div class="badges"><span class="badge">Static Recompilation</span><span class="badge">x86</span><span class="badge">WebAssembly</span><span class="badge">Compilers</span><span class="badge">Difftest</span></div>
+<div class="meta-bar">
+  <span><time datetime="2026-11-23">2026-11-23</time></span>
+  <span>Commits: <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/8444027" rel="noopener"><code>8444027</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/69f51fb" rel="noopener"><code>69f51fb</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/fc8ef2e" rel="noopener"><code>fc8ef2e</code></a></span>
+  <a href="recompiler-dead-flags-chk-sp-fast-x87.md">View raw Markdown (.md)</a>
+</div>
+<h2 id="the-cost-of-faithful-x86-lifting">The cost of faithful x86 lifting</h2>
+<p><code>pc/Speed.exe</code> (3.18 MB, 2003 PC) contains <b>13,764 functions</b> lifted ahead of time into C by <code>tools/recomp/lift.py</code> and compiled to <code>web/out/speed.wasm</code> (42.31 MB uncompressed, ~11.1 MB brotli). In early builds, every arithmetic instruction computed <code>CF</code>, <code>ZF</code>, <code>SF</code>, <code>OF</code>, and <code>PF</code>, and every stack/memory access emitted a runtime bounds check.</p>
+<h2 id="1-liveness-based-dead-guest-flag-pruning-8444027">1. Liveness-based dead guest flag pruning (<code>8444027</code>)</h2>
+<p>In x86 code, the vast majority of flag writes are overwritten by the next <code>add</code>, <code>sub</code>, <code>xor</code>, or <code>inc</code> before any conditional branch (<code>jcc</code>), <code>cmov</code>, <code>setcc</code>, or <code>adc</code>/<code>sbb</code> ever reads them.</p>
+<ul><li><code>tools/recomp/lift.py</code> and <code>tools/recomp/abk.py</code> now compute intra- and inter-procedural <b>flag liveness</b> (<code>FlagABI</code> argument and live-flag masks across direct <code>call_to(target)</code> edges).</li><li>Instructions whose flag outputs are dead emit plain C integer math (<code>eax = eax + ecx;</code>) instead of flag-computing helper calls.</li><li>Special control-flow edges (<code>popfd</code>, indirect calls, traps, and return boundaries) conservatively preserve live flag masks so semantics never drift.</li></ul>
+<h2 id="2-chk-img-and-straight-line-chk-sp-coalescing-69">2. <code>CHK_IMG</code> and straight-line <code>CHK_SP</code> coalescing (<code>69f51fb</code>, <code>fc8ef2e</code>)</h2>
+<p>Guest memory safety in <code>host/rt.h</code> prevents a bug in lifted x86 from corrupting the Emscripten host heap, but checking every individual stack slot inside a function prologue/epilogue is wasteful:</p>
+<ul><li><b><code>CHK_IMG</code></b>: Constant addresses known to lie inside the static PE image (<code>0x400000+</code>) bypass dynamic range checks.</li><li><b><code>CHK_SP</code> coalescing</b>: Within any straight-line basic block (broken at loop targets and overlap-stream entries), <code>lift.py</code> tracks <code>esp</code> deltas (<code>sp_acc</code> / <code>sp_move</code>) and emits <b>one coalesced stack bounds check</b> covering the block&#x27;s min/max stack excursion instead of one check per <code>push</code>/<code>pop</code>.</li><li><b>Cold trap path (<code>host/rt.h</code>)</b>: Bounds-check failure paths are marked cold so Clang/LLVM keeps the hot WebAssembly loop tight.</li></ul>
+<h2 id="3-rn-fast-x87-verified-against-rn-strict-x87-69f">3. <code>RN_FAST_X87</code> verified against <code>RN_STRICT_X87</code> (<code>69f51fb</code>)</h2>
+<p>x87 floating-point stack emulation is a classic hotspot in 2003 PC racing physics (<code>physics.md</code>, <code>accel.md</code>). <code>host/rt.h</code> now splits x87 execution into:</p>
+<ul><li><b><code>RN_FAST_X87</code></b> for shipped game builds (fast native IEEE-754 doubles in WASM registers).</li><li><b><code>RN_STRICT_X87</code></b> for <code>tools/recomp/difftest.py</code> trace builds, allowing single-function differential verification (<code>RN_ONLY=&lt;addr&gt; tools/recomp/difftest.py</code>) against reference traces whenever a compiler pass changes.</li></ul>
+<p class="repo"><b>Files in repo:</b> <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/lift.py" rel="noopener"><code>tools/recomp/lift.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/build.py" rel="noopener"><code>tools/recomp/build.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/abk.py" rel="noopener"><code>tools/recomp/abk.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/difftest.py" rel="noopener"><code>tools/recomp/difftest.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/host/rt.h" rel="noopener"><code>host/rt.h</code></a></p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

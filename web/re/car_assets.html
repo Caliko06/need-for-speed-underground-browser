@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Car assets: how a car is assembled and drawn (NFSU Speed.exe) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Tool tags: G = Ghidra export (census/ghidra/decomp_0x54c000_0x5f1800.c), H = Hopper export (census/hopper/decomp.c),">
+<link rel="canonical" href="https://nfsu.cc/re/car_assets.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/car_assets.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Car assets: how a car is assembled and drawn (NFSU Speed.exe) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Tool tags: G = Ghidra export (census/ghidra/decomp_0x54c000_0x5f1800.c), H = Hopper export (census/hopper/decomp.c),">
+<meta property="og:url" content="https://nfsu.cc/re/car_assets.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Car assets: how a car is assembled and drawn (NFSU Speed.exe) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Tool tags: G = Ghidra export (census/ghidra/decomp_0x54c000_0x5f1800.c), H = Hopper export (census/hopper/decomp.c),">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Car assets: how a car is assembled and drawn (NFSU Speed.exe)", "description": "Tool tags: G = Ghidra export (census/ghidra/decomp_0x54c000_0x5f1800.c), H = Hopper export (census/hopper/decomp.c),", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/car_assets.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Car assets: how a car is assembled and drawn (NFSU Speed.exe)", "item": "https://nfsu.cc/re/car_assets.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Assets, Runtime &amp; Shipping</p>
+<article>
+<h1>Car assets: how a car is assembled and drawn (NFSU Speed.exe)</h1>
+<div class="badges">
+  <span class="badge">Assets, Runtime &amp; Shipping</span>
+  <span class="badge accent">29 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="car_assets.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/car_assets.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Tool tags: G = Ghidra export (census/ghidra/decomp_0x54c000_0x5f1800.c), H = Hopper export (census/hopper/decomp.c), C = capstone (<code>.venv/bin/python tools/recomp/asm.py dis</code>), D = bytes of game/ files and pc/Speed.exe, F = readers tools/re/{chunks,tpk,carinfo}.py. The REA MCP could not be loaded in this session; the REA CLI was not used. Hash = bStringHash: h=-1; h=h*33+c (invertible, so LOD letters A/B/C give consecutive hashes). All examples use RX7. Offsets are for Speed.exe base 0x400000.</p>
+<h2 id="1-files-per-car">1. Files per car</h2>
+<ul><li>game/Cars/&lt;NAME&gt;/GEOMETRY.BIN, TEXTURES.BIN, VINYLS.BIN (F, D). Cars/NEON is the Dodge Neon, not underglow.</li><li>Shared dirs: Cars/WHEELS (all rim solids, 1476 solids, 84 wheel textures), BRAKES, EXHAUST, PLATES (D).</li><li>Cars/TEXTURES.BIN = pack &quot;Global\CarTextures.tpk&quot;, 353 textures: &lt;CAR&gt;_SKIN1..8 of traffic cars, logos, SHADOWIG (F tpk.py).</li><li>GLOBALB.BUN holds the shared textures (INTERCOOLER 427b4565, GRILL_02 69c032ba, CARBONFIBRE 721aff7c, CARBOTTOM bd1f0e0a),</li></ul>
+<p>the 139 materials (chunk 0x135200) and the part database (chunk 0x80034602) (F, D).</p>
+<ul><li>RX7/TEXTURES.BIN: 112 textures: STYLE0n_HEADLIGHT/BRAKELIGHT, KIT00 lights, DOORLINE (+_KIT, _KIT_MASK, _WIDEBODY,</li></ul>
+<p>_WIDEBODY_MASK), BADGING, ENGINE, STYLE0n_ENGINE, NEON, TIRE, KIT00_WHEEL_BLUR, SHADOWFE/IG (F).</p>
+<ul><li>RX7/VINYLS.BIN: TPK &quot;RX7_Vinyls.tpk&quot;, 874 paletted 512x512 P8 vinyl textures and masks (F tpk.py list).</li><li><b>RX7_SKIN1 (0xefd842c5) is in no pack</b> (F, D search of every TPK). It is a runtime composite: paint + doorline + vinyl + decals.</li></ul>
+<p>How it is composited is NOT VERIFIED (see section 5).</p>
+<h3 id="geometry-bin-chunk-tree-f-chunks-py-d-names-agre">GEOMETRY.BIN chunk tree (F chunks.py, D; names agree with docs/re/assets.md)</h3>
+<ul><li>0x80134000 top. 0x80134001 solid list: 0x134002 header (&quot;SolidList,%s&quot;), 0x134003 sorted (hash, ptr) pairs, 0x134004.</li><li>One 0x80134010 per solid: 0x134011 header (176 B: name hash +0x10, texture count +0x19, material count +0x1a, marker count +0x1b),</li></ul>
+<p>0x134012 texture table (hash, ptr), 0x134013 material table (hash, ptr).</p>
+<ul><li>Mesh container 0x80134100: 0x134900 mesh header (64 B), 0x134b01 vertex buffer, 0x134b02 group array, 0x134b03 index buffer.</li><li>Optional 0x134017/18/19 collision mesh; 0x13401a markers (0x50 B each, lights, wheel dummies).</li><li>Solid names: <code>&lt;CAR&gt;_KIT&lt;NN&gt;_&lt;PARTNAME&gt;_&lt;A|B|C|D&gt;</code> (A = highest LOD). RX7 has 399 solids, all referenced by the part DB (D, hash inversion).</li></ul>
+<h2 id="2-which-solid-is-chosen-for-an-installed-part">2. Which solid is chosen for an installed part</h2>
+<ul><li>Part DB chunk 0x80034602: 4537 records of 0x30 bytes (F carinfo.py parts(), D):</li></ul>
+<p>+0 name off, +4 car hash, +8 part hash, +0xc brand hash, +0x10 type (= slot) byte, +0x11 level, +0x12 sub, +0x14 attributes ptr, +0x1c attribute count, <b>+0x20/+0x24/+0x28/+0x2c = solid-name hash for LOD A/B/C/D (0 = none)</b>.</p>
+<ul><li>Attribute pairs (key, value). 0x6ba02c05 = material hash (paint parts: REGPAINT<em>, METPAINT</em>, PEARL*, CUSTOMPAINT_n;</li></ul>
+<p>window tint: WINDSHIELD*). 0xe80a3b62 = &quot;hide slot&quot; (value = hash of a slot name). 0x10c98090 = wheel texture name (read at 0x580b00).</p>
+<ul><li>Slot names, table 0x6f0970, stride 8 (index, name ptr), 120 entries (G, D): 0 BASE, 1 FRONT_BUMPER, 2 REAR_BUMPER, 3/4 side mirrors,</li></ul>
+<p>5 BODY, 6 WIDE_BODY, 7 ROOF, 8 HOOD, 9 TRUNK, 10 SKIRT, 11 SPOILER, 12 ENGINE, 13 HEADLIGHT, 14 BRAKELIGHT, 15 EXHAUST, 16 BRAKE, 17 WHEEL, 18 LICENSE_PLATE, 19..29 DECAL_<em>, 30 BASE_PAINT, 31..34 VINYL_LAYER0..3, 35 VINYL_HOOD, 36 VINYL_SPOILER, 37..41 PAINT_ENGINE/SPOILER/BRAKE/EXHAUST/RIM, 42..57 VINYL_COLOUR</em>, 58..114 DECAL_TEX*, 115 WINDOW_TINT, 116 NEON, 118 WHEEL_MANUFACTURER.</p>
+<ul><li>RideInfo (G, docs/re/garage.md): +0 car index, +0x44c CarPart*[0x78] (index = slot), <b>+0x6a4 + slot = &quot;part enabled&quot; byte</b>.</li></ul>
+<p>RideInfo::UpdatePartsEnabled 0x57ea80 (G): set all to 1, then every installed part with attribute 0xe80a3b62 clears the enabled byte of the slot it names (e.g. a wide body hides stock quarter decals). Slot 6 builds &quot;%s_WIDE%d_&quot; and calls CarPartDatabase::GetCarPart 0x57ce10.</p>
+<ul><li>Install path (docs/re/garage.md): InstallPart 0x5044b0 -&gt; BuildRide 0x4ac5a0 -&gt; 0x57ea80 -&gt; FillFromRide 0x4ac750.</li><li>CarRenderInfo ctor 0x56a130 (G): loops ride slots 0..0x1d; per slot and LOD it fills an entry (24 bytes, table at object +0x39b ints,</li></ul>
+<p>0x18 ints per slot): [1] = solid hash from CarPart+0x20.., [3] = Solid* from Solid_FindInAllLists 0x540680. If LOD A is missing it falls back to the LOD B hash (CarPart+0x24).</p>
+<ul><li>Stock vs kit: kit parts are just other part records of the same type with another solid hash (e.g. FRONT_BUMPER sub 1 -&gt; RX7_KIT01_FRONT_BUMPER_A).</li></ul>
+<p>KIT numbers run 00..15 per car and are not equal to the sub byte (D).</p>
+<h2 id="3-how-a-solid-is-drawn">3. How a solid is drawn</h2>
+<ul><li>CarRenderInfo::Render 0x56dc30 (G, render.c lines ~940-1000), per frame, slots 0..0x1d with enabled byte (ride+0x6a4+slot) set:</li></ul>
+<ol><li>pick the entry for the current LOD (distance table UNK_006b5dec; forced LOD via DAT_006f1b30/34);</li><li>patch the solid material table: every material hash 0xd6d6080a (CARSKIN) is replaced by the paint material</li></ol>
+<p>([obj+0x4d0], found by scanning list DAT_00743c18 for the hash in attribute 0x6ba02c05 of slot 30; spoiler slot 11 uses [obj+0x4e4]); every 0x471a1dca (WINDSHIELD) is replaced by [obj+0x4d4] (slot 115 tint). Exhaust tip (0x3b3a1f8d) is patched in the tail;</p>
+<ol><li>call Solid_QueueGroups 0x40c910(view, entry, matrix, lod, 0). Mirrors (3,4) are drawn in a separate case; 0xf..0x12 are skipped here.</li></ol>
+<p>So all painted kit surfaces share one paint material and the skin texture; only the other groups keep their own material.</p>
+<ul><li>Solid_QueueGroups 0x40c910 (G/H): loops mesh groups. Group record 0x3c bytes: +0 bbox min, +0xc index count, +0x10 bbox max,</li></ul>
+<p>+0x1c texture index (byte, into solid texture table), +0x20 material index (0xff = none), +0x34 first index, +0x38 flags (bit 0 = always draw, else frustum test 0x40db20). It picks the effect from the mesh flags with the tables 0x706898/0x706818/0x706798 (see render_pc.md) and queues the item with 0x40f1e0; flush 0x40ed70 draws; texture bind 0x40f3d0; material -&gt; constants 0x40fae0.</p>
+<ul><li>Mesh header (chunk 0x134900 aligned: ptr = (chunk+0x17)&amp;~0xf, D): +0xc flags (seen 0x4180, 0xc180), +0x10 group count, +0x14 groups.</li></ul>
+<p>Mesh_FixupGroups 0x40c890 maps flag 0x01 -&gt; effect slot 4 (worldbone), 0x40 -&gt; slot 2 (worldreflect), 0x80 -&gt; slot 5 (car.efx), table 0x701440.</p>
+<ul><li><b>Vertex = 36 bytes: float3 position, float3 normal, D3DCOLOR, float2 uv</b> (D: RX7_KIT00_BODY_A, 491 vertices, 50/50 unit normals,</li></ul>
+<p>color 0xffffffff, uv in 0..1; matches census/car_draw_census.txt stride 36). No tangent, no second UV set. VB data starts at the next 0x80-aligned address: file offset = (chunk_off+0x87)&amp;~0x7f.</p>
+<ul><li>Shader car.efx (vs_1_1/ps_1_1, build/canon/w2/car.efx.txt, C census): VS uses position, normal, uv only. <b>Vertex colour is not used.</b></li></ul>
+<p>Lighting = per-vertex spherical harmonics from the normal (HarmonicCoeff[10]); diffuse scale = DiffuseMin + (N.V)<em>DiffuseRange; specular from reflection vector with SpecularPower; env cube EnvMapTex (initialised by 0x40eb30, cube at [0x73646c]). PS: out = 2</em>tex<em>diffuse; out.rgb += 2</em>tex.a<em>(specular + 2</em>env). <b>The diffuse texture alpha is the reflectivity mask.</b></p>
+<ul><li>Material record (GLOBALB 0x135200, 160 B: hash +0xc, name +0x14) -&gt; constants in 0x40fae0 (G): DiffuseMin = rgb(+0x34..) * +0x30, a=+0x50;</li></ul>
+<p>DiffuseRange = (rgb(+0x44..) <em> +0x40) - min; SpecularMin = rgb(+0x60..) </em> +0x5c; SpecularRange = (rgb(+0x70..) <em> +0x6c) - min; SpecularPower = global[0x7070d4] </em> +0x58; EnvmapMin = rgb(+0x84..) <em> +0x80 </em> 0.5; EnvmapRange = (rgb(+0x94..) <em> +0x90 </em> 0.5) - min; EnvmapPower = +0x7c. Env terms are zeroed when cube quality [0x700e74] is 0 or mesh flag 0x100 is clear; diffuse/spec are zeroed when flag 0x80 is clear (this flag source is inferred, NOT VERIFIED).</p>
+<ul><li>Materials seen (D): CHROME has diffuse 0 and high env/spec; PLAINNOTHING and INTERIOR have zero diffuse range.</li></ul>
+<h2 id="4-table-part-solid-name-material-texture-rx7-d-f">4. Table: part -&gt; solid name -&gt; material -&gt; texture (RX7, D + F; hashes via bStringHash inversion)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Slot (type)</th><th>Solid name pattern</th><th>Materials in groups</th><th>Texture hash / name</th></tr></thead><tbody><tr><td>0 BASE</td><td>RX7_KIT00_BASE_A</td><td>n/a</td><td>n/a</td></tr><tr><td>5 BODY</td><td>RX7_KIT00_BODY_A..D</td><td>CARSKIN (1092 idx), MOLDINGS (156), PLAINNOTHING (291)</td><td>RX7_SKIN1 0xefd842c5 (runtime)</td></tr><tr><td>1 FRONT_BUMPER stock</td><td>RX7_KIT00_FRONT_BUMPER_A..</td><td>CARSKIN, PLAINNOTHING, BOTTOM</td><td>SKIN1, CARBOTTOM bd1f0e0a</td></tr><tr><td>1 kit 01 SNYPER</td><td>RX7_KIT01_FRONT_BUMPER_A</td><td>DULLPLASTIC, CARSKIN, PLAINNOTHING, DECAL, BOTTOM (6 groups)</td><td>SKIN1, RX7_BADGING 0x12a4882b, CARBOTTOM</td></tr><tr><td>1 kits 03..08</td><td>RX7_KIT0n_FRONT_BUMPER_A</td><td>RAD, MESH, BOTTOM + CARSKIN</td><td>SKIN1, INTERCOOLER 427b4565, GRILL_02 69c032ba</td></tr><tr><td>2 REAR_BUMPER</td><td>RX7_KITnn_REAR_BUMPER_A (KIT15 uses GRILL 69c032b9)</td><td>CARSKIN, PLAINNOTHING, BOTTOM</td><td>SKIN1, CARBOTTOM</td></tr><tr><td>10 SKIRT</td><td>RX7_KITnn_SKIRT_A (KIT14 carbon)</td><td>CARSKIN, PLAINNOTHING, BOTTOM; KIT14 CARBONFIBER2</td><td>SKIN1, CARBOTTOM; KIT14 CARBONFIBRE 721aff7c</td></tr><tr><td>3/4 MIRRORS</td><td>RX7_KIT00_LEFT/RIGHT_SIDE_MIRROR_A,B</td><td>CARSKIN, MIRROR</td><td>SKIN1</td></tr><tr><td>7 ROOF, 8 HOOD, 9 TRUNK</td><td>RX7_KITnn_ROOF/HOOD/TRUNK_A..; kit names not all recovered</td><td>CARSKIN (+ carbon on some)</td><td>SKIN1</td></tr><tr><td>11 SPOILER</td><td>RX7_KIT00_SPOILER_A..D (mesh flags 0x4180, vertex colour 0xff000000)</td><td>CARSKIN (paint from [obj+0x4e4])</td><td>SKIN1</td></tr><tr><td>6 WIDE_BODY</td><td>KITW01/02 (VAPOR, MANTIS), ColVol only for physics</td><td>CARSKIN</td><td>SKIN1 + DOORLINE_WIDEBODY(_MASK)</td></tr><tr><td>12 ENGINE</td><td>RX7_KIT00_ENGINE_A,B</td><td>DULLENGINE, ENGINE</td><td>RX7_ENGINE 0xca6d8215</td></tr><tr><td>13 HEADLIGHT / 14 BRAKELIGHT</td><td>RX7_KITnn_HEADLIGHT/BRAKELIGHT_A.. (EYELIDS, VOLTAGE, PROJECTOR, LUNAR; CRIMSON, CHROME, MASKED, REAPER)</td><td>HEADLIGHTGLASS, BRAKELIGHT, CLEARPLASTIC, CARBONFIBER, RUBBER</td><td>RX7_STYLE0n_HEADLIGHT / BRAKELIGHT</td></tr><tr><td>15 EXHAUST</td><td>RX7_KIT00_EXHAUST_A</td><td>DULLENGINE, CHROME, PLAINNOTHING; tip EXHAUST_TIP</td><td>n/a</td></tr><tr><td>17 WHEEL</td><td>Cars/WHEELS solids, e.g. WHEEL_A</td><td>RUBBER, PLAINNOTHING, MAGSILVER (rim materials by type)</td><td>RX7_TIRE 0x35d0c513, rim textures from WHEELS pack</td></tr><tr><td>16 BRAKE</td><td>Cars/BRAKES solids</td><td>BRAKEDISC, CALLIPER</td><td>CALIPER 0xd6640dff</td></tr><tr><td>30 paint</td><td>no solid, material only</td><td>REGPAINT<em>, METPAINT</em>, PEARL*, CUSTOMPAINT_n (attribute 0x6ba02c05)</td><td>n/a</td></tr><tr><td>31..36 vinyl</td><td>no solid; layers drawn into the skin</td><td>n/a</td><td>VINYLS.BIN textures</td></tr></tbody></table></div>
+<p>Part counts for RX7 by slot (F): bumpers/skirts 16 kits each (STOCK, SNYPER, ACE, RENEGADE, SHADOW, STRIKE, FLASH, WOLFPACK, SPYDER, TYPE V, VORTEX, CRANK, STORM, FRENZY, BLAST, RAGE); 4 headlight and 4 brakelight kits; many roof/hood/spoiler kits.</p>
+<h2 id="5-unknown-not-verified">5. Unknown / NOT VERIFIED</h2>
+<ul><li>Compositing of RX7_SKIN1: 0x56c3d0 only builds decal hash lists (DUMMY_DECAL1..8, DEFAULTALPHA, _MEDIUM/_LARGE/_SQUARE) (G);</li></ul>
+<p>the render-to-texture step was not found. 0x580b00 builds %s_SKIN1 ([0xf2]), %s_SKIN1B ([0xf3]), GLOBAL_SKIN1 ([0xf4]), %s_WHEEL ([0xf5]).</p>
+<ul><li>Which matrix places each part: Render passes one car matrix to 0x40c910 (G); wheel/brake dummy markers (0x13401a) not read.</li><li>No native RN_GEODUMP run was made; vertex format is from file bytes plus census, not from a live draw.</li><li>Names of non-stock hood/roof/spoiler/headlight/wide-body solids (not needed: the runtime uses the DB hashes).</li></ul>
+<h2 id="6-remaster-hooks-a-switchable-look-change-for-ki">6. Remaster hooks (a switchable look change for kit parts, no new reflections)</h2>
+<ol><li><b>Material constants at 0x40fae0</b> (G), fed by the GLOBALB 0x135200 records. Raising DiffuseRange and lowering DiffuseMin gives more</li></ol>
+<p>shading contrast (volume) while Env<em> and Specular</em> stay stock, so no new reflections. It can be scoped per part type because kit surfaces use distinct materials: BOTTOM, DULLPLASTIC, CARBONFIBER2, RAD, MESH, MOLDINGS, PLAINNOTHING, and CARSKIN (per car paint, patched at Render 0x56dc30). Evidence: the formula DiffuseMin + (N.V)*DiffuseRange and the per-material record layout above. Best first hook: one switch, one write site, and PLAINNOTHING/INTERIOR already have zero range, so they need a floor too.</p>
+<ol><li><b>Per-vertex data of 0x134b01 / car.efx</b>. The VS ignores the vertex colour, yet kit, skirt and spoiler vertices carry baked values</li></ol>
+<p>(0xff000000 and grays, D). A replacement car vertex shader (hash 0x4728b668 in host/d3d9.c, WVP in c10..c13) could read colour as an AO term and multiply the diffuse only, or recompute normals (smooth by position) for stronger curvature shading. Evidence: stride 36 and unit normals (D), VS input usage (C census). Risk: colour semantics are unproven; test on one kit before trusting it.</p>
+<ol><li><b>Texture swap or filter at the group level</b>: the texture table (0x134012) is resolved by 0x53f9b0 and bound at 0x40f3d0. Kit parts share the</li></ol>
+<p>SKIN1 atlas plus static kit textures (CARBOTTOM, INTERCOOLER, GRILL_02, CARBONFIBRE, BADGING, STYLE lights). A baked AO or normal-lit overlay can be added there. Constraint: ps_1_1 uses the texture alpha as the reflectivity mask, so any replaced texture must keep its alpha, or it adds reflections.</p>
+<p><b>Applied (2026-10-29): ?carvol=0|1|2 (RN_CARVOL, host/sm1.c car_ps_vol).</b> Hook 1 turned out to be the diffuse path itself: the kit materials (DULLPLASTIC, MATTEPLASTIC, BOTTOM, MOLDINGS, SHINYPLASTIC, GRILL) have DiffuseRange 0 and DiffuseMin ~1 (build/carlook/carvol/materials.txt, GLOBALB 0x135200 read with the 0x40fae0 formulas), so c18/c19 in the shader mark them. The effect multiplies only the diffuse term (an N.V ramp plus crease darkening from dN.dP/|dP|^2); the cube, Env and Specular terms are untouched. Default 1 (subtle, paint luminance within ~3 %), 2 = 1.7x, split / split2 = right half only, for an A/B in one frame.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Racer AI of Speed.exe: how rivals race each other — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Tools: Ghidra named decompile (/root/re/named_export, live Ghidra for missing functions), capstone scans of the whole">
+<link rel="canonical" href="https://nfsu.cc/re/race_ai.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/race_ai.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Racer AI of Speed.exe: how rivals race each other — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Tools: Ghidra named decompile (/root/re/named_export, live Ghidra for missing functions), capstone scans of the whole">
+<meta property="og:url" content="https://nfsu.cc/re/race_ai.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Racer AI of Speed.exe: how rivals race each other — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Tools: Ghidra named decompile (/root/re/named_export, live Ghidra for missing functions), capstone scans of the whole">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Racer AI of Speed.exe: how rivals race each other", "description": "Tools: Ghidra named decompile (/root/re/named_export, live Ghidra for missing functions), capstone scans of the whole", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/race_ai.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Racer AI of Speed.exe: how rivals race each other", "item": "https://nfsu.cc/re/race_ai.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rivals &amp; Race AI</p>
+<article>
+<h1>Racer AI of Speed.exe: how rivals race each other</h1>
+<div class="badges">
+  <span class="badge">Rivals &amp; Race AI</span>
+  <span class="badge accent">76 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="race_ai.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/race_ai.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Tools: Ghidra named decompile (/root/re/named_export, live Ghidra for missing functions), capstone scans of the whole .text (<code>asm.py</code>). Nothing was run. V = code read, I = inference, U = doubt. Names: census/names_raceai.tsv. Slots below are rows of the neighbour list (0x38 bytes each, own index byte ctx+0x388).</p>
+<h2 id="answers">Answers</h2>
+<p><b>(a) Draft.</b> Reachable, but rare, and it is a brake, not a gain.</p>
+<ul><li>Only request: <code>Racer::RunAction</code> 0x44bbd0 (racer vtable 0x6c89f0 slot 0x88) runs the action update. If the action leaves</li></ul>
+<p>byte <code>[action+0x1e0]</code> = 0, it deletes the action and calls slot 0x84 (0x4624d0) with type 4 at 0x44bc11 (priority 100, duration -1.0, ctor 0x450400, call site 0x4625a3). A scan of every <code>call [reg+0x84]</code> found no other type-4 request. V</p>
+<ul><li>Only two updates ever store 0 to +0x1e0 (scan of all 24 byte stores): Pass update 0x450bb0 at 0x450c33 (its target is no</li></ul>
+<p>longer in the neighbour list) and GetUnstuck update 0x452070 at 0x452181 (ctx+0x38c empty). V</p>
+<ul><li>Draft update 0x450480: lane drive. If the nearest car ahead (slot own-1) is a racer or human (driver kind 2 or 1), overlaps</li></ul>
+<p>laterally and is closer than 6 m (0x6b7628), the speed target is <code>lead speed - (20 - gap)</code> (0x6b7620 = 20), only if lower than the current target. So it only slows the rival. Priority 100 and no timer, and JustDrive (0) cannot replace it (0x44bc30 keeps a new action only if its priority is strictly higher), so it stays until a finder fires. V</p>
+<ul><li>A speed gain behind another car DOES exist, outside the AI: <code>car+0x47c</code>. <code>World::Step</code> 0x420b40 writes it for every car each</li></ul>
+<p>step = <code>0x426450</code> = sum over all cars of <code>0x426300(other, self)</code>, capped at 0.9 (0x6b7b54). Pair term: other speed &gt;= 1 m/s (0x706288), distance &lt;= 60 m (0x70629c), cosine &gt;= 0.95 (0x6b7b50) between the line to the other car and a heading (whose heading: I), reach from a speed table (0x7062b4), falloff table 0x700d3c = 1, .9, .75, .55, .3, 0 over dist/reach. V It enters physics as <code>(1 - car+0x47c)</code> at 0x479160 / 0x474d40 (<code>[ph+0x50]+0xc</code>, an aerodynamic factor: I, same product as the drag term in 0x456830) and the AI speed prediction. Player and rivals both get it. So &quot;the game has no slipstream&quot; (host/rivals.c comment at &quot;Slipstream&quot;) is wrong: the game has one. Its size in m/s is not measured.</p>
+<p><b>(b) Pass and Block.</b></p>
+<ul><li>Pass finder 0x450730 (selector step 8, only if current priority &lt;= 200). Needs the race clock stamp <code>[[0x73619c]+4]</code> set and</li></ul>
+<p>older than 5.0 s (0x6cc954). Walks slots 0..own-1 = cars ahead, FARTHEST first (sort order of 0x57a910, V). A slot qualifies if gap &gt; 0, |lateral| &lt; 2<em>gap, reach test 0x4569b0 (gap &lt; 3</em>(1.5*S + rel speed): I), planner 0x45bae0 finds a clear path and 0x450b40 allows it (target &gt;= 20 m/s needs state 1 or a planner flag). First qualifying slot wins, returns priority 200, then the personality draw 0x462740 (record +0xc = 1.0 for all skills, so always true, per docs/re/rivals.md). Action lasts 5.0 s (0x6b75ac). V</p>
+<ul><li>Side: planner 0x45bae0 tries the current state, then state 1, then a side state: 0x45c0d0 compares the lateral values of</li></ul>
+<p>both cars and the road edges and returns 1, 2 or 3; the planner takes state 2 or 3 (the other side of the target), each checked by <code>0x45b050</code> over 2.0 s (0x7006ec). Any failure falls back to state 1 (lane). V for the order, I for what each of 2/3 means in metres.</p>
+<ul><li>Update: path to the pass line; once the target is behind (gap &lt;= 0) back to state 1. If |rel speed| &lt;= 5 it calls 0x44f6c0</li></ul>
+<p>which sets the nitro flag (+0x1f3) when the driver is kind 2 and <code>0x462b30</code> agrees. V</p>
+<ul><li>Block finder 0x450ec0 (step 7, ceiling <code>0x77a340[8*aggr]</code> = 200/200/400). The target is the car BEHIND: it scans slots after</li></ul>
+<p>own, takes the first car (kind 6, driver flag +0x1c != 0, speed &gt;= 10 m/s), then: bumper gap &lt; 0 and &gt; -50 m, rel speed</p>
+<blockquote><p>-5, non-human follower only if |gap / rel speed| &lt;= 2.0 s (0x6b7638), human follower anywhere within 35 m (0x6b763c)</p></blockquote>
+<p>with no closing needed. Not in the 12 s start window (0x435ca0). V</p>
+<ul><li>Block update 0x451230: the line is aimed at the follower&#x27;s own lateral value (slot lane value for the route state) through</li></ul>
+<p>0x45c370, so yes it moves across to cover the follower&#x27;s lane. The blend is 1.0, or a table value of gap/rel speed (0x7061f4) when the follower is already &gt;= 10 m ahead. Speed stays the goal cruise speed. V</p>
+<p><b>(c) car+0x404 and racer+0x4b8 rewritten at 1.12 every frame.</b></p>
+<ul><li><code>0x44bd10</code> writes <code>car+0x404 = max(scale, 1.0)</code> (0x44bff5) and <code>racer+0x4b8 = scale</code> (0x44bffe) every [0x77a49c] s. Early</li></ul>
+<p>returns (no vehicle, drag, [0x78a344], [0x7361a8], flag +0x46c) write nothing. V</p>
+<ul><li>Readers of car+0x404: physics step 0x474a90 -&gt; 0x474d40 and 0x4774a0 -&gt; 0x479160 (engine/tire scale, every step);</li></ul>
+<p>AI speed prediction 0x456830 (speed / 0x404, feeds the Pass reach test); stats 0x4338c0 (clamped &gt;= 1). Other writers: init 0x4648c0 / 0x464f20 and the two-human catch-up 0x429b10. V</p>
+<ul><li>Reader of racer+0x4b8: only 0x44c550 at 0x44c731: <code>route speed * record+0x14 * 4b8</code>, and only when the current action</li></ul>
+<p>has +0x1f0 != 0. Actions that set +0x1f0 = 0 (Draft near a car, IJustGotHit, Accident, GetUnstuck) bypass it. V</p>
+<ul><li>Risks: (1) &quot;stuck high&quot;: when 0x44bd10 returns early (drag, Free Run, no vehicle) nobody resets the values, the outside value</li></ul>
+<p>stays; (2) &quot;never slowed&quot;: the game&#x27;s own lead-slowing (scale &lt; 1, rubber band for a rival ahead) is lost on 4b8, and 404 was already clamped to &gt;= 1; (3) 1.12 on 404 also changes 0x456830, so the Pass reach test and speed prediction see a faster car (&lt;= 12 %). No crash path seen. V for readers, I for effect.</p>
+<p><b>(d) Strongest behaviour that rarely fires.</b> Block against a car behind (code read, frequency not measured: no run). The single hold-back is the finder&#x27;s &quot;first car behind&quot; test at 0x450ec0: only the first behind slot that is a racer with flag +0x1c != 0 and speed &gt;= 10 decides, and for a rival follower it needs a closing time &lt;= 2.0 s (0x6b7638). The table <code>0x77a340</code> (200/200/400) only sets the ceiling over other actions. The writer and meaning of driver flag +0x1c are U. Second candidate: nitro. <code>0x44cac0</code> needs the nitro count <code>[car+0x3d8] &gt;= [0x700784]</code> = 2 in street races, and <code>0x462b30</code> needs a cooldown of rec+0x34 = 35 s (skill 0) to 17 s (skill 9) between shots (0 in the final stretch of the last lap). I</p>
+<h2 id="where-things-sit">Where things sit</h2>
+<ul><li>Selector 0x44d8b0 order: GetUnstuck 500 (finder 0x451b00 + 6 s cooldown 0x462aa0), 0x13 600, IJustGotHit 400 (0x44ed70),</li></ul>
+<p>AvoidCross 400 (0x452b40), Avoid 300 (0x44f8a0 + draw), Accident 500 (0x452630), Block, Pass, else JustDrive. V</p>
+<ul><li>IJustGotHit update 0x4522a0 is a back-off: speed = culprit speed - 6 (or - 0.1) via 0x44e850, or coast via 0x44e950 (0.2);</li></ul>
+<p>there is no revenge code. V</p>
+<ul><li>Avoid update 0x44fb30: state 2 or 3, planner 0x45b150 over 2.0 s, falls back to lane when not clear and speed &lt;= 20. V</li><li>Neighbour list 0x57a910: max 16 cars, key = along^2 + lateral^2, negative for cars behind, sorted descending: index 0</li></ul>
+<p>farthest ahead, own-1 nearest ahead, own+1 nearest behind. V (the older note said &quot;ahead first&quot;; it means farthest first.)</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

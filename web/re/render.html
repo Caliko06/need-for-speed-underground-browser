@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Render: D3D9 layer, effects, queue, views, EAGL and the static D3DX (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in code and a second tool agrees (Hopper H, Ghidra G, capstone C), I = inferred, U = open. Names: census/names_render.tsv">
+<link rel="canonical" href="https://nfsu.cc/re/render.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/render.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Render: D3D9 layer, effects, queue, views, EAGL and the static D3DX (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in code and a second tool agrees (Hopper H, Ghidra G, capstone C), I = inferred, U = open. Names: census/names_render.tsv">
+<meta property="og:url" content="https://nfsu.cc/re/render.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Render: D3D9 layer, effects, queue, views, EAGL and the static D3DX (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in code and a second tool agrees (Hopper H, Ghidra G, capstone C), I = inferred, U = open. Names: census/names_render.tsv">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Render: D3D9 layer, effects, queue, views, EAGL and the static D3DX (Speed.exe PC)", "description": "Marks: V = read in code and a second tool agrees (Hopper H, Ghidra G, capstone C), I = inferred, U = open. Names: census/names_render.tsv", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/render.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Render: D3D9 layer, effects, queue, views, EAGL and the static D3DX (Speed.exe PC)", "item": "https://nfsu.cc/re/render.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rendering &amp; Shaders</p>
+<article>
+<h1>Render: D3D9 layer, effects, queue, views, EAGL and the static D3DX (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Rendering &amp; Shaders</span>
+  <span class="badge accent">156 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="render.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/render.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in code and a second tool agrees (Hopper H, Ghidra G, capstone C), I = inferred, U = open. Names: census/names_render.tsv (84 rows; same-address rows in other names_*.tsv were skipped). Blur, camera, TPK/assets and CRT are in blur.md, camera.md, assets.md, runtime.md and are only referenced here. Method note: I swept all of .text with capstone for calls through a register loaded from <code>[0x73636c]</code> (the device) and compared that fingerprint with the H and G pseudocode (table &quot;Re-derived&quot; below).</p>
+<h2 id="answer">Answer</h2>
+<ul><li><b>The &quot;render&quot; tag is mostly not game render code.</b> census/systems.tsv has 2,374 render rows, 1,708 of them real Ghidra function starts.</li></ul>
+<p>Of those, 997 sit in a <b>statically linked D3DX9</b> (0x5ab730..0x61e000: HLSL/effect compiler, preprocessor, ps_1_x/vs_x assembler, math), 297 in <b>EAGL</b> (EA&#x27;s graphics runtime, 0x61e000..0x640000) and 65 in SEH funclets (0x684b..0x696e). Only about 350 are the game&#x27;s own render code, and only 65 of those (0x401e50..0x411f00) touch Direct3D.</p>
+<ul><li><b>The whole D3D9 device surface is one file&#x27;s worth of code</b>: 38 functions in 0x401520..0x410e50 call the device <code>[0x73636c]</code> (capstone sweep).</li></ul>
+<p>Everything else (cars, world, particles, flares, HUD) queues work or calls these. There is no <code>SetVertexShader</code>/<code>SetPixelShader</code> in game code: shaders come from <b>ID3DXEffect objects</b> compiled at run time by the linked D3DX (503 of 997 D3DX functions ran in the coverage union, so the .efx text is compiled on this machine at startup; U which functions exactly).</p>
+<ul><li><b>One frame</b> = <code>RenderFrame 0x40a580</code>: update views, BeginScene, main render <code>0x409580</code> per view, optional scene-RT composite, EndScene, Present,</li></ul>
+<p>recover a lost device, then recycle per-frame memory (flow below).</p>
+<ul><li><b>Draws are batched by effect.</b> Items are queued into per-effect buckets (<code>RenderQueue_GetBucket 0x40f0f0</code>) and drawn by</li></ul>
+<p><code>RenderQueue_Flush 0x40ed70</code>, which selects the effect, binds VB/IB only when they change, and issues <code>DrawIndexedPrimitive</code>. Seven effect slots (stride 0xe0) at 0x71abb8.</p>
+<h2 id="address-map-v-unless-marked">Address map (V unless marked)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Range</th><th>What</th><th>Evidence</th></tr></thead><tbody><tr><td>0x401520..0x401e50</td><td>modal frame loops (disc check, simple 2D frame)</td><td>G+H+C</td></tr><tr><td>0x401e50</td><td>dynamic quad VB/IB pool (30 VBs, 300-quad index buffer)</td><td>G+H+C</td></tr><tr><td>0x407db0..0x408220</td><td>texture D3D creation (named earlier), vertex declarations</td><td>G</td></tr><tr><td>0x408830</td><td>D3D init: Direct3DCreate9(0x1f), pools, window class &quot;GameFrame&quot;, CreateDevice</td><td>G</td></tr><tr><td>0x408b20</td><td>state reset; 0x408f00..0x409b70 per-view render pieces; 0x409580 RenderFrameMain</td><td>H+G</td></tr><tr><td>0x40a4e0..0x40b4e0</td><td>device lost/reset, scene RT, RT table, reflection cube</td><td>G+H+C</td></tr><tr><td>0x40cb80..0x40d6e0</td><td>blur chain (blur.md)</td><td></td></tr><tr><td>0x40e180..0x40e900</td><td>effect creation, ramp texture, per-effect parameters</td><td>G</td></tr><tr><td>0x40ed50..0x4102f0</td><td>effect select, queue flush, buckets, lights, bones</td><td>H+C</td></tr><tr><td>0x410400..0x410ed0</td><td>caps, resolutions, quality levels, option block 0x700e70..</td><td>G+C</td></tr><tr><td>0x403a60, 0x404110</td><td>particle systems (update, draw)</td><td>H, G</td></tr><tr><td>0x4ae650..0x4ae830</td><td>emitters/flares</td><td>H</td></tr><tr><td>0x5443f0..0x544f30</td><td>flare quads and lamp flares (docs/flare_re.md)</td><td></td></tr><tr><td>0x56d8d0..0x571870</td><td>car draw and car lists</td><td>H</td></tr><tr><td>0x5ab730..0x61e000</td><td><b>D3DX9 static</b>: math thunks 0x5ac449..0x5ac8e5, PSGP init 0x5b065b, effect compiler (strings &quot;ID3DXEffectCompiler: ...&quot;) 0x5b2d7a.., HLSL parser/typechecker 0x5ba0ab..0x5c7bd2, preprocessor 0x5c5700.., asm assembler 0x5e4ca2..0x5e8cd0, ps_1_x backend 0x604024..0x60f23a, vs backend 0x60fcaa..0x61808b</td><td>G strings</td></tr><tr><td>0x61e000..0x640000</td><td><b>EAGL</b>: dynamic loader (.symtab/.strtab), symbol pool, RenderContext, PC caps/window, VertexBuffer/IndexBuffer wrappers, EAGLAnim</td><td>G strings</td></tr></tbody></table></div>
+<h2 id="flow-of-one-frame-v-h-g-addresses-in-order">Flow of one frame (V: H+G, addresses in order)</h2>
+<ol><li><code>Render_InitSubsystem 0x53e020</code> (once, from 0x4471b0): <code>0x408830</code> creates IDirect3D9 <code>[0x736368]</code>, the window <code>[0x736380]</code> and the device</li></ol>
+<p><code>[0x73636c]</code> with present parameters <code>[0x71a96c]</code> (filled by <code>0x4086b0</code>), then <code>0x40a7f0</code>, <code>0x40ac80</code>, <code>0x40c600</code>, EAGL <code>0x61f020/30</code>, <code>0x627b90</code> and the pools <code>DynamicFrameMemory</code>, <code>eLightFlare</code>, <code>ePointSprite3D</code>, <code>ePoly</code>. <code>0x410e50</code> reads caps; <code>0x40e180</code> creates the 7 effects.</p>
+<ol><li><code>RenderFrame 0x40a580</code>, every frame:</li></ol>
+<p>a. <code>0x408410</code> (view/Z mode), set the two zero flags <code>[0x734608]/[0x73460c]</code> from option <code>[0x700eb4]</code>; <code>0x5707b0</code> updates views (<code>0x40ad60</code> builds matrices). b. Loop <code>i = 0..15</code> over <code>gViews</code> (0x740460, stride 0x60): active views get <code>0x40dd00</code> (camera.md); view 8 first runs <code>0x40a140</code>. c. If <code>TestCooperativeLevel</code> (+0xc) is OK: <code>BeginScene</code> (+0xa4), <code>0x409cd0(1)</code> (HUD pass in, hud docs), <b><code>0x409580</code></b>, and when <code>[0x73645c]==1</code> <code>0x40d6e0</code> composites the scene RT into the back buffer, <code>0x409cd0(0)</code>, <code>EndScene</code> (+0xa8). d. <code>Present</code> (+0x44). On <code>D3DERR_DEVICELOST</code> (0x88760868) and then NOTRESET (0x88760869): <code>Device_HandleLost 0x40a4e0</code> -&gt; <code>Device_ResetAndRecreate 0x40a510</code>. e. <code>0x403a60(0x78e980, 1/60)</code> particle update, <code>0x545ea0</code> texture animation, <code>Clear</code> (+0xac, flags 7, z=1.0), <code>0x53e210</code> ping-pong the scratch arena, <code>0x53e330</code> recycle per-frame lists, frame counter <code>[0x7364dc]++</code>, then input/audio ticks (<code>0x405860</code>, <code>0x4058d0</code>, <code>0x4057c0</code>, <code>0x419ea0</code>, <code>0x4130d0</code>, <code>0x41e670</code>).</p>
+<ol><li><code>RenderFrameMain 0x409580</code> (H, order verified against blur.md): reflection views first (6 slots 0x740820..0x740a00, <code>0x571870</code>, <code>0x40ed50</code>, <code>0x446730</code>, <code>0x4ae650</code>, flares),</li></ol>
+<p>then for the player view: <code>0x4090a0</code>, scene RT select <code>0x40abd0</code>, <code>0x446730</code> (queue world sections), <code>0x58a240</code>, <code>RenderWorldModels 0x592100</code>, motion blur <code>0x40cd40</code>, <code>0x408b20</code>, cars <code>0x571050</code>/<code>0x570950</code>, emitters <code>0x4ae650</code>, particle systems <code>0x404110</code> x2 (if <code>[0x700ea8]</code>), then flares (<code>0x544f30</code>, <code>0x4ae7d0</code>, <code>0x570d00/0x570c70</code>) or the light-streak path <code>0x409b70</code>; after the view the <b>rear-view mirror</b>: <code>0x409180(RVM)</code> and <code>0x409180(RVM_MASK)</code> (textures from <code>0x408610</code>).</p>
+<ol><li>Every <code>0x40ed50</code> call increments <code>[0x71b1dc]</code> and runs <code>RenderQueue_Flush 0x40ed70</code>.</li></ol>
+<h2 id="renderqueue-flush-0x40ed70-v-h-body-c-device-cal">RenderQueue_Flush 0x40ed70 (V: H body, C device-call fingerprint)</h2>
+<p>For each effect slot k (0..6) at <code>0x71abd0 + k*0xe0</code> with bucket list heads at <code>0x78a4e8..0x78a868</code> (stride 8 per kind): select effect (<code>0x40e6d0</code> logic inline: End old, init callback, <code>SetVertexDeclaration(slot+4)</code>, <code>Begin</code> = effect vtbl +0x100), then for each queued item (node: +0 next, +4 prev, +0x10 item, +0x18 sub-list): <code>0x40f3d0</code> sets blend/cull, <code>0x410400</code> loads matrices, <code>0x4100a0</code> per-object params, <code>0x40f7c0</code> lights (SetLight +0xcc, LightEnable +0xd4), <code>0x40fae0</code> material, then per pass <code>Pass</code> (+0x104) and <code>DrawIndexedPrimitive</code> (+0x148) after <code>SetStreamSource</code> (+0x190) / <code>SetIndices</code> (+0x1a0) only if the buffer differs from <code>[0x7363e8]</code> / <code>[0x7363ec]</code>. Items with no index data use <code>DrawPrimitiveUP</code> strip (+0x14c, stride 0x18). Counters: <code>0x71b1d8</code> items, <code>0x71b1e8</code> VB changes, <code>0x71b1ec</code> IB changes, <code>0x71b204</code> effect switches (I for what each one counts).</p>
+<h2 id="structures-offsets-v-from-h-g-unless-noted">Structures (offsets V from H+G unless noted)</h2>
+<ul><li><b>Effect slot</b> (0x71abb8 + i<em>0xe0, 7 slots): +0 index, +4 IDirect3DVertexDeclaration9</em>, +8 vertex stride, +0xc flag read by <code>0x4100a0</code>, +0x18 ID3DXEffect*, +0xd8 init callback,</li></ul>
+<p>+0x84/+0x88/+0x8c/+0x38 parameter handles used by <code>0x40e7b0/0x4100a0</code> (I). Created by <code>0x40e180</code> from the descriptor table 0x7010c0 (stride 0x80, vertex element indices).</p>
+<ul><li><b>View record</b> (0x740460 + i*0x60, 16 views): +8 active, +0x40 camera object (matrix at +0x40 inside it, <code>0x40bc10</code>), +0x58 render target entry; +4 view type index used by <code>0x571870</code>.</li><li><b>D3DPRESENT_PARAMETERS</b> 0x71a96c: width, height <code>[0x701038]</code>, format <code>[0x702a80]</code>=0x15, SwapEffect 1, windowed <code>[0x73637c]</code>, AutoDepthStencil 1, DS format 0x4b/0x50.</li><li><b>Quad pool</b> (0x401e50): 30 dynamic VBs (<code>[0x71abc0]*0x4b0</code> bytes = 1200 vertices each) + one INDEX16 buffer of 300 quads (indices b+3,b,b+1,b+1,b+2,b+3).</li><li><b>Bucket node</b> (0x40f0f0): 0x20 bytes from SlotPool 0x567160; +0x10 owner mesh, +0x18/+0x1c self-linked sub-list head; list heads at 0x78a4e8 + (kind<em>7+effect)</em>8 or 0x78a6a8 + ..*0x20 (flag at mesh+0x54).</li><li><b>Scratch arena</b>: cursor 0x7355b4, limit 0x7355b8, overflow flag 0x7355c4, overflow bytes 0x7355c8, high water 0x7355cc; <code>0x53e210</code> swaps halves each frame (base <code>[0x72f5fc]</code>).</li><li><b>Reflection cube</b>: 6 faces + 6 depth surfaces (0x71ab6c / 0x71ab84), size <code>[0x702a84]</code> (patched 128 -&gt; 512 by patches.py), only when option <code>[0x700e74] != 0</code>.</li><li><b>Option block</b> 0x700e70..0x700eb4 (dwords) set by <code>GraphicsQuality_Set 0x410ed0(level 0..3)</code>: level 0 everything off; 3 enables MOTIONBLUR <code>0x700e98</code> and LIGHTSTREAKS <code>0x700e9c</code>.</li></ul>
+<h2 id="d3d9-calls-the-game-makes-v-capstone-sweep-count">D3D9 calls the game makes (V, capstone sweep; counts of call sites)</h2>
+<p>SetRenderState 59, SetSamplerState 24, SetRenderTarget 12, SetVertexDeclaration 9, SetTextureStageState 9, CreateTexture 8, Clear 7, DrawPrimitiveUP 7, SetDepthStencilSurface 4, SetViewport 4, SetTransform 4, BeginScene/EndScene/Present 3 each, CreateVertexDeclaration 3, SetTexture 3, CreateDepthStencilSurface 3, GetDepthStencilSurface 3, CreateVertex/IndexBuffer 2, Reset 2, LightEnable 2, SetStreamSource/SetIndices/DrawIndexedPrimitive 1 each, SetLight 1, SetMaterial 1, CreateCubeTexture 1, SetFVF 1. Not called by game code: SetVertexShader, SetPixelShader, Set<em>ShaderConstant</em>, DrawPrimitive. The host (host/d3d9.c) therefore sees shaders only through the D3DX-created effects.</p>
+<h2 id="re-derived-with-a-second-tool-12">Re-derived with a second tool (12)</h2>
+<p>Method: first the capstone fingerprint (which device calls a function makes and with what immediate arguments), written down as a guess, then H and G pseudocode.</p>
+<div class="tbl-wrap"><table><thead><tr><th>Addr</th><th>Fingerprint (C)</th><th>H / G reading</th><th>Result</th></tr></thead><tbody><tr><td>0x401e50</td><td>CreateVertexBuffer, CreateIndexBuffer</td><td>G: 30 VBs, 0xe10 INDEX16 filled with quad pattern</td><td>match</td></tr><tr><td>0x40e560</td><td>CreateTexture(0x40,1,0,0,0x15,1,0x71abb4)</td><td>G: 64x1 A8R8G8B8 ramp fill</td><td>match</td></tr><tr><td>0x40b340</td><td>CreateCubeTexture, CreateDepthStencilSurface</td><td>G: cube + 6 faces + 6 depth surfaces</td><td>match</td></tr><tr><td>0x40a510</td><td>Reset x2</td><td>H: calls 0x401e50, 0x40a890, 0x40aa20, 0x40b340, 0x40cb80 after Reset; G merges it with 0x40a4e0</td><td>match (G boundary differs)</td></tr><tr><td>0x410e50</td><td>GetDeviceCaps, LightEnable</td><td>G: caps, adapter id, disable all lights</td><td>match</td></tr><tr><td>0x408220</td><td>CreateVertexDeclaration x2</td><td>G: two element arrays</td><td>match, element meaning open</td></tr><tr><td>0x40ed70</td><td>SetDecl, SetStreamSource, SetIndices, DrawIndexedPrimitive, DrawPrimitiveUP</td><td>H: bucket flush</td><td>match (G merges with 0x40ed50)</td></tr><tr><td>0x40e6d0</td><td>SetVertexDeclaration</td><td>H: effect switch</td><td>match</td></tr><tr><td>0x409180</td><td>8x SamplerState ADDRESS=3, SetTexture, DrawPrimitiveUP(6,2,?,0x18)</td><td>G: textured quad</td><td>match</td></tr><tr><td>0x410ed0</td><td>stores to 0x736334, 0x700e74</td><td>G: level 0..3 option table</td><td>match</td></tr><tr><td>0x40aa20</td><td>GetDepthStencilSurface x2</td><td>G: 7-entry target table</td><td>partial (field meaning I)</td></tr><tr><td>0x40a580</td><td>TestCooperativeLevel, BeginScene, Clear, EndScene, Present</td><td>H and G same order</td><td>match</td></tr></tbody></table></div>
+<p>Score: 10 match, 1 match with boundary difference, 1 partial; the fingerprint was not blind for 0x40a580 (frame order already in blur.md).</p>
+<h2 id="open">Open</h2>
+<ul><li>Which of the 7 effects is which (world, car body, glass, road, particle, UI, blur filter) and what each descriptor row at 0x7010c0 means; the .efx text is loaded through 0x594c60.</li><li>Whether the 503 D3DX functions that ran compile effects every start or only on a cache miss; the D3DX create/compile entry points <code>0x5af9e5/0x5afb2f</code> are called only from 0x40e180 and are not named.</li><li>EAGL: 71 of 297 render-tagged functions ran. Is EAGL&#x27;s device context (<code>[0x709d80]</code>, <code>0x620ed0</code>) the same IDirect3DDevice9 as <code>[0x73636c]</code> or a second one? Its role (animation <code>EAGLAnim</code>, <code>RenderMethod</code> dynamic code) is only known by strings.</li><li>Meaning of <code>[0x700ea8]</code>, <code>[0x700e78]</code>, <code>[0x700e7c]</code>, <code>[0x700e80]</code>, <code>[0x700e84]..[0x700e94]</code> option fields (names exist only for MOTIONBLUR/LIGHTSTREAKS).</li><li><code>0x404110</code> (5,000 lines in Hopper, 399 in Ghidra): spray/particle drawing by type switch is I; the item layout is not decoded. <code>0x403a60</code> update is not read.</li><li>Car body/wheel/shadow draw (<code>0x56dc30</code>, 1,493 lines H; shadow strings <code>*_SHADOWIG</code>, <code>BLURTEST</code>, <code>ALPHA</code>, <code>GREEN2</code>, <code>GLOSS</code> at 0x56a130..0x5aa800), light flares (flare_re.md) and <code>FEng</code> (hud docs) were not re-read here.</li><li>systems.tsv: the D3DX, EAGL and funclet bands (about 1,360 functions) should leave &quot;render&quot;; the FEng band 0x4fa3..0x503f belongs to hud.</li></ul>
+<p>HANDOFF: names_render.tsv has 84 rows; next: decode the 7 effect descriptors (0x7010c0) and the .efx loader 0x594c60, then name the car draw 0x56dc30 sub-passes and the D3DX create-effect entry points.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

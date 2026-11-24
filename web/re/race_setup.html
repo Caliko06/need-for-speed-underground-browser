@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Race setup: NFSU1 data to running cars — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Static read of pc/Speed.exe (base 0x400000, MD5 b6b9232c55376b3c38c56aac1f8a121d); no race placed or run.">
+<link rel="canonical" href="https://nfsu.cc/re/race_setup.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/race_setup.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Race setup: NFSU1 data to running cars — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Static read of pc/Speed.exe (base 0x400000, MD5 b6b9232c55376b3c38c56aac1f8a121d); no race placed or run.">
+<meta property="og:url" content="https://nfsu.cc/re/race_setup.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Race setup: NFSU1 data to running cars — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Static read of pc/Speed.exe (base 0x400000, MD5 b6b9232c55376b3c38c56aac1f8a121d); no race placed or run.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Race setup: NFSU1 data to running cars", "description": "Static read of pc/Speed.exe (base 0x400000, MD5 b6b9232c55376b3c38c56aac1f8a121d); no race placed or run.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/race_setup.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Race setup: NFSU1 data to running cars", "item": "https://nfsu.cc/re/race_setup.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Menus, Garage &amp; Career Flow</p>
+<article>
+<h1>Race setup: NFSU1 data to running cars</h1>
+<div class="badges">
+  <span class="badge">Menus, Garage &amp; Career Flow</span>
+  <span class="badge accent">69 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="race_setup.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/race_setup.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Static read of pc/Speed.exe (base 0x400000, MD5 b6b9232c55376b3c38c56aac1f8a121d); no race placed or run. V = code read plus second tool; I = inference; UNKNOWN = unproved. Address-level proof: ../../census/names_racesetup.tsv (44 rows). G = census/ghidra/decomp_*.c; H = census/hopper/decomp.c; C = capstone on this executable; TSV gives file:line and instruction addresses. Prior art inspected: https://github.com/nfs-tools/Explorer (BUN asset tooling); race semantics below come from local binary reads.</p>
+<div class="tbl-wrap"><table><thead><tr><th>Data / path</th><th>Layout or behavior</th><th>Proof (V unless stated)</th></tr></thead><tbody><tr><td>Career definitions</td><td>FrontEnd/FrontB.lzc container 0x80034a00: 0x34a01 type rows, 0x20 bytes -&gt; 0x733f78; 0x34a02 EventDesc rows, 0x14c bytes -&gt; id index 0x733ff8.</td><td>0x5a00a0, 0x5a0060 H+C</td></tr><tr><td>Event -&gt; race</td><td>Event +0 u32 id, +8 u32 mode; +0x78 eight stage slots (s16 track, u8 laps, u8 direction), +0x98 u32 stage count. 0x5a2350 copies event to runtime +0x58a0 and expands each stage to track/direction/laps s32.</td><td>0x5a2350 G+C; tools/re/events.py:17-26</td></tr><tr><td>Career mode</td><td>+8: 1 drag, 3 drift, 4 timed, 5 knockout; standard otherwise. Stage -&gt; track 0x78a2f0, direction 0x78a2fc, laps 0x78a31c; condition 0x78a30c, drag byte 0x78a344, drift byte 0x78a345.</td><td>0x4b5df0 G+C</td></tr><tr><td>Quick modes</td><td>Separate enum: 0 circuit, 1 sprint, 2 knockout, 3 free, 4 tournament, 5 drag, 6 drift. Options +0 racer count, +8 track, +0xc direction, +0x10 laps, +0x14 difficulty. Sprint forces 1 lap; knockout sets condition 3 and 3 laps.</td><td>0x4b5c00, 0x4b49e0, 0x4b4c30, 0x4b4e60 G+C</td></tr><tr><td>Track catalog</td><td>Global/GLOBALB.BUN (also GlobalB.lzc), 0x34201: 0xfc-byte TrackInfo, s16 +0x6c id, byte +0x69 open; array at 0x736168, count 0x73616c.</td><td>0x442040 H+C; 0x441fe0 G+C</td></tr><tr><td>Track loading</td><td>0x449760 loads TRACKS/TRACKB&lt;id&gt;.LZC (BUN alternative); 0x4496a0 configures region/event streams. 0x449870 builds splines, applies reverse, initializes road graph.</td><td>H+C; G+C; <code>re_stream</code></td></tr><tr><td>Route != AI road</td><td>0x80034147 children in order: 0x34148 path rows 0x28, 0x34149 nodes 0x14, 0x3414a zone rows 0xb4. Header +1 closed, +2 first node, +6 spline point count, +0xc length; node +0/+4 f32 xy, spline z=0. Road graph separately 0x34121/22.</td><td>0x4434d0, 0x4432a0 G+C; docs/re/track.md:60; docs/re/traffic.md</td></tr><tr><td>Position markers</td><td>0x34146, aligned 0x30-byte rows: +8 u32 name hash, +0xc integer ordinal (not float), +0x10 f32 xyz, +0x20 u16 angle.</td><td>0x441ed0 G+C; integer compare 0x422661</td></tr><tr><td>Grid positions</td><td>ForwardStartingPosition / BackwardStartingPosition, ordinal k=0..n-1, becomes entrant grid k+1. Missing count or ordinal regenerates whole grid at path distances 100+17*floor(k/2), lateral +/-3; ground query replaces z.</td><td>0x422580 G+C, constants 0x6b7c34/2c/30</td></tr><tr><td>Grid -&gt; cars</td><td>0x421f00 constructs race, calls 0x422a70, then 0x434590. Grid matches entrant +3 (1..4 original), builds car 0x422410 -&gt; 0x425350; kind 1 human mode 1, kind 2 rival mode 3; traffic separately 0x598bf0.</td><td>G+H+C</td></tr><tr><td>Rival definition</td><td>Event +0xd4: 3 rows x0x1c, name[8], +0xc preset hash, +0x10 three s16 difficulty skills, +0x16 s16 rating (-1 auto), +0x18 aggression 0..2; +0x128 count, +0x12c catchup.</td><td>0x4b4040 G+C; docs/re/rivals.md</td></tr><tr><td>Rival entrants</td><td>Career takes count from event; quick one-human race uses total-1 (two-human setup uses 0 AI). 0x5809c0 creates id 100+k, kind 2, grid 1+k, skill +0x735, aggression +0x736; 0x4322a0 appends 0x750-byte entrant. Player id 0, kind 1; shuffle 0x4b4610 / career 0x4b6300.</td><td>0x4b4040, 0x4b49e0, 0x5809c0 G+C</td></tr><tr><td>Which AI</td><td>0x4623d0 selects goal 1 normal, drag human 3 / rival 2. 0x435d30 reads optional TrackInfo +0xa8 s16 section[direction<em>4+carClass]; -1 auto-selects, drag auto uses 0x456e90 nearest traffic lane. Global tuning 0x34b00 -&gt; 0x779c78, skill rows 0x779ff8+0x54</em>k.</td><td>G/H+C; loader 0x462070 H+C</td></tr><tr><td>Boundaries</td><td>0x434810 resolves ForwardStartLine/BackwardStartLine, SplitTimeBoundary1/2/3, ForwardFinishLine/BackwardFinishLine through 0x434640; marker xy projects to route percentage via 0x443a10. No independent checkpoint collision volume in this lap path.</td><td>G+C; literal loads 0x434836..0x4349a9</td></tr><tr><td>Defaults</td><td>Missing start -&gt; 5%; splits -&gt; start+33/+66 percentage points; third omitted; open finish -&gt; start+95, closed finish=start. Finish selector 0x78a340 selects marker ordinal (forward finish or reverse start).</td><td>0x434810, 0x434640 G+C</td></tr><tr><td>Lap / finish</td><td>0x434270 takes lap target, forces 1 for nonzero open/drag target. 0x433650 detects signed percentage crossing, wrap +/-50, rejects delta &gt;25; 0x4338c0 counts forward finish laps, reverses backward crossing. 0x435570 ranks/knocks out; 0x4350d0 finishes a car and notifies player.</td><td>G+C; record +8 lap, +9 maximum, +0x1c previous %; race +0x530 target</td></tr><tr><td>Drag</td><td>0x4b55b0 options +0x20 finish selector, +0x24 longitudinal grid adjustment. Uses traffic lanes; 0x45cff0 plans lane route, 0x45d970 (I: lane-change controller) calls 0x456e90 / 0x5a7700. No separate drag-lane table proved.</td><td>G/H+C</td></tr><tr><td>Drift</td><td>0x43de90 builds four score records, synthetic opponents id100+k; physical rival spawn bypassed. 0x43e310 -&gt; intensity 0x43e540, bonus 0x43e6e0, scores 0x43eb00; intensity uses speed/slip/yaw. Bonus requires &gt;=2 wheels on surface 3 plus speed gate; not a placed 0x3414a scoring polygon in this path.</td><td>G+C, surface read 0x43e727/2c; authoring surface 3 UNKNOWN</td></tr><tr><td>Current WORLD limit</td><td>Grid patch asks 10 slots and reorders close poses; RaceManager still ranks only 4, extra racers get external records with rank 0. Six WORLD rivals do not establish a seven-car classified race (I).</td><td>tools/recomp/patches_race.py:90-107; host/free.c:998,1028</td></tr></tbody></table></div>
+<h2 id="a-new-race-in-ug2-space-needs">A new race in UG2 space needs:</h2>
+<p>Fields below are a semantic minimum, not a new serialized format. Reuse proven existing records; unspecified bytes stay UNKNOWN.</p>
+<div class="tbl-wrap"><table><thead><tr><th>Data</th><th>Fields / units / coordinate frame</th><th>Required or optional; proof</th></tr></thead><tbody><tr><td>Selection</td><td>Track id s16 in TrackInfo and career stage (WORLD 1010); race mode enum appropriate to career or quick; direction; difficulty; lap count. Event id u32 only if entering through career event index.</td><td>Required selection; career EventDesc optional for quick entry. 0x441fe0, 0x5a0060, 0x4b5df0, 0x4b49e0</td></tr><tr><td>Resources</td><td>TrackInfo and matching TRACKB route/marker/road chunks; stream-region association and loaded collision/render sections covering the chosen roads.</td><td>Required; existing WORLD resources reusable where present. 0x449760, 0x4496a0, 0x449870; docs/re/track.md</td></tr><tr><td>Frame</td><td>All xy/xyz use NFSU1 world units (metres, z up); UG2 -&gt; current WORLD: (y-1287.375, -x+812.25, z-6.203125); tangent (tx,ty)-&gt;(ty,-tx).</td><td>Required common frame, not raw UG2 coordinates. UG2 road tools (not published); <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/ug2_bridge.md" rel="noopener">docs/re/ug2_bridge.md</a></td></tr><tr><td>Progress route</td><td>0x34148 closed flag, first/count, f32 length in metres; 0x34149 ordered f32 xy nodes in world frame, stride 0x14; consistent path metadata.</td><td>Required for lap/progress/grid fallback. 0x4432a0, 0x433650; node bytes beyond xy are not fully named (docs/re/track.md)</td></tr><tr><td>Exact grid</td><td>0x34146 hashed direction-specific StartingPosition; integer ordinal 0..n-1; f32 xyz metres; u16 heading, full turn 65536 (world XY); supporting collision for final z.</td><td>Markers optional only if generated grid is acceptable; required to choose exact poses. 0x422580; angle conversion 0x564bd0; ground query always runs</td></tr><tr><td>Start / splits / finish</td><td>Named 0x34146 point markers in same frame; optional finish ordinal selector; start/finish projected onto route, percentages 0..100, not metre distances. Lap target integer.</td><td>Markers optional with defaults above; explicit markers needed to choose boundaries. Third split optional; closed finish reuses start. 0x434810/640, 0x4338c0</td></tr><tr><td>Physical rivals</td><td>Count, unique entrant id, kind 2, one-based grid slot, car/preset, skill per difficulty, aggression; career rating/catchup settings. Reachable AI road sections/nodes/links through chosen roads (0x34121/22).</td><td>Required for rival racing; preset may be randomized, rating -1 auto; TrackInfo start-section seed optional (-1 auto). 0x4b4040, 0x435d30; &gt;4 classified entrants unresolved</td></tr><tr><td>Drag additions</td><td>Drag mode, lane-bearing road nodes, legal lane transitions, finish selector and optional longitudinal grid adjustment in metres.</td><td>Lane route required for drag; selector/adjustment can retain defaults. 0x4b55b0, 0x422580, 0x45cff0; precise UG2 drag-compatible lane authoring UNKNOWN</td></tr><tr><td>Drift additions</td><td>Drift mode, player route/laps; existing skill-score tuning and simulated rival records; wheel-contact surface 3 for bonus, speed/slip/yaw thresholds.</td><td>Surface-3 bonus optional for base scoring; physical rivals unnecessary in shipped path. 0x43de90, 0x43e540/6e0, 0x43eb00; collision material encoding UNKNOWN</td></tr><tr><td>Zones / opaque bytes</td><td>0x3414a supports route/reset/wrong-way zones (not the drift bonus above); path node tail, full zone subtype contracts and opaque EventDesc/TrackInfo fields remain only partially named.</td><td>New zone authoring necessity UNKNOWN for arbitrary UG2 route; preserve validated templates, not invented zero fills. docs/re/track.md:63-68,105; no placement validated here</td></tr></tbody></table></div>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Main menu flow — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="V = capstone + Hopper agree, I = one tool, U = unknown. FEng objects are hashes (FEng::HashName 0x4fd230, upper-cased); text is a string-table hash.">
+<link rel="canonical" href="https://nfsu.cc/re/frontend_menu.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/frontend_menu.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Main menu flow — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="V = capstone + Hopper agree, I = one tool, U = unknown. FEng objects are hashes (FEng::HashName 0x4fd230, upper-cased); text is a string-table hash.">
+<meta property="og:url" content="https://nfsu.cc/re/frontend_menu.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Main menu flow — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="V = capstone + Hopper agree, I = one tool, U = unknown. FEng objects are hashes (FEng::HashName 0x4fd230, upper-cased); text is a string-table hash.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Main menu flow", "description": "V = capstone + Hopper agree, I = one tool, U = unknown. FEng objects are hashes (FEng::HashName 0x4fd230, upper-cased); text is a string-table hash.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/frontend_menu.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Main menu flow", "item": "https://nfsu.cc/re/frontend_menu.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Menus, Garage &amp; Career Flow</p>
+<article>
+<h1>Main menu flow</h1>
+<div class="badges">
+  <span class="badge">Menus, Garage &amp; Career Flow</span>
+  <span class="badge accent">51 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="frontend_menu.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/frontend_menu.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>V = capstone + Hopper agree, I = one tool, U = unknown. FEng objects are hashes (FEng::HashName 0x4fd230, upper-cased); text is a string-table hash.</p>
+<h2 id="main-menu-mu-main-pc-fng-frontb-chunk-hash-0x5b5">Main menu = MU_Main_PC.fng (FRONTB, chunk hash 0x5b543f80), ctor 0x4b2c30, vtable 0x6c614c</h2>
+<ul><li>6 buttons in the FNG (objects UndergroundMode 0xd7ba6011, QuickRace 0xde511657, Online 0x70fbb1e4, Options 0x95ad096b, CUSTOMIZE 0xa936c3a2, STATISTICS 0xf20e404a); labels are string hashes inside the FNG:</li></ul>
+<p>MU_MAIN_UNDERGROUND 0xc6fd2991 &quot;GO UNDERGROUND&quot;, MU_MAIN_QUICK_RACE 0x961626db, MU_MAIN_PLAY_ONLINE 0x36dbec3e, MU_MAIN_OPTIONS 0x99e650b0, CUSTOMIZE, UNDERGROUND_STATS 0xda20a5da &quot;STATISTICS&quot; (found by scanning the decompressed FNG for English.bin hashes).</p>
+<ul><li>Text lookup: hash -&gt; 0x59fc00 -&gt; 0x59fb80 binary search in [0x734434] (count [0x73442c]); English.bin chunk 0x39000 (3846 pairs); miss -&gt; label 0xc01a6f63.</li><li>Action: vtable slot 2 <code>Screen_MU_Main_PC::NotificationMessage 0x4b3240</code>. Accept 0xc407210 switches on the object hash, writes [0x777b4c] (the only writer of it in the exe) and calls FEngSwitchPackages 0x4f6360 (edi = package name):</li></ul>
+<div class="tbl-wrap"><table><thead><tr><th>button</th><th>[0x777b4c]</th><th>next package</th></tr></thead><tbody><tr><td>UndergroundMode</td><td>1</td><td>MU_UG_UndergroundMenu.fng (the path 0x4b3513..0x4b35b6 also calls MU_UG_Explained or a new-career setup 0x5a0a00/0x5a0ce0; not fully read, I)</td></tr><tr><td>QuickRace</td><td>2 (@0x4b34e9)</td><td>MU_QuickRaceModeSelect.fng</td></tr><tr><td>Online</td><td>8, only if [0x7346c4]</td><td>MU_Online_NetworkLogin.fng</td></tr><tr><td>Options</td><td>0x10</td><td>MU_OptionsSelector_PC.fng</td></tr><tr><td>CUSTOMIZE</td><td>0x20</td><td>MU_MainMenuCarCustomize.fng</td></tr><tr><td>STATISTICS</td><td>0x80</td><td>MU_UG_StatsScreen.fng</td></tr><tr><td>0x14d83e4e (no button in this FNG)</td><td>0x40</td><td>MU_UG_NewOrLoad_PC.fng</td></tr><tr><td>0x11793157 (bit 4, no button, no accept case)</td><td>-</td><td>text 0xe4db4839 &quot;head-to-head racing&quot;: vestigial multiplayer</td></tr></tbody></table></div>
+<ul><li>Free Run is NOT on this menu: it is a mode button of MU_QuickRaceModeSelect (ctor 0x4b6880): AddModeButton 0x4b6fe0 builds nodes {+8 mode}; Free Run = mode 3, object hash(&quot;QR_freerun&quot;), label 0xcc4e72b1 &quot;FREE RUN&quot;.</li></ul>
+<h2 id="quick-race-chain-each-screen-s-accept-slot-2-han">Quick Race chain (each screen&#x27;s accept = slot 2 handler)</h2>
+<p>MU_Main_PC (QuickRace) -&gt; ModeSelect 0x4b7a94 (writes [0x777cc8] = mode) -&gt; CarSelect 0x4bcb40 (writes [0x758c28] = car handle) -&gt; TrackSelect 0x4bb2b0 (0x4bafe0 writes record+8 = track id, +0xc = reverse) -&gt; Options 0x4b8050 / LapPopup 0x4bd710 -&gt; QuickRace::StartRaceByMode 0x4b5c00.</p>
+<ul><li>0x4b5c00: [0x777ccc]=0, RaceStatus::Reset 0x431df0 (esi 0x78a2f0), switch [0x777cc8] via 0x4b5d04 (3 -&gt; RaceStarter::SetupFreeRun 0x4b5090), 0x4df790, then [0x77a90c] = &quot;UnloadingFrontEnd&quot; (0x6c9e8c), [0x77a904] = 0x448d10, [0x77a918] = 0 (@0x4b5ce1..0x4b5cf7). GameFlow does the rest (docs/re/gameflow.md state 3 -&gt; 2 -&gt; 4 -&gt; 5 -&gt; 6).</li><li>Per-mode settings record = 0x4ab510(0x748f70, mode); Free Run = 0x7589e0 (0x24 bytes): +8 track id, +0xc reverse. Setup 0x4b5090 copies +8 -&gt; [0x78a2f0], +0xc -&gt; [0x78a2fc], +0x18 -&gt; [0x78a300]. (<code>re_freerun_menu</code> says +0x18 is the reverse flag: wrong, the track pick stores it at +0xc, 0x4b9d5f / 0x4bb0bc.)</li><li>WORLD is already the 32nd track row, id 1010, mask 0x90 (host/openworld.c world_rows), name pair TRACK_NAME_1010 -&gt; &quot;WORLD&quot; (world_lang): it shows in the Free Run track list.</li></ul>
+<h2 id="what-pool-1-completion-py-jump-3-1010-drives">What ?pool=1 / completion.py jump 3:1010 drives</h2>
+<p>Keys: profile MU_UG_NewOrLoad_PC2 RETURN, MU_Main_PC RETURN (the cursor starts on QuickRace, observed, completion.py:30) -&gt; [0x777b4c]=2 -&gt; MU_QuickRaceModeSelect. host/input.c input_jump then (flow state 3, screen up 30 frames) stores [0x777cc8]=3, [0x7589e8]=1010 and calls 0x4b5c00. Nothing else: no car, track, options screen. It is a host hook, not game code.</p>
+<h2 id="world-button-row-8-built-2026-11-11">WORLD button (row 8, built 2026-11-11)</h2>
+<p>Online accept 0x4b342a -&gt; cave 0x7977c0 -&gt; host world_arm (host/input.c) -&gt; QuickRace case 0x4b34e9 (ModeSelect builds, its ctor does the 0xf660 copy) -&gt; world_go sets [0x777cc8]=3, 0x7589e0+8=1010, +0xc=0, calls 0x4b5c00 (6 frames after the screen is up). Label: world_lang repoints hash 0x36dbec3e at &quot;WORLD&quot;. Track 1010 needs its row in the track-info table (setup 0x4b5090 looks it up by id, +0x69; TRACKB/TEX/STREAM names come from it), NOT the Free Run list: lists filter by mask bits (0x4ab470), so Original gets the row with mask 0x80 = in no list (RN_WORLDROW=2, web/mode.js). Run: shots web/plan/shots/world_menu<em>.png, world_launcher</em>.png.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Acceleration chain and the knobs that scale it — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Question from the OWNER: &quot;0-60 in ~2.7 s feels too fast&quot;. Sources read this session: docs/re/physics.md,">
+<link rel="canonical" href="https://nfsu.cc/re/accel.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/accel.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Acceleration chain and the knobs that scale it — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Question from the OWNER: &quot;0-60 in ~2.7 s feels too fast&quot;. Sources read this session: docs/re/physics.md,">
+<meta property="og:url" content="https://nfsu.cc/re/accel.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Acceleration chain and the knobs that scale it — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Question from the OWNER: &quot;0-60 in ~2.7 s feels too fast&quot;. Sources read this session: docs/re/physics.md,">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Acceleration chain and the knobs that scale it", "description": "Question from the OWNER: \"0-60 in ~2.7 s feels too fast\". Sources read this session: docs/re/physics.md,", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/accel.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Acceleration chain and the knobs that scale it", "item": "https://nfsu.cc/re/accel.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Driving &amp; Physics</p>
+<article>
+<h1>Acceleration chain and the knobs that scale it</h1>
+<div class="badges">
+  <span class="badge">Driving &amp; Physics</span>
+  <span class="badge accent">14 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="accel.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/accel.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Question from the OWNER: &quot;0-60 in ~2.7 s feels too fast&quot;. Sources read this session: <code>docs/re/physics.md</code>, the archived feel notes (not published) §5, <code>re_accel</code>, <code>census/hopper/decomp.c</code> (0x46cff0, 0x4774a0, 0x46aa40, 0x585410), direct float reads of <code>pc/Speed.exe</code>. Marks: F = read in code/data this or a prior RE session (cited), I = inference/model output, NV = not verified (no build, no run).</p>
+<h2 id="1-formula-chain-force-to-speed">1. Formula chain, force to speed</h2>
+<p>Per frame, <code>PhysicsMover 0x4774a0</code>: inputs -&gt; per-wheel scales -&gt; substeps <code>0x46aa40</code> (semi-implicit Euler, dt/n) -&gt; <code>0x4783c0</code> -&gt; CarState refresh <code>0x4789d0</code> (F, physics.md &quot;How the pieces fit&quot;).</p>
+<ol><li><b>Base torque</b> <code>Engine::ComputeTorque 0x46cff0</code> (F, decomp 0x46cff0):</li></ol>
+<p><code>T = curve(rpm) * Engine+0xa0</code> then <code>* 1.05</code> if <code>Engine+0x1d != 0</code> (float <code>0x700024</code>, one reader only). <code>curve</code> = 9 samples 850..9000 rpm at <code>Engine+0x200..0x220</code> (ctor 0x46c7c0), turbo samples <code>+0x224..0x244</code> already folded into the curve by <code>0x575bc0</code> (F, physics.md, <code>re_accel</code> §3).</p>
+<ol><li><b>Nitrous</b> is added after that product: <code>+ curve(rpm) * info+0x2ac</code> (F, same function). So nitrous L3 (6 s, strength</li></ol>
+<p>0.5) does not scale with the 1.05 constant, and is not on during a 0-60 (F/I: not pressed in the logged run).</p>
+<ol><li><b>Wheel force</b> <code>F = T * gear * fd / r</code> (F for the fields, I for the port): gears/fd at <code>DriveTrain+0x54</code> /</li></ol>
+<p><code>phys+0x1b0..</code>, <code>r = 0.3266</code>, <code>fd = split*[0x1bc] + (1-split)*[0x1b8]</code> (physics.md; <code>re_accel</code> §3).</p>
+<ol><li><b>Drag</b> is a body force, not a wheel term: <code>body+0x1e8 * body+0x1e4</code> in <code>0x585410</code> (F). Stock <code>phys+0x290 = 0</code>,</li></ol>
+<p>so the shipped car has no body drag; the ported table integration uses <code>k = 0.00043</code> (I, <code>re_accel</code> §7).</p>
+<ol><li><b>Acceleration</b> <code>a = (F - k v^2) / mass</code>, mass in tonnes, torque kN.m, force kN (F for units, I for the port).</li><li><b>Shift</b>: the acceleration table <code>0x581b30</code> rescans the shift rpm in 50 rpm steps from (idle+redline)/2; R34 lands at</li></ol>
+<p>7900 (F, <code>re_accel</code> §3). Each gear change costs ~0.25-0.4 s of torque interruption in the model (I, fitted there and re-fitted here).</p>
+<ol><li><b>Weight</b>: <code>0x576250</code> sets <code>mass = row[0] * stock_mass</code>, rows at spec chunk <code>0x2b0</code>; L1/L2/L3 = x0.932/0.866/0.800</li></ol>
+<p>for the R34 (F, <code>re_accel</code> §4).</p>
+<ol><li><b>Turbo</b>: level rows at <code>0x520</code> are 9 floats copied to <code>info+0x224</code> and added into the curve (F, tuning.md §1);</li></ol>
+<p>R34 stock peak 0.3428, turbo L1 0.3496 kN.m (F, <code>re_accel</code> §4).</p>
+<ol><li><b>Engine / ECU / transmission</b> change the curve and the rpm limits; transmission L3 only touches top gear and</li></ol>
+<p><code>out+0x1cc</code>, so 0-60 is unchanged (F, <code>re_accel</code> §4).</p>
+<h2 id="2-constants-and-addresses-that-scale-acceleratio">2. Constants and addresses that scale acceleration</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Knob</th><th>Address</th><th>Value / source</th><th>What it scales</th><th>Mark</th></tr></thead><tbody><tr><td>Torque boost flag multiplier</td><td><code>0x700024</code> (float)</td><td>1.05, single reader 0x46cff0</td><td>whole torque of every car with <code>Engine+0x74 != 0</code> (AI too); not nitrous</td><td>F</td></tr><tr><td>Engine torque multiplier</td><td><code>Engine+0xa0</code></td><td>per car, set by PhysicsMover ctor 0x476840</td><td>torque</td><td>F (prior), NV here</td></tr><tr><td>Torque curve / turbo curve</td><td><code>Engine+0x200..0x244</code></td><td>built by 0x575bc0 from spec rows 0x3a0/0x520</td><td>torque vs rpm</td><td>F (prior)</td></tr><tr><td>Nitrous strength</td><td><code>phys+0x2ac</code> (via <code>Engine+0x7</code>)</td><td>0 / 0.5 at L3</td><td>only while NOS burns</td><td>F</td></tr><tr><td>Mass</td><td><code>phys+0x110</code></td><td>0x576250, rows at 0x2b0</td><td>inertia of the whole chain</td><td>F (prior)</td></tr><tr><td>Gears / final drive</td><td><code>phys+0x1b0..</code>, <code>+0x1b8/1bc</code></td><td>transmission rows 0x2e0</td><td>rpm vs speed, force multiplication</td><td>F (prior)</td></tr><tr><td>Body drag</td><td><code>body+0x1e4/0x1e8</code></td><td><code>phys+0x290</code> = 0 stock</td><td>top speed only</td><td>F</td></tr><tr><td>Global power/grip scale</td><td><code>car+0x404</code> via <code>0x479160</code></td><td>1.0 unless rubber-band</td><td>engine + grip + drag</td><td>F (physics.md d)</td></tr><tr><td>Rear grip cap</td><td><code>0x6ffdd4</code></td><td>0.35 stock / 0.18 Remaster</td><td>launch traction only, not 0-60 here</td><td>F</td></tr></tbody></table></div>
+<p>The only in-exe global that scales acceleration without touching data chunks, per-car torque curves or mass is <b><code>0x700024</code></b>: a 4-byte float, read once, single consumer. Mass/transmission/grip constants are per-level rows or per-car fields; patching those means either data edits in GLOBALB.BUN or a cave.</p>
+<h2 id="3-the-owner-s-levels-f-re-accel-2">3. The OWNER&#x27;s levels (F, <code>re_accel</code> §2)</h2>
+<p>R34 <code>SKYLINE</code>, spec <code>(weight 3, susp 1, engine 0, turbo 1, nitrous 3, ECU 0, trans 3, tires 3, brakes 2, spoiler 0, gf 0)</code>: mass 1.5 -&gt; 1.2 t, peak torque 0.3496, gears 1-2 and fd unchanged, tires never traction-limited (mu ~2 vs ~1 g demand), nitrous not pressed. So the relevant chain is: mass x0.8, turbo L1, x1.05, ~0.4 s per shift.</p>
+<h2 id="4-port-of-the-chain-calibrated-i-model-not-a-mea">4. Port of the chain, calibrated (I: model, not a measurement)</h2>
+<p>Model: 9-point curve interpolation, <code>a = (T*gear*fd/r - k v^2)/m</code>, shift at 7900 rpm, dt 0.5 ms, target 26.82 m/s. Reproduces <code>re_accel</code> within 0.02 s:</p>
+<div class="tbl-wrap"><table><thead><tr><th>case</th><th>prior report</th><th>this port</th></tr></thead><tbody><tr><td>stock (m 1.5)</td><td>3.63</td><td>3.56</td></tr><tr><td>installed, no x1.05, no shift loss</td><td>2.86</td><td>2.85</td></tr><tr><td>installed, x1.05, no shift loss</td><td>2.72</td><td>2.71</td></tr><tr><td>installed, x1.05, 0.25 s shift</td><td>3.12</td><td>2.96</td></tr><tr><td>installed, x1.05, 0.4 s shift</td><td>3.13-3.27</td><td>3.11</td></tr></tbody></table></div>
+<p>The logged Original run (0 -&gt; 9.9 -&gt; 20.0 -&gt; 25.4 -&gt; 30.5 m/s) crosses 60 mph at ~3.1-3.3 s, so the &quot;2.7 s&quot; the OWNER recalls is the ideal no-shift figure, not the measured one (F log, I reading).</p>
+<h2 id="5-candidate-patch-predicted-0-60-owner-s-levels">5. Candidate patch -&gt; predicted 0-60 (OWNER&#x27;s levels)</h2>
+<p>Patch = overwrite the float at <code>0x700024</code> (old bytes <code>66 66 86 3f</code> = 1.05). All predictions are I (model, same cartesian chain as above); the shift columns bound the shift loss.</p>
+<div class="tbl-wrap"><table><thead><tr><th>patch (float at 0x700024)</th><th>new bytes</th><th>0-60, 0.4 s shift</th><th>0-60, 0.25 s shift</th><th>0-60, no shift</th></tr></thead><tbody><tr><td>1.05 (stock, today)</td><td><code>6666863f</code></td><td>3.11</td><td>2.96</td><td>2.71</td></tr><tr><td>1.00 (drop the boost only)</td><td><code>0000803f</code></td><td>3.25</td><td>3.10</td><td>2.85</td></tr><tr><td>0.95</td><td><code>3333733f</code></td><td>3.40</td><td>3.25</td><td>3.00</td></tr><tr><td>0.90</td><td><code>6666663f</code></td><td>3.57</td><td>3.42</td><td>3.17</td></tr><tr><td>0.85</td><td><code>9a99593f</code></td><td>3.76</td><td>3.61</td><td>3.36</td></tr><tr><td>0.80</td><td><code>cdcc4c3f</code></td><td>3.97</td><td>3.82</td><td>3.57</td></tr><tr><td>0.75</td><td><code>0000403f</code></td><td>4.21</td><td>4.06</td><td>3.81</td></tr><tr><td>0.70</td><td><code>3333333f</code></td><td>4.49</td><td>4.34</td><td>4.09</td></tr></tbody></table></div>
+<p>Reference for scale: a stock 1.5 t R34 runs 3.56 s in the same model. k = 0.90 puts the OWNER&#x27;s upgraded car at about stock time (3.57 s); k = 0.85 puts it behind stock (3.76 s). That is the trade the table shows.</p>
+<h2 id="6-limits-and-open-points">6. Limits and open points</h2>
+<ul><li>The patch is global: it slows every car with <code>Engine+0x74 != 0</code> (AI included) and leaves nitrous untouched. If the</li></ul>
+<p>OWNER wants &quot;calmer acceleration&quot; as a player-only feel, this is too blunt; a cave on 0x46cff0 keyed on the player ride would be the surgical version.</p>
+<ul><li>No run, no build, no Chrome, no ghosts: every 0-60 here is model output. The one precedent is the logged Original</li></ul>
+<p>run, which the model matches to ~0.2 s at 5 s.</p>
+<ul><li>Whether the shipped game with the same save does 3.1-3.3 s is still NV (needs the Wine reference run the earlier</li></ul>
+<p>report asked for).</p>
+<ul><li>Alternative knobs not written as candidates: mass rows (GLOBALB.BUN data), per-car <code>Engine+0xa0</code>, the accel table</li></ul>
+<p><code>0x581b30</code> shift rpm (<code>DAT_00700030</code>). All need either data edits or a cave; parked.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

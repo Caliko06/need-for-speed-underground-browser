@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Track: loading, sections, streaming, collision, route (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = verified (a second tool agrees: Hopper export H vs Ghidra export G, plus capstone C over pc/Speed.exe, or file">
+<link rel="canonical" href="https://nfsu.cc/re/track.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/track.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Track: loading, sections, streaming, collision, route (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = verified (a second tool agrees: Hopper export H vs Ghidra export G, plus capstone C over pc/Speed.exe, or file">
+<meta property="og:url" content="https://nfsu.cc/re/track.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Track: loading, sections, streaming, collision, route (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = verified (a second tool agrees: Hopper export H vs Ghidra export G, plus capstone C over pc/Speed.exe, or file">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Track: loading, sections, streaming, collision, route (Speed.exe PC)", "description": "Marks: V = verified (a second tool agrees: Hopper export H vs Ghidra export G, plus capstone C over pc/Speed.exe, or file", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/track.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Track: loading, sections, streaming, collision, route (Speed.exe PC)", "item": "https://nfsu.cc/re/track.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Tracks, Roads &amp; Props</p>
+<article>
+<h1>Track: loading, sections, streaming, collision, route (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Tracks, Roads &amp; Props</span>
+  <span class="badge accent">118 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="track.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/track.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = verified (a second tool agrees: Hopper export H vs Ghidra export G, plus capstone C over pc/Speed.exe, or file bytes F through tools/re/chunks.py), I = inferred, U = open. Prior notes (<code>re_stream</code>, <code>re_coll</code>, <code>re_zones</code>, <code>re_mesh</code>, <code>re_citygraph</code>) were D; every claim reused here was re-read in the binary, the ones that were not are marked I/U. Loaders and chunk ids are in docs/re/assets.md and not repeated; this doc starts where a TRACKB chunk has been handed to its loader. Names: census/names_track.tsv (62 rows, 48 V / 14 I). Road network (0x34121..24, traffic) belongs to docs/re/traffic.md.</p>
+<h2 id="answer">Answer</h2>
+<ul><li>A race track is five independent data sets that share the TRACKB&lt;id&gt;.lzc file: collision polygons (0x34130..34), the route and</li></ul>
+<p>zones (0x80034147), the streamer tables (0x34107/08 + 0x80034150), the road network (traffic) and the marker list (0x34146). The visual world is not in TRACKB: it is the 423 <code>0x80034100</code> sections of STREAML1RA.BUN, read on demand (H+G+C).</p>
+<ul><li>Collision is a quadtree of 32 m cells over 32-byte polygon rows; a row becomes a &quot;body&quot; (plane + 4 vertices) only when a query</li></ul>
+<p>touches it, from the slot pool <code>TrackPolygonSlotPool</code> (0x80-byte slots) (V H+G). Cars ask <code>GroundQuery</code> (0x4407b0 / 0x440a40) with a cached box.</p>
+<ul><li>Streaming is a per-frame state machine <code>0x445050</code> -&gt; <code>0x445180</code>: the viewer (player car) position picks one of 101 boundary</li></ul>
+<p>polygons, each boundary lists the sections to keep; up to 3 async reads, LRU eviction (V H+G+C).</p>
+<ul><li>The race &quot;path&quot; (0x34148/49) is one route per track: closed (circuit, tracks 1001..1008) or open (sprints 1102..1109), 22..100 nodes</li></ul>
+<p>of (x, y). The game builds a spline object per path (<code>0x4432a0</code>, class <code>Spline</code>, basis <code>0x59c850</code>) and uses the nodes for nearest-node search, reset-to-route and wrong-way logic. Zones (type 0..10) live in the same container (V F+H+G).</p>
+<h2 id="flow-addresses-v-unless-marked">Flow (addresses; V unless marked)</h2>
+<ol><li>Load: <code>GameFlow</code> creates TRACKB&lt;id&gt; (<code>0x449765</code>), <code>0x4496a0</code> builds <code>TRACKS\STREAM%s.BUN</code> paths and calls <code>StreamSections::SetTrack 0x4445c0</code></li></ol>
+<p>(I for 0x4496a0; V for 0x4445c0). Each top-level chunk goes to its loader (table <code>0x7007e0</code>): collision 0x441ed0 -&gt; 0x441380, sections table 0x4442a0, boundaries 0x446aa0 -&gt; 0x446db0, route container 0x4441f0 -&gt; 0x4434d0 -&gt; <code>TrackPath::Init 0x443450</code>.</p>
+<ol><li>After load <code>0x449870</code> (I) runs: <code>0x4412b0</code> TrackPolygonSlotPool::Init, <code>0x4432a0</code> BuildSplines, <code>0x4435e0</code> SetReverse (G only),</li></ol>
+<p><code>0x4430b0</code> road net post-load. Loading screen then loops <code>0x445100</code> (WaitUntilIdle) until the first streaming round is done.</p>
+<ol><li>Sections: per frame <code>0x445050</code> Update -&gt; <code>0x445180</code> Round. Viewers come from <code>0x48e8b0</code> (I) which copies the player cars&#x27; xy and velocity.</li></ol>
+<p><code>0x444fb0</code> gets the boundary id of each viewer with <code>0x444870</code> (3 look-ahead samples, type-10 zones, corridor 0x34153) and needs 3 equal ticks to switch. <code>0x444b50</code> BuildWantedSet adds the specials {2500, 2400, 2600, 2499} (C: <code>mov word [esp+0x18..0x1e]</code> at 0x444b6e), the track&#x27;s 0x34154 list, each viewer&#x27;s 0x34152 list and (first round only) rows with preload flag +0xa; cap 0x100 (C cmp at 0x444d5b). <code>0x444ee0</code>/<code>0x444d80</code> allocate (2 per call, stop after 0x9c3c00 B), <code>0x444780</code> evicts the loaded unwanted row with the oldest LRU stamp. <code>0x4446e0</code> issues the read (state 2) through ResourceFile; <code>0x444740</code> sets state 3 when it finishes; the section loader <code>0x4457c0</code> parses it into the table <code>0x72a008</code> (indexed by section id).</p>
+<ol><li>Draw: <code>0x4465b0</code> -&gt; <code>0x446400</code> (camera boundary -&gt; ids 2600..2699 + the visible list; outside every polygon only id%100 &lt; 10)</li></ol>
+<p>-&gt; <code>0x446140</code>/<code>0x446220</code> BVH walk (0x34104) -&gt; <code>0x445ec0</code> per placement (LOD by distance, view mask) (I for the last three).</p>
+<ol><li>Collision query: <code>GroundQuery::FindSurfaceBelow 0x440a40</code> (cache box 0x4407b0 radius 8.0) -&gt; <code>TrackCollision::QueryBox 0x441c10</code></li></ol>
+<p>-&gt; per 32 m cell <code>0x441530</code> quadtree -&gt; <code>0x441660</code> polygons (mark byte, bbox selector) -&gt; <code>0x441b90</code> body from the pool -&gt; <code>0x4400e0</code> edge test -&gt; z from the plane. Walls/other rows have flag bits 2/8 (<code>(flags &amp; 0x0a) == 0</code> is ground, re_coll). 160 rows cap per query (0xa0, V C/H/G).</p>
+<ol><li>Route: <code>TrackPath::UpdateCursor 0x443a10</code> (called by ~23 sites: cars, AI, road entries) keeps a cursor near the previous node or runs</li></ol>
+<p><code>FindNearestNode 0x443630</code>; <code>NeighbourNodes 0x443920</code> wraps closed paths; <code>WrapDistance 0x443d60</code> is the signed distance (17 callers, AI/traffic). Reverse races: <code>0x4435e0</code> replaces zone distance fields +0x1c/+0x20/+0x24 by length minus value (I, G only).</p>
+<ol><li>Zones: manager <code>0x7372b0</code>; search <code>0x4436d0</code> (named Zone_Find in names_traffic), range search <code>0x443790</code>. Consumers: wrong way <code>0x430e00</code>,</li></ol>
+<p>reset <code>0x427ed0</code> / <code>0x4314a0</code> / <code>0x4264d0</code>, commentary <code>0x43fb50</code>, streamer type 10 in <code>0x444870</code>. Details and per-track counts: <code>re_zones</code>.</p>
+<h2 id="structures-offsets-verified-by-the-named-code-an">Structures (offsets verified by the named code and, for files, by tools/re/chunks.py on TRACKB1001..1109)</h2>
+<ul><li>wsrc row 0x20 (0x34132): +0 query mark byte (1 while collected), +1 bbox selector byte, +2 flags-&gt;body+0xb, +3 -&gt;body+0xa, +4 s16 z hi,</li></ul>
+<p>+6 s16 body slot (loader 0x441380 writes 0xffff to every row), +8..+0xe s16 x[4], +0x10..+0x16 s16 y[4], +0x18..+0x1e s16 z lo[4]. Vertex = (s16&lt;&lt;13, ...) times 2^-16 (0x43fd20: x = x16/8; z = (zhi<em>256+zlo)</em>256/65536). V H+G.</p>
+<ul><li>Body (slot 0x80 of pool 0x736184): +8 refcount byte, +9 type (3 = quad flagged 0x10, 4 otherwise), +0xa/+0xb row flags, +0xc source row,</li></ul>
+<p>+0x14/+0x18/+0x1c/+0x20 bbox x0,y0,x1,y1, +0x30/+0x40/+0x50/+0x60 vertices (16 B each), +0x70/+0x74/+0x78 plane normal, +0x7c plane d. V H+G (0x43ff30). Pool node: +8 next, +0x10 free list, +0x18 used, +0x1c peak, +0x24 count, +0x28 stride, +0x2c capacity, data at +0x30 (0x43fe70 / 0x566ed0).</p>
+<ul><li>Ground cache (GroundQuery object): +0 box min xy, +8 max xy (floats), +0x10 box used, +0x20.. body pointers, +0xa8 count, +0xac last hit. V H+G.</li><li>Collision manager 0x77b130, wmap/wcell/wsrc/widx and the world bbox: <code>re_coll</code> (layouts re-checked: 0x441380 stores</li></ul>
+<p>+0 wmap, +4 rows, +8 wcell, +0xc rows, +0x10 wsrc, +0x14 rows = size&gt;&gt;5, +0x18 widx, +0x1c count; bbox +0x30/+0x40 from 0x34134).</p>
+<ul><li>Streamer 0x77a980: row 0x38 (0x34107): +8 s16 id, +0xa preload, +0xb wanted, +0xc state 0..3, +0x10 file index, +0x14 offset, +0x18 bytes, +0x1c resident</li></ul>
+<p>bytes, +0x24 LRU, +0x28 request, +0x2c buffer. Viewer slots +0xd4/+0x118 (0x44 B: xy, v, enabled, id, candidate, counter). +0x17c count, +0x180 requests[256], +0x580 pool, +0x584 size, +0x588/+0x58c done callback, +0x598 corridor row. V H+G (0x4443e0, 0x444840, 0x444d80, 0x445180).</p>
+<ul><li>Boundary 0x34151 row 0x8c (+8 id, +0xa nverts, +0xc xy pairs), visible set 0x34152 row 0x94 (+0x10 count, +0x14 ids), corridor 0x34153 (0x110),</li></ul>
+<p>always set 0x34154 (0x20). V H+G (0x446db0 consts 0x8c 0x94 0x110 0x34151..54).</p>
+<ul><li>Path row 0x28 (0x34148): +0 u8 0, +1 u8 closed flag, +2 s16 first node, +4 s16 end (exclusive), +6 s16 same, +0xc f32 length, +0x24 runtime Spline object</li></ul>
+<p>(0x2c B: +0xe point count, +0x20 points, 16 B each (x, y, 0, 0); built by 0x4432a0). V F (16 tracks: closed=1 for 1001..1008, 0 for 1102..1109; length 2.9..8.2 km) + H+G for +2/+4 (0x443630, 0x443920) and +1 (0x443920, 0x443d60).</p>
+<ul><li>Node 0x14 (0x34149): +0 f32 x, +4 f32 y, +8 u8 path index; +9..+0x13 U (0xff/-1 fillers in 1001). V F+G.</li><li>Manager 0x7372b0 (init 0x443450): +0 total length (path0 +0xc), +4 reverse flag, +8 path count, +0xc rows, +0x10 node count, +0x14 nodes, +0x18 zone</li></ul>
+<p>count, +0x1c zone rows (0xb4), +0x20..+0x48 first row per type (11 entries + end). V H+G.</p>
+<ul><li>Zone row 0xb4 (0x3414a): +0 type, +4/+8 target xy, +0xc/+0x10 direction, +0x14 z limit, +0x18 selector (-1 any), +0x1c..+0x24 route distances (I),</li></ul>
+<p>+0x28..+0x34 bbox, +0x38 nverts, +0x3c polygon, +0x7c boundary id, +0x80 track ids. V G (0x4436d0, 0x443450) + H.</p>
+<h2 id="functions-by-stage-62-names-census-names-track-t">Functions by stage (62 names, census/names_track.tsv)</h2>
+<p>Collision body and query: 0x4412b0 0x43fd20 0x43fe70 0x566ed0 0x43ff30 0x4400d0 0x4400e0 0x4407b0 0x440a40 0x440ce0 0x440e00 0x441500 0x441530 0x441660 0x441b20 0x441b90 0x441c10 0x5679b0 0x567600 0x46a6e0. Streaming: 0x444480 0x4443e0 0x4445c0 0x4446e0 0x444740 0x444780 0x444840 0x444870 0x444af0 0x444b50 0x444d80 0x444e90 0x444ee0 0x444fb0 0x445050 0x445100 0x445180 0x446400 0x4465b0 0x446fd0 0x48e8b0 0x4496a0 0x449870 0x58a850. Sections/placements: 0x445520 0x445580 0x445ca0 0x445ec0 0x446140 0x445d00 (debug dump). Route/zones: 0x443790 0x4435e0 0x443a10 0x443630 0x443920 0x443d60 0x430e00 0x427ed0 0x4314a0 0x4264d0 0x43fb50 0x564db0. Already named elsewhere (not repeated): loaders in names_assets.tsv (0x441380, 0x4434d0, 0x443450, 0x4432a0, 0x4442a0, 0x4457c0, 0x446db0 ...), road net and Zone_Find in names_traffic.tsv, props 0x445b00 / 0x469580.</p>
+<h2 id="second-tool-agreement-10-re-derived-names">Second-tool agreement (10 re-derived names)</h2>
+<p>Rule: the name comes from reading one export; the other tool is asked the same question. G = Ghidra export, H = Hopper export, C = capstone.</p>
+<div class="tbl-wrap"><table><thead><tr><th>addr</th><th>name</th><th>what was re-derived</th><th>result</th></tr></thead><tbody><tr><td>0x441500</td><td>CollisionGrid::Floor32</td><td><code>&amp; 0xffe00000</code> then scale</td><td>G, H, C (and eax,0xffe00000 @0x44150f) agree</td></tr><tr><td>0x441530</td><td>CollisionQuadtree::FindCell</td><td>descent from -16384.0, 0 = empty, -1 on fallback</td><td>G and H agree on 0xffffffff and callees; levels read from G</td></tr><tr><td>0x43ff30</td><td>TrackPolyBody::Build</td><td>14 shared field offsets (+0x38..+0x7c, plane) and callee set</td><td>G == H</td></tr><tr><td>0x4400e0</td><td>TrackPolyBody::EdgeDistanceMax</td><td>8 shared vertex offsets 0x30..0x64, type byte +9 == 4</td><td>G == H</td></tr><tr><td>0x444af0</td><td>StreamSections::ComputePoolSize</td><td>ids 0x9c4 0x960 0xa28 0x9c3 (2500 2400 2600 2499)</td><td>G == H; C: <code>add eax,0x200000</code> @0x4499a0 in its caller</td></tr><tr><td>0x444b50</td><td>StreamSections::BuildWantedSet</td><td>4 specials, cap 0x100, offsets 0x164 0x6c</td><td>G, H shared; C: words at 0x444b6e..0x444b83, <code>cmp ecx,0x100</code> @0x444d5b</td></tr><tr><td>0x444fb0</td><td>UpdateViewerBoundaries</td><td>+0xec counter, 3-tick rule, 0x3e8 = 1000</td><td>G, H share 0xec 0x179 0x3e8; C: <code>mov [esi],0x3e8</code> @0x444ffa</td></tr><tr><td>0x446400</td><td>StreamBoundaries::BuildDrawList</td><td>0xa28..0xa8c (2600..2699), % 100 &lt; 10</td><td>G, H share 0xa28 0xa8c; C: <code>mov eax,0xa28</code>, <code>cmp eax,0xa8c</code> @0x446473/0x446497</td></tr><tr><td>0x4264d0</td><td>Car::ServiceResetRequest</td><td>+0x734, +0x818/+0x81c, +0x888, 0x7fffffff</td><td>G, H share 11 constants; C: <code>[eax+0x734]</code> @0x426531, <code>cmp edx,0x7fffffff</code> @0x4266f9</td></tr><tr><td>0x444ee0</td><td>StreamSections::AllocateRequested</td><td>give-up limit 0x9c3c00 (10,239,000 B)</td><td>G, H share 0x9c3c00; C: <code>cmp ebp,0x9c3c00</code> @0x444f00</td></tr></tbody></table></div>
+<p>10/10 agree. Wider check over the 62 rows: 59 exist in both exports and 53 of them have the same callee set. The 6 that differ are Hopper fragment splits or inlined labels: 0x444780, 0x444870 and 0x444e90 were checked with C (0x4447d8 call 0x4483c0, 0x44495c call 0x4436d0, 0x444eb3 call 0x565ce0); 0x446140, 0x449870 and 0x58a850 are only I. Single-tool rows: 0x444740 (H+C), 0x4496a0 (H), 0x4435e0 (G). Script: scratchpad agree.py (callee sets and shared constants, not committed).</p>
+<h2 id="label-audit-of-census-systems-tsv-track-827-rows">Label audit of census/systems.tsv <code>track</code> (827 rows)</h2>
+<p>Seen wrong while reading (the graph labelled them track): 0x4655f0 and 0x465770 (CollisionSlotPool / &quot;Collision&quot; are the car-body collision, not track polygons; the track pool is <code>TrackPolygonSlotPool 0x4412b0</code>), 0x46d510 DriveTrain (car), 0x54cc10 &quot;TRACK&quot;/&quot;HOST&quot; (online), 0x4ba100..0x4bb160 (menu track pictures), 0x417700 / 0x4b2c30 (FE_SKYLINE, front end), 0x578820 / 0x692e50 DrawBridge (props), 0x562660 / 0x5627e0 TRACK_NAME_%d (text). The solid core is 0x430e00-0x4483c0 range pieces, 0x4264d0 family and 0x564db0/0x5679b0. Not a recount: only the rows read here.</p>
+<h2 id="open-u">Open (U)</h2>
+<ul><li>Who advances race progress along the path (laps, position): <code>0x443a10</code> has 23 callers (0x422410, 0x422580, 0x426930, 0x4314a0 ...) but the</li></ul>
+<p>lap/finish logic was not traced; cursor field meanings (+0x10..+0x1c) are I.</p>
+<ul><li>Node bytes +9..+0x13 of 0x34149, path row +6, zone +0x1c..+0x24 meaning (route distances, I from 0x4435e0 only), zone types 7/8 readers.</li><li>Row +0x1c vs +0x18 of the stream table and the code that shrinks the 19.5 MB TempTextures buffer (re_stream doubt 1).</li><li><code>0x58a850</code>&#x27;s OS mechanism (thread vs overlapped I/O); <code>0x48e8b0</code>&#x27;s other per-player objects; <code>0x449870</code> full duty (many calls, only the track ones named).</li><li>Meaning of 0x34146 marker records beyond (type hash, index) and chunk 0x34250 trigger volumes (loader 0x588d10, V assets.md, consumers not traced).</li><li>0x440e00 (segment sweep) and 0x440d30 callers: wall response not traced. 0x4435e0 has no Hopper function (label inside 0x449870): G only.</li></ul>
+<p>HANDOFF: track.md and census/names_track.tsv done (62 names, 10/10 second-tool); next: trace lap/progress consumers of 0x443a10 and the 0x34146 markers.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

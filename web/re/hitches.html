@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Log: runs/w_L1/log.txt (37,033 lines). Nothing was built or run; every number below comes from reading that log">
+<link rel="canonical" href="https://nfsu.cc/re/hitches.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/hitches.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Log: runs/w_L1/log.txt (37,033 lines). Nothing was built or run; every number below comes from reading that log">
+<meta property="og:url" content="https://nfsu.cc/re/hitches.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Log: runs/w_L1/log.txt (37,033 lines). Nothing was built or run; every number below comes from reading that log">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are", "description": "Log: runs/w_L1/log.txt (37,033 lines). Nothing was built or run; every number below comes from reading that log", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/hitches.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are", "item": "https://nfsu.cc/re/hitches.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rendering &amp; Shaders</p>
+<article>
+<h1>Hitches in `runs/w_L1/log.txt`: what `spike:` and `SMOOTHJOB` are</h1>
+<div class="badges">
+  <span class="badge">Rendering &amp; Shaders</span>
+  <span class="badge accent">28 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="hitches.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/hitches.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Log: <code>runs/w_L1/log.txt</code> (37,033 lines). Nothing was built or run; every number below comes from reading that log and <code>pc/Speed.exe</code> (objdump, image base 0x400000) plus the host sources. Markers: <b>F</b> = read in the log or in the code, <b>I</b> = inference from that evidence, <b>NV</b> = not verified (no run, no counter).</p>
+<h2 id="1-what-the-two-line-types-are">1. What the two line types are</h2>
+<p><code>spike:</code> (5,671 lines) — <code>host/d3d9.c:817-841</code>, <code>spike_log()</code>, called at Present. It logs <b>only</b> when all of these hold (F, source): the frame is longer than <b>25,000 us</b> Present-to-Present, the game state <code>[0x77a920] == 6</code> (race), the race manager <code>[0x7361f0]</code> is set, and <code>[race_manager] != 1</code>. So the probe sees race frames only; menus and loads are invisible to it. The payload is <em>not</em> a stack sample: <code>host/win32.c:559-566</code> <code>clk_site()</code> counts, per frame and on the main thread only, every clock read (<code>QueryPerformanceCounter</code>, <code>GetTickCount</code>, <code>timeGetTime</code>) keyed by the <b>return address</b> of the game&#x27;s <code>call *0x69717c</code>; the line prints the 3 hottest sites with their counts.</p>
+<ul><li>All 5,671 spikes have <code>reads 0 (0 KB, 0.0 ms)</code> (F). <b>No spike in this run is disk/file streaming.</b></li><li>The three sites are almost always the same family: <code>0x403a7a</code> in 5,670 of 5,671 (2 reads, the per-frame timer),</li></ul>
+<p><code>0x474c24</code>/<code>0x474aa9</code> in 5,053, <code>0x585bf7</code> in 353, <code>0x477de0</code>/<code>0x477511</code> in 263 (F).</p>
+<p><code>SMOOTHJOB</code> (425 lines) — <code>host/d3d9.c:2464</code>, only with <code>RN_FREELOG</code> set. It is <b>not</b> a hitch: it is the main thread picking up one finished async car-smoothing job (<code>host/carsmooth.c</code>, worker thread) and copying its vertices into the cache slot. 425 jobs for the whole race, cumulative worker CPU 45.9 ms = <b>0.11 ms per job</b> (F). Ignore it as a cause; it only tells you how many car meshes were smoothed on first sight.</p>
+<h2 id="2-size-of-the-problem">2. Size of the problem</h2>
+<ul><li>5,671 spikes over 35,634 race frames (frames 3060 to 38693) = <b>15.9 %</b> of race frames over 25 ms (F).</li><li>335 s of the run sit inside spike frames (F, sum of the logged ms).</li><li><code>gpu:</code> windows (100 frames each, 389 of them) give the whole-run frame time: mean <b>23.0 ms</b> (43 fps), median</li></ul>
+<p>17.4, p10 16.7, p90 30.2 (F). CPU raster thread: 0.8 % of the wall (F) — the raster backend is idle, this is not GPU.</p>
+<ul><li>Not isolated stutters: <b>75 % of spikes are followed by another spike</b> (base rate 15.9 %), 87 % of spikes live in</li></ul>
+<p>runs of 2+, longest run 248 consecutive frames, and the 116 runs of &gt;= 10 frames hold <b>54 % of all spike frames</b> (mean 26 frames, mean 78.5 ms per frame) (F). The bad stretches are self-sustaining.</p>
+<h2 id="3-spikes-by-frame-time-with-the-events-around-th">3. Spikes by frame time, with the events around them</h2>
+<p>Dominant site = the clock site with the most reads that frame. &quot;nearby&quot; = the event&#x27;s line within +-3 frames.</p>
+<div class="tbl-wrap"><table><thead><tr><th>ms bucket</th><th>count</th><th>share</th><th>of spike time</th><th>substep loop <code>0x474c24</code></th><th>limiter <code>0x585bf7</code></th><th>per-car <code>0x477de0</code></th><th>AIHIT near</th><th>FREE tp near</th><th>REFILL near</th><th>flow/load near</th></tr></thead><tbody><tr><td>25-30</td><td>1,662</td><td>29.3 %</td><td>13.5 %</td><td>84 %</td><td>13 %</td><td>2 %</td><td>19 %</td><td>18 %</td><td>2 %</td><td>1 %</td></tr><tr><td>30-40</td><td>1,357</td><td>23.9 %</td><td>13.8 %</td><td>91 %</td><td>6 %</td><td>3 %</td><td>19 %</td><td>20 %</td><td>2 %</td><td>1 %</td></tr><tr><td>40-60</td><td>1,154</td><td>20.3 %</td><td>16.8 %</td><td>91 %</td><td>3 %</td><td>6 %</td><td>22 %</td><td>24 %</td><td>2 %</td><td>2 %</td></tr><tr><td>60-100</td><td>849</td><td>15.0 %</td><td>19.2 %</td><td>89 %</td><td>2 %</td><td>8 %</td><td>22 %</td><td>27 %</td><td>2 %</td><td>2 %</td></tr><tr><td>100-150</td><td>304</td><td>5.4 %</td><td>11.0 %</td><td>92 %</td><td>1 %</td><td>7 %</td><td>26 %</td><td>30 %</td><td>2 %</td><td>3 %</td></tr><tr><td>150-250</td><td>214</td><td>3.8 %</td><td>12.1 %</td><td>93 %</td><td>0 %</td><td>7 %</td><td>30 %</td><td>31 %</td><td>2 %</td><td>0 %</td></tr><tr><td>250-500</td><td>118</td><td>2.1 %</td><td>11.3 %</td><td>86 %</td><td>0 %</td><td>14 %</td><td>36 %</td><td>36 %</td><td>2 %</td><td>1 %</td></tr><tr><td>500+</td><td>13</td><td>0.2 %</td><td>2.3 %</td><td>85 %</td><td>0 %</td><td>15 %</td><td>54 %</td><td>38 %</td><td>0 %</td><td>0 %</td></tr></tbody></table></div>
+<p>Readings (F for the numbers):</p>
+<ul><li>The same loop dominates <b>every</b> bucket: 84-93 %. There is no separate class of &quot;load hitch&quot;.</li><li><code>REFILLWHY</code> (traffic refill/spawn decisions) sits at 14.4 % of its own frames vs 15.9 % baseline: <b>no effect</b> (F).</li><li><code>flow open</code> / <code>flow fe</code> lines (file opens, HUD <code>.fng</code> sets) are near 1-3 % of spikes, no better than their base rate;</li></ul>
+<p>27 <code>flow open</code> frames have 59 % spikes, but most are the race-start window (F).</p>
+<ul><li><code>AIHIT</code> and <code>FREE tp</code> (traffic teleport) rise monotonically with bucket: whatever makes a frame long also makes</li></ul>
+<p>contact events and traffic respawns <em>log in that frame</em>; direction unknown (I).</p>
+<ul><li>88.6 % of spikes are dominated by the substep loop, 6.2 % by the limiter spin, 4.6 % by the per-car update (F).</li></ul>
+<h2 id="4-where-the-time-is-two-named-loops-disassembly-">4. Where the time is: two named loops (disassembly of <code>pc/Speed.exe</code>)</h2>
+<p><b>The substep loop, <code>0x474a90</code></b> (the physics step; <code>docs/re/race_ai.md:51</code>). At <code>0x474be4</code>: <code>flds 0x8(%ebp)</code> / <code>fdivs 0x6fff10</code> (= <b>0.0084 s</b>) / <code>call 0x674898</code> / <code>incl %eax</code> -&gt; <code>n = (int)(dt / 8.4 ms) + 1</code>; then <code>0x474c10..0x474c4b</code> loops <code>n</code> times, each pass reading QPC (the site logged as <code>0x474c24</code>), calling the Euler step <code>0x46aa40</code> and one more QPC read (F, disasm at <code>0x474be4-0x474c4b</code>).</p>
+<p>The dt that reaches that division is <b>clamped</b>: the limiter&#x27;s clock at <code>0x585c6a</code> loads <code>[0x6f0894] = 3.0</code> (a max of 3 frame targets) and <code>0x585c82</code>/<code>0x585ca3</code> multiply it by <code>0x6cc7d0 = 0.02</code> or <code>0x6cc7b0 = 0.016667</code> and keep the smaller of dt and that product, i.e. <b>dt &lt;= 60 ms or 50 ms</b> (F for the constants and the min pattern, I for which branch). That is exactly what the log shows: over the bad stretches <code>0x474c24</code> reads / <code>0x474aa9</code> step calls = <b>6.0</b> (168/28, 120/20, 188/32, 212/37), i.e. 6 substeps of 8.4 ms = 50 ms, the clamp, no matter whether the frame took 685 ms or 143 ms (F). So the amplifier is real but saturates at ~6 steps: a frame longer than 50 ms cannot shorten itself, and each of those 6 steps costs 4-7 ms per car in the worst frames instead of the ~0.1 ms it needs at 60 fps (I from the same counts).</p>
+<p><b>The limiter spin, <code>0x585bf7</code></b> (F, <code>host/win32.c:567-573</code> comment + disasm: <code>call *0x69717c</code> at <code>0x585bf5</code>, return <code>0x585bf7</code>, loop until the wait expires). 353 spikes have 100 % of their clock reads there, median 32,939 reads in a median 27.9 ms frame: that whole interval is the game spinning on its own 60 Hz limiter, not work. Their share falls to 0 % above 250 ms, as expected (a frame that is really late does not wait).</p>
+<p><b><code>0x477de0</code></b> (263 spikes) is a QPC read inside the per-car frame update <code>0x4774a0</code>; its count is cars x substeps (x12 = 12 car updates = one pass over ~12 nearby cars, F for the site; I for the decomposition). These are the worst: median 58.7 ms, mean 87.9 ms, and 14-15 % of the 250 ms+ buckets.</p>
+<h2 id="5-by-position-player-and-traffic">5. By position: player and traffic</h2>
+<p>Player position comes from <code>AIP fNNNN ... pos x,y,z</code> (one every 60 frames, F). Traffic comes from the <code>carpos</code> blocks (21 cars every ~100 frames, <code>carpos &lt;t&gt; &lt;idx&gt; k3 x y</code>, F).</p>
+<p><b>Nearest traffic car vs spike rate</b> (control: every race frame with a <code>carpos</code> block in the previous 400 frames):</p>
+<div class="tbl-wrap"><table><thead><tr><th>nearest traffic</th><th>frames</th><th>spikes</th><th>rate</th></tr></thead><tbody><tr><td>0-10 m</td><td>15,100</td><td>2,275</td><td>0.151</td></tr><tr><td>10-20 m</td><td>11,962</td><td>2,033</td><td>0.170</td></tr><tr><td>20-30 m</td><td>4,022</td><td>643</td><td>0.160</td></tr><tr><td>30-40 m</td><td>1,697</td><td>174</td><td>0.103</td></tr><tr><td>50-60 m</td><td>574</td><td>133</td><td>0.232</td></tr><tr><td>60-70 m</td><td>247</td><td>82</td><td>0.332</td></tr></tbody></table></div>
+<p>86 % of race frames have traffic within 30 m and their rate is the baseline. Traffic in your face is <b>not</b> the trigger; the mild rise at 50-100 m is thin data and coincides with faster road sections (I).</p>
+<p><b>The (1846,-727) spot.</b> That exact coordinate appears in this repo only as an <code>AIHIT</code> wall hit in other runs: <code>runs/w_a/log.txt:17230</code> (f12390), <code>runs/w_b/log.txt:20286</code> (f14299), <code>runs/w_d/log.txt:2555</code> (f5237), all <code>at 1846,-727,53</code> — a wall that a rival hits deterministically (F). In <code>w_L1</code>:</p>
+<ul><li>the player never gets closer than <b>102 m</b> to it (minimum at frame 2880, spawn area 1861,-626) (F);</li><li>0 spikes within 200 m, 391 spikes (6.9 %) in the 200-400 m band, at a rate of <b>0.096</b>, i.e. <em>below</em> the 0.159</li></ul>
+<p>baseline; 93 % of spikes happen 400 m+ away (F);</p>
+<ul><li>the only traffic cars logged near it are <code>carpos 40.55 20 1790.5 -729.5</code> and <code>44.61 20 1782.7 -709.5</code> (F).</li></ul>
+<p>So in <code>w_L1</code> that wall is <b>not</b> a hitch hotspot (F). In <code>w_a</code> and <code>w_b</code> the +-120 frames around their 1846,-727 hit are 241/241 spiking frames, but those two runs spike 19,416 and 17,911 times overall — they are bad everywhere, so the coincidence says nothing about the spot (F for the counts, I for the reading). If the OWNER saw a hitch there, it is from <code>w_a</code>/<code>w_b</code>, not from L1, and it needs its own log with <code>spike:</code> positions (NV).</p>
+<h2 id="6-the-five-worst-spikes-20-log-lines-around-each">6. The five worst spikes, 20 log lines around each</h2>
+<p>Frame 38329, 827.5 ms (<code>0x477de0</code> x12 = one car pass, 791 clock reads, no file reads):</p>
+<pre><code>AIHIT f38326 kind 2 car 01751300 sp 16.5 -&gt; 11.0 act 1 car (nearest kind 3 at 4.2 m) d 133 at 727,256,50
+spike: frame 38327 116.0 ms, clock 518: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+AIEV 38327 TODD act 1
+spike: frame 38328 117.0 ms, clock 660: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+AIHIT f38328 kind 2 car 0175a690 sp 34.5 -&gt; 25.3 act 1 car (nearest kind 3 at 3.9 m) d 201 at 753,320,49
+spike: frame 38329 827.5 ms, clock 791: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+FREE tp car 8: 277 m (route +73) behind, player 92 m/s, frame 38329
+spike: frame 38330 143.0 ms, clock 709: 0x474c24 x212 0x474aa9 x37 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+carpos 872.60 9 k3 740.9 395.4
+carpos 872.60 10 k3 870.3 359.1 N
+carpos 872.60 11 k3 994.6 355.9 N
+carpos 872.60 12 k3 724.9 163.7
+carpos 872.60 13 k3 748.4 317.2
+carpos 872.60 14 k3 852.8 -15.1
+carpos 872.60 15 k3 744.3 314.5
+carpos 872.60 16 k3 722.6 269.6</code></pre>
+<p>(player at ~740,330 with 92 m/s and a pile of traffic cars at 724-870, 160-395, two rival-vs-rival hits 4 m apart.)</p>
+<p>Frame 38230, 731.4 ms (same site class, a 12-car pass; worst of a 40-frame bad stretch):</p>
+<pre><code>carpos 858.33 25 k3 738.9 100.4 N
+carpos 858.33 26 k3 724.7 197.0
+carpos 858.33 27 k3 724.7 255.3
+carpos 858.33 28 k3 851.5 352.9
+carpos 858.33 29 k3 741.7 315.1
+spike: frame 38230 731.4 ms, clock 531: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38231 197.7 ms, clock 485: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38232 92.9 ms, clock 486: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38233 56.1 ms, clock 465: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38234 109.4 ms, clock 495: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38235 115.6 ms, clock 473: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+AIEV 38235 WILL act 1
+spike: frame 38236 52.4 ms, clock 487: 0x477de0 x18 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38237 180.9 ms, clock 589: 0x477de0 x23 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38238 53.1 ms, clock 461: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38239 65.7 ms, clock 464: 0x477de0 x12 0x403a7a x2 0x4040b4 x2, reads 0 (0 KB, 0.0 ms)</code></pre>
+<p>(identical clock pattern for 10 frames, 12 car updates each, ms from 731 down to 52: the work per car pass changes, not the number of passes.)</p>
+<p>Frame 37207, 685.5 ms (substep loop x168 = 28 step calls x 6 substeps = the 50 ms dt clamp; frame 38194 has x188 = 32 x 6):</p>
+<pre><code>spike: frame 37207 685.5 ms, clock 536: 0x474c24 x168 0x474aa9 x28 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIEV 37207 TODD act 0
+spike: frame 37208 143.4 ms, clock 532: 0x474c24 x168 0x474aa9 x28 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIEV 37208 HUNTER nos
+spike: frame 37209 217.8 ms, clock 563: 0x474c24 x168 0x474aa9 x28 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 37210 127.2 ms, clock 558: 0x474c24 x168 0x474aa9 x28 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIHIT f37210 kind 2 car 017783c0 sp 66.2 -&gt; 42.1 act 7 wall (nearest kind 2 at 114.1 m) d 250 at 1676,630,50
+spike: frame 37211 60.6 ms, clock 530: 0x474c24 x169 0x474aa9 x29 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIEV 37211 WILL act 7
+AIEV 37211 WILL nos
+AIHIT f37211 kind 2 car 017783c0 sp 42.1 -&gt; 36.8 act 7 wall (nearest kind 2 at 115.0 m) d 252 at 1676,631,50
+carpos 789.20 21 k3 1459.8 633.4
+carpos 789.20 22 k3 1197.6 359.2
+carpos 789.20 23 k3 1411.2 554.5
+carpos 789.20 24 k3 1510.4 672.5
+carpos 789.20 25 k3 1295.4 448.2</code></pre>
+<p>Frame 9871, 653.5 ms (x120 / 20 cars, constant across the stretch):</p>
+<pre><code>AIEV 9869 AL nos
+spike: frame 9870 364.0 ms, clock 541: 0x474c24 x120 0x474aa9 x20 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 9871 653.5 ms, clock 535: 0x474c24 x120 0x474aa9 x20 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIEV 9871 TODD nos
+spike: frame 9872 368.0 ms, clock 436: 0x474c24 x120 0x474aa9 x20 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 9873 271.7 ms, clock 443: 0x474c24 x120 0x474aa9 x20 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIEV 9873 KAZ act 7
+AIEV 9873 KAZ nos
+spike: frame 9874 217.1 ms, clock 450: 0x474c24 x120 0x474aa9 x20 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+carpos 243.57 9 k3 1307.5 -299.7
+carpos 243.57 10 k3 868.6 -157.5
+carpos 243.57 11 k3 1494.3 -265.6
+carpos 243.57 12 k3 856.1 -83.0</code></pre>
+<p>Frame 38194, 590.4 ms (wall hit repeated at 886,340 for 4 frames, x188):</p>
+<pre><code>AIEV 38189 AL act 12
+spike: frame 38190 133.9 ms, clock 573: 0x474c24 x190 0x474aa9 x32 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+spike: frame 38191 99.5 ms, clock 536: 0x474c24 x186 0x474aa9 x32 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIHIT f38191 kind 2 car 01751300 sp 46.4 -&gt; 42.3 act 7 wall (nearest kind 3 at 14.3 m) d 139 at 886,340,49
+spike: frame 38192 118.4 ms, clock 548: 0x474c24 x190 0x474aa9 x32 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIEV 38192 HUNTER nos
+AIHIT f38192 kind 2 car 01751300 sp 42.3 -&gt; 37.8 act 7 wall (nearest kind 3 at 14.5 m) d 139 at 884,340,49
+spike: frame 38193 63.8 ms, clock 530: 0x474c24 x192 0x474aa9 x32 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIHIT f38193 kind 2 car 01751300 sp 37.8 -&gt; 33.6 act 7 wall (nearest kind 3 at 14.7 m) d 138 at 882,340,49
+spike: frame 38194 590.4 ms, clock 562: 0x474c24 x188 0x474aa9 x32 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+AIEV 38194 CHAD nos
+spike: frame 38195 163.9 ms, clock 535: 0x474c24 x192 0x474aa9 x32 0x403a7a x2, reads 0 (0 KB, 0.0 ms)
+carpos 854.27 9 k3 733.3 301.1
+carpos 854.27 10 k3 1002.6 356.0 N</code></pre>
+<h2 id="7-ranked-guess-at-the-causes">7. Ranked guess at the causes</h2>
+<ol><li><b>CPU overrun inside the physics substep loop, self-sustaining.</b> F: 88.6 % of spikes are dominated by the</li></ol>
+<p><code>0x474c24</code> site, which lives in a loop whose count is <code>(int)(dt/8.4 ms)+1</code>, dt clamped at 50-60 ms (so ~6 steps); 75 % of spikes follow a spike and 54 % of spike frames sit in 116 stretches of &gt;= 10 frames. I: the game is behind, runs its clamped 6 substeps, is still behind, and the stretch only ends when the car/work mix changes.</p>
+<ol><li><b>Per-car cost blow-up (contact/solver), not per-car count.</b> F: inside the worst stretches the site count is</li></ol>
+<p>constant (x120, x168, x188) while ms varies 5-10x — 6 substeps x 20-32 cars every frame, yet 4-7 ms per car-step against ~0.1 ms at 60 fps; <code>AIHIT</code> co-occurs in 19 % of 25-30 ms spikes rising to 54 % of 500 ms+, and the worst five all sit in stretches with rival-vs-rival or wall contact at 4-15 m. I: some per-car contact/solver path gets expensive when cars pile up; the clock sites cannot see inside a single step, so this is the open part.</p>
+<ol><li><b>The 60 Hz limiter inflates 6.2 % of &quot;spikes&quot;.</b> F: 353 frames are 100 % <code>0x585bf7</code> spin, ~33k QPC reads, median</li></ol>
+<p>27.9 ms — the interval is the wait, not work. Do not chase these: they are not hitches, they are the limiter landing late (or its wait target being wrong: I).</p>
+<ol><li><b>Nothing from I/O, loads, refills or the GPU.</b> F: 0 of 5,671 spikes read a file; <code>REFILLWHY</code> is at baseline;</li></ol>
+<p><code>flow</code>/load lines are 1-3 % of spikes; the raster thread uses 0.8 % of the wall time.</p>
+<p>What would settle #1 vs #2 (NV, needs a run): a counter of <code>dt</code>, substep count and the per-step <code>now_us()</code> inside <code>0x474a90</code> (or a host timer around <code>0x46aa40</code>) printed only when a frame passes 25 ms — that separates &quot;more steps&quot; from &quot;slower steps&quot; without guessing. A second, cheaper probe: log <code>[0x6f0738]</code> (the step index written at 0x474c19) with the spike line.</p>
+<p>No patch is proposed: the evidence names two loops but not a defect, and any change to 8.4 ms, the substep count or the limiter would change physics timing with nothing measured behind it. No <code>tools/recomp/cand/memo.py</code> was written.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

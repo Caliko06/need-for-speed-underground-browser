@@ -13,4 +13,24 @@ Disallow: /data-chunks.json
 Disallow: /manifest.json
 Disallow: /seed_save.json
 
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Allow: /
+Allow: /re/
+Allow: /devlog/
+Allow: /blog/
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /feed.xml
+Disallow: /game/
+Disallow: /data-chunks/
+Disallow: /pc/
+Disallow: /remaster/
+Disallow: /world/
+Disallow: /out/
+
 Sitemap: https://nfsu.cc/sitemap.xml

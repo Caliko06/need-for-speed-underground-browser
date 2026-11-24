@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Tuning, parts and garage (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4">
+<link rel="canonical" href="https://nfsu.cc/re/tuning.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/tuning.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Tuning, parts and garage (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4">
+<meta property="og:url" content="https://nfsu.cc/re/tuning.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tuning, parts and garage (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Tuning, parts and garage (Speed.exe PC)", "description": "Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/tuning.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Tuning, parts and garage (Speed.exe PC)", "item": "https://nfsu.cc/re/tuning.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Driving &amp; Physics</p>
+<article>
+<h1>Tuning, parts and garage (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Driving &amp; Physics</span>
+  <span class="badge accent">65 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="tuning.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/tuning.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 (REA MCP or headless <code>tools/ghidra/gpar.sh</code>), H = Hopper export <code>census/hopper/decomp.c</code>, C = capstone <code>tools/recomp/asm.py</code>, D = data read with <code>tools/re/carinfo.py</code>. PS2/GC names come from <code>ref/docs/re/out/x86-ps2-map.tsv</code> and are hints only until a row in <code>census/names_tuning.tsv</code> says V.</p>
+<h2 id="answer">Answer</h2>
+<ul><li><b>Where the numbers live.</b> All car physics comes from one chunk, <code>0x34600</code> in <code>game/Global/GLOBALB.BUN</code>.</li></ul>
+<p>It holds 35 <code>CarTypeInfo</code> records of 0xc90 bytes (20 tuners, then 15 traffic cars). Each record has the stock <code>CarPhysicsInfo</code> (0x2b0 bytes at +0x110). After it come the per-car upgrade tables for levels 1..3 of every performance path, then one &quot;Junkman&quot; delta per path. V (G, H, D)</p>
+<ul><li><b>How upgrades reach physics.</b> Every rebuild (<code>RideInfo::RebuildPhysicsInfo</code> 0x57f2b0) copies the stock block</li></ul>
+<p>into the ride (<code>RideInfo+0x60</code>), then applies each path&#x27;s table row for the level in <code>PhysicsUpgradeSpecification</code> (<code>RideInfo+8</code>: <code>int level[11]</code>, <code>int junkman[11]</code>). Some paths replace fields (gear set, tires, suspension, nitrous) and others add (engine/ECU/turbo torque, brakes, aero). Weight scales the mass. There is no formula per part: the designers&#x27; table row <em>is</em> the part. V (G, H)</p>
+<ul><li><b>Visual parts</b> are a separate database: chunk <code>0x80034602</code>, with 4,537 parts, 8,113 attributes and a string</li></ul>
+<p>table. Each part has a car hash, a slot/type byte, a level byte (0..4) and a list of (bStringHash, value) attributes (colour, texture, rim size...). The visual parts do not touch physics. The only link is the aero term in RebuildPhysicsInfo, which grows with the <em>handling</em> levels, not with the kit. V (G, D)</p>
+<ul><li><b>Prices and cash exist</b> (corrected 2026-10-29 by night-opus-a2; the earlier &quot;no prices&quot; was wrong). Cash is</li></ul>
+<p><code>[0x76026c]</code> (career+0x1374). The cost table is chunk <code>0x34a01</code> in <code>FrontEnd/FrontB.lzc</code> → <code>[0x733f78+4*type]</code>, with cost L1/L2/L3 at +4/+8/+0xc (100..4000) and rating points at +0x10..+0x1c. Readers are <code>0x5a08f0</code> (visual) and <code>0x5a08b0</code> (perf); the payment is <code>0x5a2620</code>/<code>0x5a25a0</code>. A tier unlocks when a career event whose reward is {type 0, price type, level} is won (<code>0x5a1550</code>). V (C, G, D). Full flow: <code>docs/re/garage.md</code>.</p>
+<ul><li><b>Two old labels were wrong.</b> <code>0x583ea0</code> is not a speed cap. It is the generic lookup in a uniformly sampled</li></ul>
+<p>float table <code>{n, xmin, xmax, 1/step, data*}</code> with linear interpolation and clamping, V (G). The &quot;tuning block&quot; <code>0x705f48..0x705f84</code> is four of those tables for <b>steering</b>: maximum wheel angle vs speed (45° at 0 down to 2.9°/7° at the axis end 160; the unit of that axis, km/h?, is I: the exe gives only the number), a 6-point factor and a 0..1 return scale. They are read by the steering limiter <code>0x460a80</code>/<code>0x460de0</code>, not by the garage. V (G, D)</p>
+<h2 id="corrections-to-older-notes-for-the-orchestrator-">Corrections to older notes (for the orchestrator to apply)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Note</th><th>Says</th><th>This RE shows</th><th>Evidence</th></tr></thead><tbody><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/driving_patches.md#L4" rel="noopener"><code>docs/driving_patches.md:4</code></a></td><td>&quot;the speed caps 0x583ea0, tuning 0x705f48..0x705f84&quot;</td><td><code>0x583ea0</code> is the generic lookup in a sampled float table (with clamping and linear interpolation; no cap of its own). <code>0x705f48..0x705f98</code> are four of those table headers for <b>steering vs speed</b>, read by <code>0x460a80</code>/<code>0x460de0</code>. Car tuning lives in GLOBALB chunk 0x34600</td><td>V (G, D)</td></tr><tr><td>an archived plan (not published)</td><td>&quot;speed caps 0x583ea0 on 0x705f48..0x705f84 (lead); bought upgrades really change the tuning values&quot;</td><td>Same correction. Upgrades do change the physics, through <code>0x57f2b0</code> → <code>0x575960</code> with the table rows in §1. The 0x705f48 tables are the steering limit (relevant to the &quot;rigid, late&quot; handling item, not to upgrades)</td><td>V (G)</td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re_scoreboard.md#L57" rel="noopener"><code>docs/re_scoreboard.md:57</code></a></td><td>tuning block <code>0x705f48..</code>, speed caps <code>0x583ea0</code></td><td>Point it to this doc and to chunk 0x34600 / <code>0x57f2b0</code></td><td>V</td></tr><tr><td><code>ref/docs/re/out/x86-ps2-map.tsv</code> row 0x473fc0</td><td><code>PhysicsUpgradeSpecification::GetUpgradeLevel</code> (tier I)</td><td><code>0x473fc0</code> picks a row of the drift/drag blend table <code>0x6f0fc0</code> by a float vs 0.2/0.8; not GetUpgradeLevel</td><td>V (G, H)</td></tr><tr><td><code>re_rivals_ai</code></td><td>position curve &quot;through sub_4175c0 / sub_583ea0&quot;</td><td>Consistent: 0x583ea0 is the table lookup that reads that curve. No change needed</td><td>V</td></tr></tbody></table></div>
+<h2 id="1-data-cartypeinfo-chunk-0x34600">1. Data: CarTypeInfo (chunk 0x34600)</h2>
+<p>Loader <code>0x57c8b0</code> (V, G+H): if the chunk id is <code>0x34600</code>, it sets <code>[0x734588] = (chunk+0x17) &amp; ~0xf</code> and, for each of 0x23 records whose <code>+0xc54 == 0</code>, calls <code>0x581d30</code> (it clamps per-car grip/load sums against limits at <code>0x6f0d30..</code>). In the data, <code>+0xc54</code> is 0 for the 20 tuners and 2 for the 15 traffic cars (D). Strings at the start of each record: name, name, <code>CARS\&lt;X&gt;\GEOMETRY.BIN</code>, <code>.LZC</code>, maker (D).</p>
+<p>Upgrade tables, offsets from <code>CarTypeInfo+0x110</code> (level n at <code>base+(n-1)*size</code>). Builder addresses are V (G, H). The field meaning is V where a consumer is named and I otherwise.</p>
+<div class="tbl-wrap"><table><thead><tr><th>Path (spec index)</th><th>Base</th><th>Row</th><th>Builder</th><th>Effect</th></tr></thead><tbody><tr><td>0 weight</td><td>0x2b0</td><td>0x10</td><td>0x576250</td><td>mass <code>[+0x110] = row[0] * stock</code>; inertia recomputed as a box <code>m/12*(b²+c²)</code> from dims +0x114..0x11c</td></tr><tr><td>6 transmission</td><td>0x2e0</td><td>0x40</td><td>0x576360</td><td>replaces the gear set at +0x1b0 (final drive, reverse, gears; gear count = non-zero gears)</td></tr><tr><td>2 engine</td><td>0x3a0</td><td>0x40</td><td>0x575bc0</td><td>adds 16 floats to the torque curve +0x1f0..0x220 and +0x248..0x250</td></tr><tr><td>5 ECU</td><td>0x460</td><td>0x40</td><td>0x575bc0</td><td>same shape as engine; the first floats raise the rpm limits (GOLF L3 +1500/+2000 rpm, D)</td></tr><tr><td>3 turbo</td><td>0x520</td><td>0x30</td><td>0x575bc0</td><td>copies 9 floats to +0x224 (turbo curve) and adds them into the torque curve</td></tr><tr><td>4 nitrous</td><td>0x670</td><td>0x10</td><td>0x575bc0</td><td>copies {seconds, shots(int), ?, strength} to +0x2a0..0x2ac; stock is 0 s, 0 shots</td></tr><tr><td>7 tires</td><td>0x5b0</td><td>0x40</td><td>0x575a90</td><td>replaces 8+8 floats at +0xd0/+0xf0 (front/rear grip blocks)</td></tr><tr><td>9 spoiler</td><td>0x6a0</td><td>0x10</td><td>0x575b30</td><td>adds 3 floats to aero +0x264..0x26c</td></tr><tr><td>10 ground effects</td><td>0x6d0</td><td>0x10</td><td>0x575b30</td><td>same as spoiler</td></tr><tr><td>8 brakes</td><td>0x700</td><td>0x10</td><td>0x575960</td><td>replaces 3 floats at +0x274..0x27c</td></tr><tr><td>1 suspension</td><td>0x730</td><td>0x50</td><td>0x575a10</td><td>replaces springs/dampers +0x170, +0x190; lowers ride height (+0x8, wheel y +0x18/0x48/0x78/0xa8)</td></tr></tbody></table></div>
+<p>Junkman deltas (one per path, applied when <code>spec.junkman[path] != 0</code>, V G+H): weight 0x820 (subtracted from the mass factor), transmission 0x824, nitrous 0x828 (+strength), brakes 0x82c, tires 0x830 (4 floats), engine 0x840 (9), ECU 0x864 (9), turbo 0x888 (9). The suspension junkman flag (spec+0x30) is never read, matching the PS2 note. V (G, H)</p>
+<p>Values, GOLF (D): stock mass 1.33; weight L1..3 = ×0.949/0.900/0.850; transmission L3 adds a 6th gear (0.73); nitrous L1..3 = 2/4/6 s in 2/4/6 shots. All 20 tuners share the nitrous rows. Transmission L3 gives every tuner 6 gears. The ECU rpm rows differ per car.</p>
+<h2 id="2-rebuildphysicsinfo-0x57f2b0-v-g-h">2. RebuildPhysicsInfo 0x57f2b0 (V G+H)</h2>
+<p><code>edi</code> = RideInfo: <code>+0</code> car index (-1 = none), <code>+8</code> spec, <code>+0x60</code> output physics. Order of work:</p>
+<ol><li><code>BuildCarPhysicsInfo 0x575960(stock = CarTypeInfo+0x110, out = ride+0x60, spec = ride+8)</code>: memcpy of 0xac dwords,</li></ol>
+<p>then suspension 0x575a10, tires 0x575a90, aero 0x575b30, brakes (inline), engine/turbo/ECU/nitrous 0x575bc0, transmission 0x576360, and weight 0x576250 last.</p>
+<ol><li>Mode blend (only when <code>[0x78a344]==0 &amp;&amp; [0x7361a8]==0</code> and one of <code>[0x735fa0]</code>, <code>[0x78a345]</code>, <code>[0x7361a4]</code>;</li></ol>
+<p>0x78a345/0x7361a4 are the drift flags per <code>re_zones</code>): <code>0x473fc0</code> picks one of 3 rows of the 0x6c-byte table <code>0x6f0fc0</code> from <code>out+0x1c0</code> (thresholds 0.2/0.8 at 0x6cc960/0x6cc95c). The row pulls several fields back toward stock by factors and snaps <code>out+0x1c0</code> to 0.175/0.5/0.825. V for the mechanics, I that this is the drift/drag handling assist. The map name &quot;GetUpgradeLevel&quot; for 0x473fc0 is <b>wrong</b>.</p>
+<ol><li>Aero top-up: <code>out+0x264..0x26c += (CarTypeInfo+0x7d0.. + +0x800..) * (level[0]+level[1]+level[7]) / 9 * blend</code></li></ol>
+<p>(0x6ccb88 = 0.1111): the L3 spoiler and ground-effects rows, scaled by weight+suspension+tires levels. V (G)</p>
+<ol><li><code>0x581b30(ride+0x410)</code> builds the force-vs-speed table: for 75 speed steps it shifts gear when the gear&#x27;s rpm</li></ol>
+<p>limit is passed and stores wheel force/mass. It then resamples the result into the table at ride+0x410. V mechanics (G); naming I.</p>
+<ol><li>Tuners only (<code>+0xc54==0</code>): integrate (force(v) − drag k·v²/m) over the speed range of that table in steps of</li></ol>
+<p>1.3411 m/s (3 mph) until the drag wins. Compare with thresholds <code>0x6b5bd8 = {0, 280, 390, 500}</code> and store the class 0..3 at <code>ride+0x424</code> and the integral at <code>ride+0x428</code>. V (G, C); meaning I (performance rating shown in the garage / used by matchmaking).</p>
+<p>Nitrous at race time (V, C+H): the CarState reset 0x464c80 sets <code>[cs+0x3b0]=[cs+0x3b8] = ftol(seconds*4000+0.5)</code> (4000 ticks/s, 0x6cc9fc) and the per-shot ticks <code>[cs+0x3b4] = seconds/shots*4000</code> when shots ≥ 1. <code>0x465490</code> = available (time left ≥ threshold and not firing). <code>0x4654f0</code> = start: it stamps <code>[cs+0x3bc]</code> with the clock <code>[0x73ad34]</code>, then subtracts one shot, or keeps the tank full when <code>[0x7000e8]</code> (infinite-NOS cheat or mode flag, I).</p>
+<h2 id="3-data-car-part-database-chunk-0x80034602">3. Data: car part database (chunk 0x80034602)</h2>
+<p>Sub-chunks (V, D + loader 0x57c8b0 G):</p>
+<ul><li><code>0x34603</code> header: <code>+0x10</code> part count 4,537, <code>+0x18</code> attribute count 8,113.</li><li><code>0x34606</code> strings.</li><li><code>0x34605</code> attributes, 8 bytes each: <code>(bStringHash name, value)</code>.</li><li><code>0x34604</code> parts, 0x30 bytes each.</li></ul>
+<p>Part record:</p>
+<div class="tbl-wrap"><table><thead><tr><th>Off</th><th>Field</th><th>Evidence</th></tr></thead><tbody><tr><td>0x00</td><td>string offset (display name)</td><td>D</td></tr><tr><td>0x04</td><td>car name hash (<code>bStringHash(&quot;GOLF&quot;)</code> etc.; one shared hash for generic parts)</td><td>D: resolves to the 20 car names</td></tr><tr><td>0x08</td><td>part name hash</td><td>D</td></tr><tr><td>0x0c</td><td>brand/group hash (paint: GLOSS, METALLIC... = 7 groups)</td><td>loader buckets 7 hashes × 3 levels into 0x73ad54..0x73adf8 (G)</td></tr><tr><td>0x10</td><td>slot/type byte</td><td>loader: 0x1e paint, 0x1f vinyl get special lists (G)</td></tr><tr><td>0x11</td><td>level (0..4)</td><td>loader clamps level-1 to 0..2 for the paint lists (G); data 0..4 (D)</td></tr><tr><td>0x12</td><td>sub-index (kit/style number)</td><td>D</td></tr><tr><td>0x14</td><td>first attribute index</td><td>loader: <code>+0x14 = attrs + idx*8</code> when count <code>+0x1c</code> ≠ 0 (G)</td></tr><tr><td>0x18</td><td>second attribute list index (count +0x1e)</td><td>G</td></tr><tr><td>0x20, 0x24</td><td>two hashes (texture / model)</td><td>D, I</td></tr></tbody></table></div>
+<p>Type byte by content (D; labels I unless a garage function confirms them): 0 base, 1/2/10 body kit pieces (16 kits ACE..WOLFPACK × 20 cars), 3/4 mirrors, 5 stock body/tire, 6 MANTIS/VAPOR (level 4), 7 roof scoops (BLIZZARD, GILLS...), 8 hoods (with &quot;CF&quot; carbon variants), 9 trunk, 11 spoilers (AEROMAX, KATANA...), 12 engine bay style, 13 headlights, 14 taillights, 15 exhaust tips, 16 brake kit, 17 rims (<code>BRAND STYLE SIZE</code>, attrs 0xeb0101e2 = 15..21 and 0xce7d8db5 = 23..26 are sizes, I), 18 plate, 19..29 decal zones, 30 paint (body and caliper colours, RED/GREEN/BLUE/GLOSS), 31 vinyls + sponsor decals (TEXTURE, REMAP, NUMCOLOURS), 58 sponsor logos, 115 window tint, 116 neon, 118 rim brands, 119 collision volumes. Chunk <code>0x34601</code> (95 × 0x40) holds named colour presets (&quot;Graphite Black w/ Silver Stripe&quot;), read by 0x4322a0, 0x56a130 and 0x56dc30. I: these are the traffic/AI car liveries.</p>
+<p>Reader: <code>tools/re/carinfo.py check</code> re-packs every decoded table and every part record and compares them with the file. The result is 1435/1435 tables and 4537/4537 parts byte-equal, with all 8,113 attributes referenced. V (D, 2026-10-29).</p>
+<h2 id="4-unlocks-paint-as-the-read-example">4. Unlocks (paint as the read example)</h2>
+<p><code>0x4d7eb0</code> (map: IsPaintLocked, V-graph) and <code>0x4d8180</code> (IsPaintOwned). V (G), with the arguments partly lost by Ghidra:</p>
+<ul><li>A paint part with level byte (<code>part+0x11</code>) ≤ 1 is never locked.</li><li>Otherwise the code asks <code>0x5a1550(&amp;0x75eef8, key)</code> five times, once per level 0..4, and the part is locked when</li></ul>
+<p>the answer for its own level is false. <code>0x75eef8</code> is the career/unlock state object (I).</p>
+<ul><li><code>[0x7677ac]</code> bypasses the lock entirely. It is the &quot;career beaten&quot; flag: <code>0x5a0dc0</code> writes 1 when the last</li></ul>
+<p>event (0x71) is won, and the new-profile code <code>0x41cf40</code> clears it. V (G xref + patches.py:311 note). So beating the career unlocks every part. <code>[0x735ec1]</code> also bypasses (U).</p>
+<ul><li>&quot;Owned&quot; first looks for the level in the list at <code>[0x737668]</code> (count <code>[0x73766c]</code>, 0x34-byte entries, type 1).</li></ul>
+<p>It then accepts when any of <code>[0x7677ac]</code>, <code>[0x735e12]</code>, <code>[0x735ec1]</code> is set. Otherwise it compares the level with 2 or 3, using the flags <code>[0x735e10]</code>/<code>[0x735e11]</code> and the same <code>0x5a1550</code> queries.</p>
+<p>So the level byte in the part DB is the unlock tier: tier n opens when the career reaches it. The part record has no price field; the price comes from the per-type cost table (see garage.md §3). V (D)</p>
+<h2 id="open-u">Open (U)</h2>
+<ul><li>Answered in garage.md §2: <code>0x5a1550</code> keys are price types; a tier opens when an event with reward {0, type, level} is won.</li></ul>
+<p>Old note: the keys passed to <code>0x5a1550</code> and the perf-package unlock (same object?). Candidates that use attribute hash 0x10c98090: 0x4bbd70, 0x4bc790, 0x4c7790, 0x50d420, 0x580b00.</p>
+<ul><li>Who writes spec levels 9/10 (spoiler/ground effects). The garage leaves them 0 on PS2. On PC only the</li></ul>
+<p>RebuildPhysicsInfo aero top-up (step 3) is seen.</p>
+<ul><li>The exact meaning of the out+0x1c0 float that picks the drift row (it is copied from the gear-set row +0x10).</li></ul>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

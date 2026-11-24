@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Camera at speed: distance, height, pitch, FOV — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Wish: &quot;camera low/flat and car small at speed&quot;. Tools: capstone on the unpatched pc/Speed.exe (read-only, no build,">
+<link rel="canonical" href="https://nfsu.cc/re/camera_speed.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/camera_speed.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Camera at speed: distance, height, pitch, FOV — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Wish: &quot;camera low/flat and car small at speed&quot;. Tools: capstone on the unpatched pc/Speed.exe (read-only, no build,">
+<meta property="og:url" content="https://nfsu.cc/re/camera_speed.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Camera at speed: distance, height, pitch, FOV — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Wish: &quot;camera low/flat and car small at speed&quot;. Tools: capstone on the unpatched pc/Speed.exe (read-only, no build,">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Camera at speed: distance, height, pitch, FOV", "description": "Wish: \"camera low/flat and car small at speed\". Tools: capstone on the unpatched pc/Speed.exe (read-only, no build,", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/camera_speed.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Camera at speed: distance, height, pitch, FOV", "item": "https://nfsu.cc/re/camera_speed.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Camera Systems</p>
+<article>
+<h1>Camera at speed: distance, height, pitch, FOV</h1>
+<div class="badges">
+  <span class="badge">Camera Systems</span>
+  <span class="badge accent">40 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="camera_speed.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/camera_speed.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Wish: &quot;camera low/flat and car small at speed&quot;. Tools: capstone on the unpatched <code>pc/Speed.exe</code> (read-only, no build, no run), <code>census/hopper/decomp.c</code>, <code>docs/re/camera*.md</code>, the archived feel notes (not published) §1, port code <code>host/d3d9.c</code> + <code>web/tune.js</code>. Marks: <b>F</b> = read in bytes/code, <b>I</b> = inferred from F, <b>NV</b> = not verified.</p>
+<h2 id="answer">Answer</h2>
+<ul><li><b>The exe has no speed term for distance, height or FOV (F, negative result).</b> <code>0x48bcb0</code> (Cubic update, the default</li></ul>
+<p>race camera) never reads <code>car+0x3d4</code> (speed). The row values are used as they sit in <code>CarTypeInfo</code> at <b>any</b> speed: far chase <code>d = -5.80 m</code>, <code>h = 1.70 m</code>; close chase <code>-4.70 / 1.70</code>; high chase <code>-5.80 / 3.45</code> (R34, F). FOV is <code>0x6fbdf4[pov]</code> and nothing else (F, bytes <code>dc32 dc32 0040 0040 dc32 0000</code> = 71.5 / 71.5 / 90 / 90 / 71.5 deg).</p>
+<ul><li><b>The only speed-dependent camera geometry is the look direction (F).</b> <code>0x48b530</code> blends the car&#x27;s forward with its</li></ul>
+<p>velocity through the curve <code>0x705b20</code> read at the speed <code>car+0x3d4</code>, and applies that blend <b>twice</b> (weight of the velocity = <code>f²</code>, F, see §3). Above 13 m/s (47 km/h) the camera looks 100 % along the velocity (I: it is a yaw follow, not a distance).</p>
+<ul><li><b>Pitch is deliberately killed (F).</b> The z of that look direction is multiplied by a ramp</li></ul>
+<p><code>r = clamp(1 - (now - mover+0x4c)·0.00025 / 2, 0, 1)</code> (ticks of 4000/s), i.e. the camera is level 2 s after every camera cut. In steady driving the camera looks exactly horizontal: it never tilts up as speed grows. That is the &quot;flat&quot;.</p>
+<ul><li><b>&quot;Car small&quot; is not the exe, it is the port&#x27;s projection (F).</b> The 2026-10-22 cave (<code>0x40debb</code>, <code>0x707fc0</code>) rebuilds</li></ul>
+<p>the projection as the PS2 vertical view: 64.4 deg vertical / 96 deg horizontal at 16:9, against 56.7 v / 87.6 h for the PC 4:3 view (Hor+). Car height on screen ∝ <code>1/(tan(vfov/2)·d)</code>, so the port draws the car at <b>0.86x</b> the 4:3 size at rest and at every speed (I, from the F numbers; §5). <code>?chasecam</code> (<code>CHASE_BACK</code>/<code>CHASE_LOW</code> = 0.0) and <code>?speedfov</code> (<code>SPEEDFOV</code> = 0) no longer add anything (F, <code>host/d3d9.c:944-951</code>, <code>web/tune.js:33-39</code>); <code>CHASE_TILT</code> 8 deg only steepens the eye, it does not move it (F).</p>
+<h2 id="1-where-the-numbers-come-from-f-instructions-rea">1. Where the numbers come from (F, instructions read with capstone)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Quantity</th><th>Site</th><th>Instruction</th><th>Value</th></tr></thead><tbody><tr><td>speed input</td><td><code>0x48b5f9</code></td><td><code>fld [esi+0x3d4]</code> (<code>esi</code> = player car), pushed to <code>0x583f20</code></td><td>m/s (<code>docs/re/camera_jump.md</code> §1, F)</td></tr><tr><td>blend curve</td><td><code>0x48b603</code></td><td><code>push 0x705b20</code>, <code>call 0x583f20</code></td><td>2 points, clamps outside (F)</td></tr><tr><td>second blend</td><td><code>0x48b61e..0x48b681</code></td><td><code>x·f</code>, then <code>+ (1-f)·forward</code> on all 3 axes</td><td>velocity weight = <code>f²</code> (F)</td></tr><tr><td>pitch leveling</td><td><code>0x48b685..0x48b6d7</code></td><td><code>fild dt</code>, <code>·[0x6cca38]</code> (0.00025), <code>/ [0x6b6e2c]</code> (2.0), <code>fsubr 1.0</code>, clamp 0..1, <code>·dir.z</code></td><td><code>r</code> → 0 at 2 s (F)</td></tr><tr><td>row read</td><td><code>0x48ba2a..0x48ba44</code></td><td><code>[esi+4]</code>→d, <code>[esi+0xc]</code>→lat, <code>[esi+8]</code>→h, <code>[esi+2]</code>→aux</td><td>per-POV row (F)</td></tr><tr><td>tan(yaw) scale</td><td><code>0x48ba48..0x48ba77</code></td><td><code>0x674898()</code>+aux → <code>sin(a)/sin(a+0x4000)</code> = <code>tan(a)</code></td><td>a yaw, not a speed (F; corrects the &quot;sine ratio at speed&quot; guess in <code>feel_candidates</code> §3)</td></tr><tr><td>chase eye/target</td><td><code>0x48bb21..0x48bb36</code></td><td>POV 0/1/4: target z = <code>d·tan(a) + h</code>, lateral = 0</td><td>pitch swings with yaw error (F)</td></tr><tr><td>contact eye</td><td><code>0x48bafd</code></td><td>eye <code>· [0x6b6eb0]</code> (1.3) when <code>car+0x38 != 0</code>, <code>car+0x3cc &lt;= 2</code></td><td>1.3x, no speed (F)</td></tr><tr><td>FOV</td><td><code>0x48bbed</code></td><td><code>movzx eax, word [pov*2 + 0x6fbdf4]</code> → view <code>+8</code></td><td>constant per POV (F)</td></tr><tr><td>follow lag</td><td><code>0x48ec80..0x48ecbd</code></td><td><code>1/filled</code>, ring at <code>+8</code>, count <code>+5</code></td><td>moving average, not speed (F)</td></tr><tr><td>smoothing</td><td><code>0x48afd0</code></td><td><code>edi[0xa] = 0x41200000</code>, <code>sub_48ead0(0x3f000000)</code></td><td>10.0 time constant, 0.5 (F)</td></tr></tbody></table></div>
+<h2 id="2-curves-at-0x705b20-f-bytes">2. Curves at <code>0x705b20</code> (F, bytes)</h2>
+<p><code>0x705b20</code> is a <em>descriptor</em>: <code>{ptr = 0x705b10, count = 2}</code>. The data lives at <code>0x705b10</code>:</p>
+<div class="tbl-wrap"><table><thead><tr><th>addr</th><th>value</th><th>meaning</th></tr></thead><tbody><tr><td><code>0x705b10</code></td><td><code>8.0</code> (<code>00000041</code>)</td><td>speed where the velocity look starts, m/s</td></tr><tr><td><code>0x705b14</code></td><td><code>0.0</code> (<code>00000000</code>)</td><td>weight there</td></tr><tr><td><code>0x705b18</code></td><td><code>13.0</code> (<code>00005041</code>)</td><td>speed where it is complete, m/s</td></tr><tr><td><code>0x705b1c</code></td><td><code>1.0</code> (<code>0000803f</code>)</td><td>weight there</td></tr></tbody></table></div>
+<p><code>0x583f20</code> clamps below the first x to y0, above the last x to yN, interpolates linearly between points (F). Effective velocity weight (<code>f²</code>, F for the math, I for reading it as the yaw follow):</p>
+<div class="tbl-wrap"><table><thead><tr><th>speed m/s (km/h)</th><th>8 (29)</th><th>10 (36)</th><th>13 (47)</th><th>20 (72)</th><th>30 (108)</th><th>60 (216)</th><th>90 (324)</th></tr></thead><tbody><tr><td>f</td><td>0.00</td><td>0.40</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td></tr><tr><td>velocity weight <code>f²</code></td><td>0.00</td><td>0.16</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td><td>1.00</td></tr></tbody></table></div>
+<p>The same descriptor is read by <code>0x489690</code> (type 1, the fallback mover) and by <code>0x48cbd0</code> / <code>0x48da20</code> (drag-race movers), so a curve patch moves those too (F, callers of <code>0x583f20</code> + literal <code>0x705b20</code> per function).</p>
+<p>There is <b>no</b> second curve for distance or height anywhere in the chase path: the only other curves in the camera are the jump-view ones (<code>0x7062fc</code> speed, <code>0x7062cc</code> height, <code>0x7062e4</code> distance, F, <code>camera.md</code> §2) and they belong to modes 6/7, not to the chase.</p>
+<h2 id="3-shipped-feel-vs-the-port-at-speed">3. Shipped feel vs the port, at speed</h2>
+<div class="tbl-wrap"><table><thead><tr><th></th><th>distance 30 m/s</th><th>60 m/s</th><th>90 m/s</th><th>height 30/60/90</th><th>FOV</th><th>car height on screen</th></tr></thead><tbody><tr><td>Speed.exe, PC 4:3 (Hor+ ref)</td><td>5.80</td><td>5.80</td><td>5.80</td><td>1.70 / 1.70 / 1.70</td><td>71.5 h, 56.7 v</td><td>1.00</td></tr><tr><td>Speed.exe, own 16:9 (anamorphic, F from <code>patches.py</code> comment)</td><td>5.80</td><td>5.80</td><td>5.80</td><td>1.70</td><td>71.5 h, 48.0 anamorphic</td><td>1.21 (stretched, <code>I</code>)</td></tr><tr><td>Port now (cave <code>0x40debb</code>, default <code>?hfov</code>)</td><td>5.80</td><td>5.80</td><td>5.80</td><td>1.70</td><td>96 h, 64.4 v</td><td><b>0.86</b> (<code>I</code>)</td></tr><tr><td>Port with <code>?chasecam=1</code> (<code>CHASE_TILT</code> 8)</td><td>5.80</td><td>5.80</td><td>5.80</td><td>2.49 (far row, <code>-5.51/2.49</code>)</td><td>same</td><td>0.86, pitch 24.3 deg instead of 16.3</td></tr><tr><td>Port with <code>?speedfov=10</code> (off by default)</td><td>5.80</td><td>5.80</td><td>5.80</td><td>1.70</td><td>up to 80.5 → 105 h / 73 v</td><td>0.59 (<code>I</code>, the <code>feel</code> §1 0.65 figure)</td></tr></tbody></table></div>
+<p>Pitch of the shipped chase: <code>atan(h/d) = atan(1.7/5.8) = 16.3 deg</code> at every speed (F inputs, I on the on-screen read), leveled to 0 deg of <em>look</em> pitch by the <code>r</code> ramp (§1) 2 s after a cut.</p>
+<h2 id="4-three-candidates-patches-in-a-candidate-file-n">4. Three candidates (patches in a candidate file, not published, all <code>when=lambda: False</code>)</h2>
+<p>Numbers are the row values the mover would use; <code>size</code> = <code>1/(tan(vfov/2)·d)</code> relative to the 4:3 reference (I).</p>
+<p><b>A. FOV table: recover the 4:3 car size.</b> <code>0x6fbdf4</code> POV 0, 1, 4: <code>13020</code> (71.5 deg) → <code>11527</code> (63.3 deg). Under the port cave that is 56.7 deg vertical, i.e. the PC 4:3 view (Hor+). Distance/height untouched at every speed.</p>
+<div class="tbl-wrap"><table><thead><tr><th>speed</th><th>d</th><th>h</th><th>vfov</th><th>size vs now</th></tr></thead><tbody><tr><td>30 / 60 / 90 m/s</td><td>5.80</td><td>1.70</td><td>56.7 v</td><td>1.00 / 0.86 = <b>+16 %</b></td></tr></tbody></table></div>
+<p>Second value if the OWNER wants the exe&#x27;s own 16:9 pixel scale instead: <code>9812</code> (53.9 deg) → 48.0 v, +21 %. Caveat: the table is global, so hood/bumper POV 2/3 stay at 90 deg and the mirror (<code>0x4e20</code>, <code>0x485300</code>) is separate (F).</p>
+<p><b>B. Curve knee: stop yawing off the car at city speed.</b> <code>0x705b10</code> 8.0 → 25.0 and <code>0x705b18</code> 13.0 → 45.0. Velocity weight becomes <code>f²</code> with <code>f = (v-25)/20</code> clamped: at 30 m/s 6 %, at 60 m/s 78 %, at 90 m/s 100 %. Distance/height/FOV unchanged; what changes is how far the aim point slides off the car when the car slides (drift, kerb, throttle steer).</p>
+<div class="tbl-wrap"><table><thead><tr><th>speed</th><th>f</th><th>velocity weight</th><th>target shift with a 10 deg slip (approx, I)</th></tr></thead><tbody><tr><td>30 m/s</td><td>0.25</td><td>6 %</td><td><code>tan(0.6 deg)·5.8</code> = 0.06 m (was 1.02 m)</td></tr><tr><td>60 m/s</td><td>1.00</td><td>100 %</td><td>1.02 m (unchanged)</td></tr><tr><td>90 m/s</td><td>1.00</td><td>100 %</td><td>1.02 m (unchanged)</td></tr></tbody></table></div>
+<p><b>C. Speed ramp on the eye (needs a cave, no data site exists).</b> Hook <code>0x48ba2a</code> (6 bytes <code>8b4e048b560c</code>, F): scale <code>[esi+4]</code> (d) and <code>[esi+8]</code> (h) by a speed ramp before the mover stores them. Proposed shape, the same 25..75 m/s smoothstep the port already uses for FOV: <code>d(v) = 5.80·(1 - 0.10·t)</code>, <code>h(v) = 1.70·(1 + 0.15·t)</code>.</p>
+<div class="tbl-wrap"><table><thead><tr><th>speed</th><th>t</th><th>d</th><th>h</th><th>eye pitch</th><th>size vs now</th></tr></thead><tbody><tr><td>30 m/s</td><td>0.028</td><td>5.78</td><td>1.71</td><td>16.4 deg</td><td>+0.3 %</td></tr><tr><td>60 m/s</td><td>0.784</td><td>5.35</td><td>1.90</td><td>19.6 deg</td><td>+8.5 %</td></tr><tr><td>90 m/s</td><td>1.000</td><td>5.22</td><td>1.96</td><td>20.5 deg</td><td>+11.1 %</td></tr></tbody></table></div>
+<p>This is the one the OWNER asked for in words (&quot;steeper and closer as speed grows&quot;) but it is the only one that is <b>not</b> a plain byte patch: the cave is designed, not assembled or built (<b>NV</b>). The 5.8/1.7 numbers are the R34 rows (F); the GOLF/FOCUS/PEUGOT rows are 1.9 high (F), so the ramp has to be relative, not absolute.</p>
+<h2 id="open-u">Open (U)</h2>
+<ul><li>Which row set a normal race uses (<code>[0x7364a0]</code>), so whether the numbers above are the normal or the <code>==3</code> set.</li><li>Whether the 10.0 smoother and the 16-entry average are the whole &quot;camera is left behind&quot; feel; no measurement was made.</li><li>No run, no build: every &quot;expected&quot; number is arithmetic on the row and FOV values, not a screenshot.</li></ul>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB — NFSU.cc Devlog | NFSU.cc</title>
+<meta name="description" content="How real production crash telemetry from r2:nfsu-crash uncovered a CPU vertex buffer leak, WebGPU format edge cases, and got Need for Speed Underground running inside a 448 MB mobile WebAssembly heap.">
+<link rel="canonical" href="https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB — NFSU.cc Devlog">
+<meta property="og:description" content="How real production crash telemetry from r2:nfsu-crash uncovered a CPU vertex buffer leak, WebGPU format edge cases, and got Need for Speed Underground running inside a 448 MB mobile WebAssembly heap.">
+<meta property="og:url" content="https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB — NFSU.cc Devlog">
+<meta name="twitter:description" content="How real production crash telemetry from r2:nfsu-crash uncovered a CPU vertex buffer leak, WebGPU format edge cases, and got Need for Speed Underground running inside a 448 MB mobile WebAssembly heap.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB", "description": "How real production crash telemetry from r2:nfsu-crash uncovered a CPU vertex buffer leak, WebGPU format edge cases, and got Need for Speed Underground running inside a 448 MB mobile WebAssembly heap.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "WebAssembly, Memory, WebGPU, Production Telemetry"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB", "item": "https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Devlog</a></p>
+<article>
+<h1>Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB</h1>
+<p class="lead">Shipping a statically recompiled 2003 PC game to thousands of real browsers surfaces failure modes that desktop tests never hit. Here is what production telemetry caught and how two surgical patches fixed both long-session OOMs and low-RAM phone crashes.</p>
+<div class="badges"><span class="badge">WebAssembly</span><span class="badge">Memory</span><span class="badge">WebGPU</span><span class="badge">Production Telemetry</span></div>
+<div class="meta-bar">
+  <span><time datetime="2026-11-24">2026-11-24</time></span>
+  <span>Commits: <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/511830f" rel="noopener"><code>511830f</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/921e827" rel="noopener"><code>921e827</code></a></span>
+  <a href="production-crash-hardening-and-448mb-phone-wasm.md">View raw Markdown (.md)</a>
+</div>
+<h2 id="what-real-browsers-broke-in-production">What real browsers broke in production</h2>
+<p>Once <code>nfsu.cc</code> went live, every unhandled browser crash reported a small JSON payload to our Cloudflare R2 crash bucket (<code>r2:nfsu-crash</code>). Auditing real user sessions revealed two distinct classes of failure:</p>
+<ol><li><b>Memory exhaustion on phones and long desktop sessions</b>: <code>speed_lite.wasm</code> previously requested a 640 MB initial heap, which caused iOS Safari and 4 GB Android devices to fail WebAssembly instantiation (<code>could not allocate memory</code>), while long 50-minute desktop sessions slowly accumulated CPU-side geometry memory.</li><li><b>Browser API edge cases</b>: GPUs without <code>unorm8x4-bgra</code> vertex format support, browsers missing <code>Atomics.waitAsync</code>, <code>tsBuf.unmap()</code> races on timestamp queries, transient network drops during chunk/WASM fetches, and <code>IndexedDB</code> hangs on save boot.</li></ol>
+<h2 id="cutting-the-50-minute-oom-and-dropping-speed-lit">Cutting the 50-minute OOM and dropping <code>speed_lite.wasm</code> to 448 MB (<code>511830f</code>)</h2>
+<p>Three concrete changes eliminated the memory pressure without touching original 2003 gameplay or audio:</p>
+<ul><li><b>Freeing CPU-side <code>SmoothEnt</code> buffers after GPU upload (<code>host/d3d9.c</code>)</b>: On web builds, once smoothed vertex and index buffers are uploaded to WebGPU/WebGL 2, keeping the host-side CPU shadow copy around caused linear memory growth across races. Freeing them immediately after upload stopped the 50-minute OOM.</li><li><b>Lowering <code>speed_lite.wasm</code> heap from 640 MB to 448 MB (<code>tools/recomp/build.py</code>, <code>host/host.h</code>)</b>: <code>GUEST_MEM</code> on the lite build was tightened to 256 MB and total WASM memory to 448 MB, letting budget Android phones and iPhones allocate the module cleanly.</li><li><b>Tightening transient host allocations (<code>host/files.c</code>, <code>host/main.c</code>)</b>: Desktop block cache cap (<code>blk_cap</code>) was reduced from 256 MB to 128 MB, and the temporary PE image buffer (<code>pe</code>) is now freed immediately after Win32 import resolution completes.</li></ul>
+<h2 id="hardening-the-webgpu-audio-and-network-host-921e">Hardening the WebGPU, audio, and network host (<code>921e827</code>)</h2>
+<ul><li><b>WebGPU <code>unorm8x4-bgra</code> software fallback (<code>web/gpu.js</code>)</b>: Devices that reject <code>unorm8x4-bgra</code> vertex attributes now fall back cleanly instead of throwing during pipeline creation.</li><li><b>Guarded timestamp query unmap (<code>web/gpu.js</code>)</b>: Prevented invalid-state throws when <code>tsBuf.unmap()</code> raced with device teardown.</li><li><b><code>Atomics.waitAsync</code> fallback (<code>web/boot.js</code>)</b>: Older browser engines without <code>Atomics.waitAsync</code> no longer abort worker startup.</li><li><b>Network retries and clean shutdown (<code>web/boot.js</code>, <code>host/files.c</code>)</b>: Fetch and WASM download paths retry transient failures, <code>IndexedDB</code> open calls have bounded timeouts (<code>web/saves.js</code>), audio degrades gracefully instead of crashing when autoplay/context fails (<code>web/audio.js</code>), and <code>ExitProcess(0)</code> closes cleanly.</li></ul>
+<h2 id="takeaway-for-browser-static-recompilation">Takeaway for browser static recompilation</h2>
+<p>Emulators usually cap memory tightly up front; static recompilations inherit the original PC executable&#x27;s allocation assumptions plus a host GPU translation layer. Pairing a lightweight crash beacon with strict CPU-shadow freeing after GPU upload is what makes a 2003 Windows binary survive real mobile browsers.</p>
+<p class="repo"><b>Files in repo:</b> <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/host/d3d9.c" rel="noopener"><code>host/d3d9.c</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/host/files.c" rel="noopener"><code>host/files.c</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/host/main.c" rel="noopener"><code>host/main.c</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/build.py" rel="noopener"><code>tools/recomp/build.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/gpu.js" rel="noopener"><code>web/gpu.js</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/boot.js" rel="noopener"><code>web/boot.js</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/audio.js" rel="noopener"><code>web/audio.js</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/saves.js" rel="noopener"><code>web/saves.js</code></a></p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

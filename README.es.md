@@ -70,12 +70,21 @@ flowchart LR
 
 Los cambios al juego son parches pequeños en [`tools/recomp/patches_*.py`](tools/recomp), y cada uno nombra la dirección de `Speed.exe` que lo justifica. **Original 2003** deja el juego como salió; los efectos y opciones de manejo extra son del **Remaster**.
 
+## Atlas de Ingeniería Inversa, Bitácora y Arquitectura
+
+`RE-NFSU` forma parte de la ola actual de recompilación estática (junto a proyectos como N64Recomp, XenonRecomp y NFSU2Recomp), con toda la evidencia del binario abierta:
+
+- **[Arquitectura (`ARCHITECTURE.md`)](ARCHITECTURE.md)** — pipeline completo x86 → C → WASM (`Speed.exe` 3.18 MB, 13,764 funciones, poda de flags muertos, coalescing `CHK_SP`, texturas BC1/2/3 en WebGPU/WebGL 2, WASM móvil de 448 MB).
+- **[Atlas de Ingeniería Inversa (44 subsistemas)](https://nfsu.cc/re/es/index.html)** ([`docs/re/`](docs/re/README.md)) — direcciones verificadas de `Speed.exe` y estructuras de física, cámara, rivales, tráfico, pistas, render, sonido, garaje y assets (HTML + `.md` limpio).
+- **[Bitácora de Ingeniería / Devlog](https://nfsu.cc/devlog/es/index.html)** ([`CHANGELOG.md`](CHANGELOG.md) · [Atom RSS](https://nfsu.cc/feed.xml)) — reportes con commits y métricas reales sobre el recompilador, WebGPU y telemetría de crashes.
+- **Índice para IA / LLMs**: [`llms.txt`](https://nfsu.cc/llms.txt) · [`llms-full.txt`](https://nfsu.cc/llms-full.txt)
+
 ## Guías
 
 | Jugar | [Jugar online](https://nfsu.cc/blog/es/jugar-need-for-speed-underground-online.html) | [Controles](https://nfsu.cc/blog/es/controles-need-for-speed-underground-teclado-mando-celular.html) | [Navegadores, celulares, ajustes](https://nfsu.cc/blog/es/navegadores-celulares-ajustes-rendimiento.html) |
 |---|---|---|---|
 | **Cómo corre** | [Cómo corre en el navegador](https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html) | [Recompilación estática](https://nfsu.cc/blog/es/recompilacion-estatica-x86-a-webassembly.html) | [DirectX 9 y Windows sobre WebGPU](https://nfsu.cc/blog/es/directx-9-y-windows-sobre-webgpu.html) |
-| **Dentro del juego** | [Leer el binario](https://nfsu.cc/blog/es/herramientas-ingenieria-inversa-ghidra-hopper-rea.html) | [Agentes de IA sobre el binario](https://nfsu.cc/blog/es/ingenieria-inversa-de-un-juego-con-agentes-de-ia.html) | [Todas las guías](https://nfsu.cc/blog/es/index.html) |
+| **Dentro del juego** | [Atlas RE (44 subsistemas)](https://nfsu.cc/re/es/index.html) | [Bitácora técnica](https://nfsu.cc/devlog/es/index.html) | [Todas las guías](https://nfsu.cc/blog/es/index.html) |
 
 ## Preguntas frecuentes
 

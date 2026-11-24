@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>NFSU.cc Engineering Devlog &amp; Reverse Engineering Updates</title>
+  <subtitle>Static recompilation of Need for Speed Underground (2003, x86) to WebAssembly and WebGPU/WebGL 2.</subtitle>
+  <link href="https://nfsu.cc/feed.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://nfsu.cc/devlog/index.html" rel="alternate" type="text/html"/>
+  <id>https://nfsu.cc/feed.xml</id>
+  <updated>2026-11-24T18:00:00Z</updated>
+  <author><name>NFSU.cc</name></author>
+  <entry>
+    <title>Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB</title>
+    <link href="https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html" rel="alternate" type="text/html"/>
+    <link href="https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.md" rel="alternate" type="text/markdown"/>
+    <id>https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html</id>
+    <updated>2026-11-24T18:00:00Z</updated>
+    <summary>How real production crash telemetry from r2:nfsu-crash uncovered a CPU vertex buffer leak, WebGPU format edge cases, and got Need for Speed Underground running inside a 448 MB mobile WebAssembly heap.</summary>
+  </entry>
+  <entry>
+    <title>Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87</title>
+    <link href="https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html" rel="alternate" type="text/html"/>
+    <link href="https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.md" rel="alternate" type="text/markdown"/>
+    <id>https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html</id>
+    <updated>2026-11-23T18:00:00Z</updated>
+    <summary>How we cut generated C/WebAssembly overhead across 13,764 lifted x86 functions from Speed.exe using liveness-based flag pruning, stack-pointer check coalescing, and differential testing.</summary>
+  </entry>
+  <entry>
+    <title>DirectX 9 to WebGPU &amp; WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline</title>
+    <link href="https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html" rel="alternate" type="text/html"/>
+    <link href="https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.md" rel="alternate" type="text/markdown"/>
+    <id>https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html</id>
+    <updated>2026-11-23T18:00:00Z</updated>
+    <summary>Eliminating CPU texture decompression and per-draw bindGroup churn by keeping DXT1/3/5 textures compressed on the GPU and caching dynamic UBOs in host/d3d9.c and web/gpu.js.</summary>
+  </entry>
+  <entry>
+    <title>One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds</title>
+    <link href="https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html" rel="alternate" type="text/html"/>
+    <link href="https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.md" rel="alternate" type="text/markdown"/>
+    <id>https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html</id>
+    <updated>2026-11-22T18:00:00Z</updated>
+    <summary>How nfsu.cc measures its own 256-frame present ring, scales resolution and effects automatically via web/quality.js, ships a brotli speed_lite.wasm for phones, and never cuts the 2003 soundtrack.</summary>
+  </entry>
+  <entry>
+    <title>Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)</title>
+    <link href="https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html" rel="alternate" type="text/html"/>
+    <link href="https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.md" rel="alternate" type="text/markdown"/>
+    <id>https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html</id>
+    <updated>2026-11-24T18:00:00Z</updated>
+    <summary>Every verified x86 address, struct, state machine, and subsystem note from Need for Speed Underground (2003, Speed.exe) is now published as a searchable web atlas and LLM-ready Markdown corpus.</summary>
+  </entry>
+</feed>

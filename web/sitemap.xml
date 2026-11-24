@@ -21,4 +21,57 @@
 <url><loc>https://nfsu.cc/blog/es/directx-9-y-windows-sobre-webgpu.html</loc><lastmod>2026-11-21</lastmod><xhtml:link rel="alternate" hreflang="en" href="https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html"/><xhtml:link rel="alternate" hreflang="es" href="https://nfsu.cc/blog/es/directx-9-y-windows-sobre-webgpu.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html"/></url>
 <url><loc>https://nfsu.cc/blog/es/alojar-un-juego-de-2-gb-en-cloudflare-r2-tiempo-de-carga.html</loc><lastmod>2026-11-21</lastmod><xhtml:link rel="alternate" hreflang="en" href="https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html"/><xhtml:link rel="alternate" hreflang="es" href="https://nfsu.cc/blog/es/alojar-un-juego-de-2-gb-en-cloudflare-r2-tiempo-de-carga.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html"/></url>
 <url><loc>https://nfsu.cc/blog/es/ingenieria-inversa-de-un-juego-con-agentes-de-ia.html</loc><lastmod>2026-11-21</lastmod><xhtml:link rel="alternate" hreflang="en" href="https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html"/><xhtml:link rel="alternate" hreflang="es" href="https://nfsu.cc/blog/es/ingenieria-inversa-de-un-juego-con-agentes-de-ia.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html"/></url>
+<url><loc>https://nfsu.cc/re/accel.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/ai_draft.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/ai_review2.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/ai_stuck.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/assets.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/blur.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/camera.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/camera_chase.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/camera_crash.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/camera_jump.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/camera_speed.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/car_assets.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/coverage_method.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/feel_patch_plan.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/feel_probe_fix.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/frontend_menu.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/gameflow.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/garage.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/hitches.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/hosting.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/hud_input.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/misc.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/mode_menu.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/physics.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/props.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/public_pack.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/race_ai.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/race_setup.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/render.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/render_pc.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/reset_causes.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/rivals.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/roadid.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/runtime.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/sound.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/systems_method.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/track.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/traffic.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/traffic_cap_plan.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/traffic_honks.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/traffic_limits.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/traffic_react.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/tuning.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/unlock.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/re/index.html</loc><lastmod>2026-11-24</lastmod><xhtml:link rel="alternate" hreflang="en" href="https://nfsu.cc/re/index.html"/><xhtml:link rel="alternate" hreflang="es" href="https://nfsu.cc/re/es/index.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://nfsu.cc/re/index.html"/></url>
+<url><loc>https://nfsu.cc/re/es/index.html</loc><lastmod>2026-11-24</lastmod><xhtml:link rel="alternate" hreflang="en" href="https://nfsu.cc/re/index.html"/><xhtml:link rel="alternate" hreflang="es" href="https://nfsu.cc/re/es/index.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://nfsu.cc/re/index.html"/></url>
+<url><loc>https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html</loc><lastmod>2026-11-22</lastmod></url>
+<url><loc>https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html</loc><lastmod>2026-11-24</lastmod></url>
+<url><loc>https://nfsu.cc/devlog/index.html</loc><lastmod>2026-11-24</lastmod><xhtml:link rel="alternate" hreflang="en" href="https://nfsu.cc/devlog/index.html"/><xhtml:link rel="alternate" hreflang="es" href="https://nfsu.cc/devlog/es/index.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://nfsu.cc/devlog/index.html"/></url>
+<url><loc>https://nfsu.cc/devlog/es/index.html</loc><lastmod>2026-11-24</lastmod><xhtml:link rel="alternate" hreflang="en" href="https://nfsu.cc/devlog/index.html"/><xhtml:link rel="alternate" hreflang="es" href="https://nfsu.cc/devlog/es/index.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://nfsu.cc/devlog/index.html"/></url>
 </urlset>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Speed blur (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless">
+<link rel="canonical" href="https://nfsu.cc/re/blur.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/blur.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Speed blur (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless">
+<meta property="og:url" content="https://nfsu.cc/re/blur.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Speed blur (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Speed blur (Speed.exe PC)", "description": "Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/blur.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Speed blur (Speed.exe PC)", "item": "https://nfsu.cc/re/blur.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rendering &amp; Shaders</p>
+<article>
+<h1>Speed blur (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Rendering &amp; Shaders</span>
+  <span class="badge accent">103 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="blur.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/blur.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless (<code>tools/ghidra/gpar.sh</code>), H = Hopper export <code>census/hopper/decomp.c</code>, C = capstone <code>tools/recomp/asm.py</code>, D = bytes read from the unpatched exe or from the PS2 ELF with python struct, M = PS2 map <code>ref/docs/re/out/x86-ps2-map.tsv</code> (hint only). Names and addresses: <code>census/names_blur.tsv</code>. Camera side: <code>docs/re/camera.md</code>.</p>
+<h2 id="answer">Answer</h2>
+<ul><li><b>What triggers it.</b> One function, <code>0x40cd40</code> (SpeedBlurPass), runs once per frame inside the main render <code>0x409580</code>.</li></ul>
+<p>It needs option MOTIONBLUR <code>[0x700e98]</code> (or LIGHTSTREAKS <code>[0x700e9c]</code>) so that the scene is drawn into a render target, and it blurs when t &gt;= 1/255 (V, G+H+C).</p>
+<ul><li><b>Strength, in one line.</b> <code>t = min( clamp((|v_cam| - 25) / 100, 0, 1) + 1.1 * n , 0.65 )</code>, where <code>v_cam</code> is the</li></ul>
+<p>velocity of the camera eye in m/s (not of the car) and <code>n</code> is a 0..1 ramp that is pulled to 1 while a special camera (jump view, slow motion, zone preview) is active. The result is composited over the scene with weight <code>w = min(1.5 * t, 1)</code>, so the blur is at most 97.5 % blurred copy (V, G+C+D).</p>
+<ul><li><b>Which pass.</b> A half-resolution (W/2 x H/2) A8R8G8B8 chain: downsample, two 4-tap &quot;zoom&quot; passes (the second with 4x the</li></ul>
+<p>vector, 16 effective taps), then one alpha-blend of the result over the scene with D3DRS_BLENDFACTOR (V, G+C).</p>
+<ul><li><b>Why the car is sharp.</b> It is drawn after the blur (order in <code>0x409580</code>): world, blur, then cars, emitters and</li></ul>
+<p>flares. There is no depth weighting on PC (V, G+C).</p>
+<ul><li><b>PLAN guesses refuted.</b> PS_FAR = 200 and the &quot;far = strong&quot; depth weight have no PC counterpart. The W/512 offsets are a</li></ul>
+<p>PS2 pixel to fraction conversion only; PC offsets are UV fractions. <code>[0x73654c]</code> is not nitrous (it is a special-camera flag). See the section &quot;What psblur gets wrong&quot;.</p>
+<h2 id="frame-order-v-g-h-c">Frame order (V, G+H+C)</h2>
+<p><code>0x409580</code> draws only view index 1 (the loop breaks after it). For the player view:</p>
+<ol><li><code>0x592100</code> RenderWorldModels (track, scenery).</li><li>If <code>[0x736384] != 0 &amp;&amp; [0x73645c] == 1</code> and <code>[0x700e98]</code> (MOTIONBLUR) then <code>0x40cd40</code>.</li><li><code>0x408b20</code> render-state reset.</li><li><code>0x571050</code> race car list (car draw <code>0x56dc30</code>, up to 99 cars), <code>0x570950</code> showcase cars (list <code>0x73d6d8</code>), <code>0x4ae650</code></li></ol>
+<p>emitters and particles, then flares (<code>0x409b70</code> path, light streaks, U).</p>
+<h2 id="render-targets-v-g-c">Render targets (V, G+C)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>What</th><th>Address</th><th>Detail</th></tr></thead><tbody><tr><td>Scene RT</td><td>texture <code>[0x736460]</code>, surface <code>[0x736464]</code></td><td><code>0x40a890</code>: size <code>[0x701034]</code> x <code>[0x701038]</code> (default 800 x 600), format <code>[0x702a80]</code>; created when <code>[0x73645c] == 1</code>. <code>0x40abd0(flag)</code> makes it the render target.</td></tr><tr><td>Blur A, B</td><td>textures <code>[0x71ab9c]</code>, <code>[0x71aba0]</code>; surfaces <code>[0x71aba8]</code>, <code>[0x71abac]</code></td><td><code>0x40cb80</code>: <code>[0x702a2c]</code> = W/2, <code>[0x702a30]</code> = H/2 (320 x 240), format <code>[0x702a28]</code> = 21 (A8R8G8B8).</td></tr><tr><td>Light-streak RT</td><td><code>[0x71aba4]</code>, surface <code>[0x71abb0]</code>, format <code>[0x702a34]</code> = 21</td><td>only if LIGHTSTREAKS <code>[0x700e9c]</code>; not analysed (U).</td></tr></tbody></table></div>
+<p><code>0x40b3f0</code> sets <code>[0x73645c]</code> and <code>[0x736384]</code> to (MOTIONBLUR or LIGHTSTREAKS) and then creates the scene RT. <code>0x40cce0</code> and <code>0x40b4e0</code> release the targets (I, C).</p>
+<h2 id="the-strength-formula-in-detail-0x40cd40-v-g-h-c">The strength formula in detail (0x40cd40, V, G+H+C)</h2>
+<p>Inputs.</p>
+<ul><li>Speed = |v|, v = camera object <code>[0x740500]</code> (= <code>0x78d270</code>, stored by <code>0x40a7f0</code>) at +0x1e0..+0x1e8. It is written by</li></ul>
+<p><code>Camera::SetCameraMatrix 0x47d070</code> as (pos - prevpos) / dt (dt at +0x274). It is the <b>camera eye velocity</b>, not the car&#x27;s.</p>
+<ul><li><code>n</code> = <code>[0x73641c]</code>, moved toward the flag <code>[0x73654c]</code> by +<code>[0x702a48]</code> (0.2) or -<code>[0x702a4c]</code> (0.1) per frame, and only when</li></ul>
+<p>|n - flag| &gt; 1/255 (<code>[0x6ccd00]</code>). Only <code>0x40cd40</code> touches <code>[0x73641c]</code> (G xref: reads and the two writes at 0x40cd8a, 0x40cd9e).</p>
+<p>Constants (static <code>.data</code>, no code writer; D from the unpatched exe, G xref shows only <code>0x40cd40</code> reads them):</p>
+<div class="tbl-wrap"><table><thead><tr><th>Addr</th><th>Value</th><th>Role</th></tr></thead><tbody><tr><td><code>0x702a38</code></td><td>25.0</td><td>speed where the blur starts (units I: the exe gives only the number 25; m/s, 90 km/h is an assumption until the unit of the speed passed in is read)</td></tr><tr><td><code>0x702a3c</code></td><td>125.0</td><td>speed where the speed term is 1 (units I, see above)</td></tr><tr><td><code>0x702a40</code></td><td>0.65</td><td>cap on t</td></tr><tr><td><code>0x702a44</code></td><td>0.00625</td><td>streak length per tap per unit t (UV)</td></tr><tr><td><code>0x702a48</code> / <code>0x702a4c</code></td><td>0.2 / 0.1</td><td>n ramp up / down per frame</td></tr><tr><td><code>0x6cccf8</code></td><td>1.1 (double)</td><td>weight of n in t</td></tr><tr><td><code>0x6cc970</code></td><td>1/255</td><td>blur is skipped if t is below this</td></tr><tr><td><code>0x6ccb7c</code></td><td>1e-5</td><td>direction is normalised only if speed is above this, else the vector is 0</td></tr><tr><td><code>0x6ccc64</code></td><td>1.2</td><td>multiplier in s</td></tr><tr><td><code>0x6cc7dc</code> / <code>0x6cc7bc</code></td><td>0.5 / 1.0</td><td>in s = t <em> 0.00625 </em> (1 + 0.5 n) * 1.2</td></tr><tr><td><code>0x6cc9d8</code></td><td>4.0 (double)</td><td>second pass vector multiplier</td></tr><tr><td><code>0x6ccc0c</code></td><td>1.5</td><td>w = min(1.5 t, 1)</td></tr></tbody></table></div>
+<p>Steps.</p>
+<ol><li>base = 0 if speed &lt;= 25, 1 if speed &gt;= 125, else (speed - 25) / 100. Then t = base + 1.1 n, capped at 0.65.</li><li>The velocity is transformed by the camera object matrix (camobj + 0, row vector; CRT thunk <code>0x5ac443</code> -&gt; <code>0x5ac449</code>) and</li></ol>
+<p>normalised (<code>0x567450</code>) to (a, b, c). The four UV shifts are v0..v3 = (a + c, b + c, a - c, b - c), each times s, with s = t <em> 0.00625 </em> (1 + 0.5 n) * 1.2.</p>
+<ol><li>Pass 1 <code>0x40d370</code> BlurDownsample4Tap: scene texture -&gt; A (half size), 4 taps of weight 0.25 at (+-0.5, +-0.5) source</li></ol>
+<p>texels (table <code>0x7024b8</code>), through the &quot;filter&quot; effect (<code>game/fx/filter.efx</code>, ps_1_1, FilterWeights[4], CLAMP, LINEAR).</p>
+<ol><li>Pass 2 <code>0x40d090(A, 4 taps, weight 0.25, vec = s * v)</code>: A -&gt; B. Tap k = 0..3 shifts the four UV corners:</li></ol>
+<p>TL (-k v0, -k v1), TR (1 - k v2, -k v1), BR (1 - k v2, 1 - k v3), BL (-k v0, 1 - k v3). So a pixel mixes itself with copies scaled about the screen centre; the shift is 0 at the centre and grows toward the edge. This is a radial zoom blur.</p>
+<ol><li>Pass 3: the same <code>0x40d090</code> with vec x 4.0, B -&gt; A. Together 4 x 4 = 16 effective taps; the reach at the edge is about</li></ol>
+<p>15 s.</p>
+<ol><li>Composite <code>0x40d6e0(1, &amp;0x71ab9c, ...)</code> onto the scene surface with SrcBlend 0xe (BLENDFACTOR) and DestBlend 0xf</li></ol>
+<p>(INVBLENDFACTOR). Weight w = min(1.5 t, 1) * 255 -&gt; <code>_ftol</code> (<code>0x674898</code>) -&gt; D3DRS_BLENDFACTOR (0xc1) = c | c&lt;&lt;8 | c&lt;&lt;16 | c&lt;&lt;24. Result = lerp(scene, blurred, w). Maximum w is 0.975 at t = 0.65.</p>
+<p>Examples (I, from the formulas). Camera speed 60 m/s: base 0.35, t = 0.35, w = 0.525, s = 0.0026, edge reach about 3.9 % of the screen width. Speed 125 m/s with no special camera: t = 0.65 (cap), w = 0.975. A special camera at speed 0: t = 0.65 after the n ramp (about 5 frames), w = 0.975.</p>
+<p>Device vtable slots used (V, C): 0x94 SetRenderTarget, 0x9c SetDepthStencilSurface, 0xe4 SetRenderState, 0x14c DrawPrimitiveUP (fan, 2 primitives, stride 0x30), 0xbc SetViewport, 0xac Clear, 0x5c CreateTexture. Vertex layout in the passes: position xyz, colour dword, four texcoord pairs.</p>
+<h2 id="what-drives-n-0x73654c-is-not-nitrous-v-g-c">What drives n: <code>[0x73654c]</code> is not nitrous (V, G+C)</h2>
+<p><code>[0x73654c]</code> is a &quot;special camera active&quot; flag.</p>
+<ul><li>Set to 1 by <code>0x42da40</code> (every special mode 1..7, JUMPVIEW included), <code>0x426930</code>, <code>0x430a3b</code>, <code>0x492949</code> (ZonePreview</li></ul>
+<p>start), <code>0x431c65</code>.</p>
+<ul><li>Cleared by <code>0x42ddc0</code>/<code>0x42ddd5</code> (mode end), <code>0x431107</code>, <code>0x427dfe</code>, <code>0x460f86</code> (destructor), <code>0x4900fd</code> (ZoneFreeze</li></ul>
+<p>destructor), <code>0x4922f2</code>, <code>0x492966</code>, <code>0x492a3b</code>.</p>
+<ul><li><code>0x4010e0</code> is a setter (<code>[0x73654c] = arg &amp; 0xff</code> if <code>view[arg2].enable == 1</code>) with no direct callers (I).</li></ul>
+<p>Nitrous only changes the blur indirectly, by raising the camera speed. This corrects <code>docs/night_re.md</code>, which says <code>[0x73641c]</code> ramps toward nitrous.</p>
+<h2 id="what-the-port-s-psblur-gets-wrong-v-for-the-pc-s">What the port&#x27;s psblur gets wrong (V for the PC side, G+C+D; port side read from web/gpu.js, host/d3d9.c, web/tune.js)</h2>
+<p>The port default is <code>BLUR_DEFAULT = 6</code> (&quot;PS2 depth&quot;): the PS2 4 (+2) full-resolution copies, alphas scaled by t / 128, run on the final scene colour before the HUD, with the game&#x27;s own blur forced off (cap 0).</p>
+<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Port</th><th>PC original</th></tr></thead><tbody><tr><td>1</td><td>Reverse depth weight with PS_FAR = 200 (&quot;far = strong&quot;) so the car stays sharp</td><td>No depth term at all. The car is sharp because the blur sits between the world draw and the car draw. PS_FAR and the depth hack are an invention.</td></tr><tr><td>2</td><td>4 (+2) full-res copies, alpha from a table</td><td>Half-res 16-tap cascade (downsample, 4 taps, 4 taps with 4x vector), composited once with w = min(1.5 t, 1)</td></tr><tr><td>3</td><td>Offsets x W/512 (pixels of a 512-wide PS2 frame)</td><td>UV fractions, resolution independent: s = 0.0075 t (1 + 0.5 n) per tap, edge reach about 15 s (t = 0.35 gives 3.4 % of the width)</td></tr><tr><td>4</td><td><code>nitro</code> reads <code>[0x73654c]</code>, so passes 5/6 and k 2 -&gt; 15 fire on &quot;nitro&quot;</td><td>The flag is the special-camera flag. They would fire in jump view, slow motion and zone preview, not with NOS. In PC the flag adds 1.1 to t (through n)</td></tr><tr><td>5</td><td>Ramp for the default: PC <code>[25, 125]</code> cap 0.65 is already right</td><td>PC ramp 25 -&gt; 125 m/s, cap 0.65 is the original. The PS2 ramp is 0.1 -&gt; 25, cap 1 (D)</td></tr><tr><td>6</td><td>Zoom-in sprite enlargement (PS2)</td><td>PC samples a larger source range for z &gt; 0 (zoom-out, edge clamp smear). Sign of z for forward motion: I, not confirmed (see U)</td></tr></tbody></table></div>
+<p>PS2 reference values read from the ELF (D, struct): offsets at <code>0x4485c0</code> = 2.3, 6.4, 8.8, 11.4, 22, 40; alphas at <code>0x4485f0</code> = 50, 35, 28, 17, 8, 4; enables at <code>0x448590</code> = 1,1,1,1,0,0; ramp <code>0x4ff95c</code> = 0.1, <code>0x4ff960</code> = 25, max <code>0x4ff954</code> = 1.0; k <code>0x4ff8f8</code>/<code>0x4ff8fc</code> = 2.0/15.0. PS2 max blur is about 70 % at t = 1 and the car is kept sharp by a depth to alpha trick (<code>ref/docs/re/postfx-elf.md</code>).</p>
+<p><code>tools/recomp/patches.py</code> already patches the PC constants: <code>0x702a38</code> -&gt; (0.1, 25) and <code>0x702a40</code> -&gt; 0.26 (&quot;too strong&quot;). The old bytes (25.0 and 125.0, 0.65) match this document (D second source). The &quot;NOS black screen&quot; skip at <code>0x40d615</code> and <code>0x40d2a2</code> (7512 -&gt; 9090) removes a SetInt BaseAlphaBlendEnable (not analysed here).</p>
+<h2 id="open-u">Open (U)</h2>
+<ul><li>U: sign and direction of the blur (z &gt; 0 for forward motion) in the camera object matrix <code>0x78d270</code>. Old logs</li></ul>
+<p><code>build/psblur/log1.log</code> show &quot;view1 v*R&quot; with z about +speed for the render block <code>[0x7404c0]</code>, which is not proven to be the same matrix. A bounded run with <code>RN_WATCH</code> on the <code>0x78d270</code> matrix and <code>0x78d450</code> would settle it. Not done tonight.</p>
+<ul><li>U: light streaks (<code>0x700e9c</code>, RT <code>0x71aba4</code>, <code>0x409b70</code>, decay BLENDFACTOR <code>0x008296b4</code> at <code>0x409bca</code>).</li><li>U: exact format <code>[0x702a80]</code> of the scene RT.</li><li>U: the &quot;NOS black screen&quot; patch sites.</li></ul>
+<h2 id="second-tool-agreement-10-random-names">Second-tool agreement (10 random names)</h2>
+<p>Names drawn with <code>random.seed(20261029)</code> from the V/I rows of both registries, then re-derived with a tool other than the primary.</p>
+<div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Primary</th><th>Second tool and result</th><th>Agree</th></tr></thead><tbody><tr><td><code>0x73641c</code> gBlurSpecialN</td><td>C</td><td>G xref: reads and writes only in <code>0x40cd40</code>, writes at 0x40cd8a and 0x40cd9e</td><td>yes</td></tr><tr><td><code>0x700e9c</code> OPT_LIGHTSTREAKS</td><td>C</td><td>G xref: readers <code>0x40cb80</code> <code>0x40b3f0</code> <code>0x409580</code> <code>0x410ce0</code> <code>0x4160b0</code>; writers <code>0x410a00</code> <code>0x410ce0</code> <code>0x410ed0</code> <code>0x416a40</code></td><td>yes</td></tr><tr><td><code>0x6cc9d8</code> 4.0 double</td><td>C+D</td><td>G xref: four reads in <code>0x40cd40</code> (0x40cfb9..0x40cffb); also read by <code>0x438b60</code> and <code>0x606110</code>, so it is a shared constant</td><td>yes (note: shared)</td></tr></tbody></table></div>
+<p>The full table of 10 names (these three and seven camera names, with three corrections) is in <code>docs/re/camera.md</code>.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

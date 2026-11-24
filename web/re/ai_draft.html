@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Slipstream (rebufo): car+0x47c, how much speed, and who gets it — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Question: how many m/s does the draft give on a straight, is it applied to the player, rivals and traffic the same, does the">
+<link rel="canonical" href="https://nfsu.cc/re/ai_draft.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/ai_draft.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Slipstream (rebufo): car+0x47c, how much speed, and who gets it — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Question: how many m/s does the draft give on a straight, is it applied to the player, rivals and traffic the same, does the">
+<meta property="og:url" content="https://nfsu.cc/re/ai_draft.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Slipstream (rebufo): car+0x47c, how much speed, and who gets it — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Question: how many m/s does the draft give on a straight, is it applied to the player, rivals and traffic the same, does the">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Slipstream (rebufo): car+0x47c, how much speed, and who gets it", "description": "Question: how many m/s does the draft give on a straight, is it applied to the player, rivals and traffic the same, does the", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/ai_draft.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Slipstream (rebufo): car+0x47c, how much speed, and who gets it", "item": "https://nfsu.cc/re/ai_draft.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rivals &amp; Race AI</p>
+<article>
+<h1>Slipstream (rebufo): car+0x47c, how much speed, and who gets it</h1>
+<div class="badges">
+  <span class="badge">Rivals &amp; Race AI</span>
+  <span class="badge accent">26 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="ai_draft.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/ai_draft.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Question: how many m/s does the draft give on a straight, is it applied to the player, rivals and traffic the same, does the player feel it, and a log-only probe. V = read in code/data, I = inference, U = open. Nothing was run. Tools: census/hopper/decomp.c, tools/recomp/asm.py (float tables from pc/Speed.exe), docs/re/physics.md and race_ai.md.</p>
+<h2 id="answer-first">Answer first</h2>
+<ol><li><b>In a stock car it gives 0 m/s</b>, to the player and to rivals. V for the data, I for the consequence (below).</li></ol>
+<p>The draft is written into the aero factor <code>1 - car+0x47c</code> (V) and that factor is only ever multiplied into the aero drag product, whose coefficient <code>body+0x1e4</code> = <code>phys+0x290</code> is <b>0.0 in all 35 cars</b> (V, physics.md). Zero times anything is zero. So top speed with draft 0 and with draft 0.9 is the same number: the straight ends on gearing / rolling resistance, not aero.</p>
+<ol><li>Applied the <b>same way to every car in the race list</b>: <code>/0x426450/</code> sums the pair terms over all cars of <code>[0x7361f8]</code>, with no</li></ol>
+<p>kind test, and both movers (<code>0x479160</code>, <code>0x474d40</code>) publish it for every car. V. Traffic is a <em>source</em> like any other car (<code>/0x426300/</code> only needs speed &gt;= 1 m/s and &lt;= 60 m), but traffic itself is driven by BeltMover (mode 4, spline + lateral) and never by the force mover, so for traffic the value is written and unused. V for the movers, I for &quot;unused&quot;.</p>
+<ol><li>The player <b>does feel something, but it is not a force</b>: <code>/0x43fa90/</code> (from <code>RacingCar::UpdateStyleItems 0x43f240</code>) tests</li></ol>
+<p><code>car+0x3d4 &gt;= 20.116</code> and <code>car+0x47c &gt;= thr</code> and calls <code>StyleItem::Trigger 0x436230</code>, passing <code>car+0x47c</code> as the strength. V. That is the style/reputation item (sound + style bar), i.e. the game sells you the tow without pushing the car.</p>
+<h2 id="the-chain-address-by-address-v-unless-marked">The chain, address by address (V unless marked)</h2>
+<ul><li>Every frame <code>0x4774a0</code> -&gt; <code>0x479160(arg = car+0x404)</code>:</li></ul>
+<p><code>engine+0xa0 = arg</code> (torque x), <code>body+0x1e8 = arg</code> (drag scale), <code>wheel+0x17c = arg</code> (grip), <code>[body?+0x50]+0xc = 1 - car+0x47c</code>. If <code>car+0x86c != 0 &amp;&amp; [[car+0x3c]+0x1c] != 0</code> the power part is x0.0055 (<code>0x3bb40000</code>).</p>
+<ul><li><code>0x474a90</code> -&gt; <code>0x474d40</code>: same set, with <code>car+0x404</code> as the drag/engine scale and the same <code>1 - car+0x47c</code> into <code>+0xc</code>; it also</li></ul>
+<p>writes a throttle-gated power cut <code>0.008 * (1 - something)</code> into <code>+0x13c</code>/<code>+0x138</code> (<code>0x3c03126f</code>, <code>0x400f2b02</code> = 2.237).</p>
+<ul><li>The only force consumer is <code>0x585410</code>, and its aero block is <code>if (body+0x1e4 != 0)</code>: drag = <code>(body+0x1e8 * body+0x1e4 + 1.9)</code></li></ul>
+<p>x speed ramp (x1.03 if <code>body+0x4f</code>) and then a speed-capped vector push against <code>-v/|v|</code>, capped by the 1200.0 table (0xc0400000 = -3.0, 0x44960000 = 1200.0). <code>body+0x1e4</code> = drag coefficient = <code>phys+0x290</code> = <b>0.0 stock</b> (physics.md, data read) -&gt; the block is skipped and the <code>1 - draft</code> factor is never read by any force path. V for the gate and the data, I for &quot;never read&quot;.</p>
+<ul><li>Where <code>1 - car+0x47c</code> is <b>read</b>: only <code>0x456830</code> (AI speed prediction) and <code>0x43fa90</code> (style item). Nothing in 0x585410 reads +0xc. V.</li><li><code>0x456830</code> is the rival&#x27;s own speed model, used by the Pass reach test and the avoid checks:</li></ul>
+<p><code>aero = (1 - car+0x47c) * body+0x260 * v² / body+0x110</code>, then <code>v_pred = var_18 - aero + gravity(0x7000ac * v)</code>, with <code>var_18 = sub_583ea0(v / car+0x404)</code> scaled by the gear/rev factor from <code>sub_57f2b0</code> when <code>body+0x424 != 0xff</code>. It uses a <em>different</em> coefficient (<code>body+0x260</code>, not <code>0x1e4</code>), so it can be nonzero even when the physics aero path is dead. U: its stock value was not read this session. Effect: it only changes the rival&#x27;s <em>predicted</em> speed, never the force on the car.</p>
+<h2 id="the-pair-term-that-fills-car-0x47c-v-values-read">The pair term that fills car+0x47c (V, values read from the exe)</h2>
+<p><code>0x426450</code> (called from <code>World::Step 0x420b40</code>) = clamp(sum over all cars of <code>0x426300(other, self)</code>, 0, <b>0.9</b> <code>0x6b7b54</code>). Per pair: <code>other+0x3d4 &gt;= 1.0</code> (<code>0x706288</code>), distance (3D, +0x60) clamped to <b>60.0 m</b> (<code>0x70629c</code>), cosine of the unit gap vector against a heading &gt;= cos_min, then <code>w = falloff(dist / reach)</code> and the cosine ramp, product.</p>
+<ul><li>falloff <code>0x700d3c</code>: <b>1, 0.9, 0.75, 0.55, 0.3, 0</b> over <code>dist/reach</code> in 6 equal steps.</li><li>reach table <code>0x7062b4</code>: {base 2.5, cap 255, slope 0.5} -&gt; reach ~0.5 per m/s, 2.5 m at 0 and ~32 m at 60 m/s. I (<code>sub_583f20</code>).</li><li>cosine: <code>(cos - c0) / (1 - c0)</code> with c0 near 0.95 (<code>0x6b7b50</code>; <code>0x6b7b40-44</code> holds 0.65 / 0.95 / 0.9). I for the exact c0.</li><li>Full 1.0 needs <code>dist/reach &lt; 1/6</code> (~5 m at 60 m/s) and cos = 1; one car at 15 m / 60 m/s gives ~0.58, 0.9 needs several. I.</li><li>Which car&#x27;s heading: <code>sub_567370</code> at <code>0x426300</code> has no visible argument. U (race_ai.md says the same).</li></ul>
+<h2 id="wave-2-the-rule-that-makes-it-real-rn-draft-k-ho">Wave 2: the rule that makes it real (RN_DRAFT_K, host/rivals.c)</h2>
+<p>Car+0x404 is the scale of engine torque (<code>engine+0xa0</code>), dead drag (<code>body+0x1e8</code>) and grip (<code>wheel+0x17c</code>), read per frame by <code>0x479160</code>. Writers: <code>0x44bd10</code> for rivals (rubber band, <code>0x44bff5</code>, <code>max(scale,1)</code> every 0.3 s) and <b>only</b> <code>0x429b10</code> (<code>UpdateTwoHumanCatchUp</code>, <code>0x429b8b</code>) for the player, i.e. only with two humans; a single player keeps 1.0 from the ctor. V. <code>0x485c00</code> also stores <code>+0x404</code> but it is <code>TrackCarCameraMover::Update</code>, a camera field. V.</p>
+<p>Rule (<code>RN_DRAFT_K=&lt;k&gt;</code>, off by default, logs <code>DRAFTK</code> 1/s): every present, kind 1 and 2, <code>car+0x404 = base * (1 + k*draft)</code> when <code>draft &gt; 0.2</code>. <code>base</code> = the value the game left; if it differs from ours it is the new base, so rubber band and tow never compound. Traffic skipped (BeltMover, no force mover).</p>
+<p>Arithmetic for k. With the aero path dead the terminal speed is where drive force meets the remaining resistance (rolling, drivetrain, rev limiter), <code>F(v) = R</code>. Near v0 in a fixed gear the engine is at constant power, <code>F ~ P/v</code>, so scaling the torque (and P) by <code>s = 1 + k*d</code> scales the terminal speed the same way:</p>
+<p><code>s*F(v&#x27;) = R, F(v) = F0*v0/v  -&gt;  v&#x27; = s*v0  -&gt;  dv/v0 = k*d</code></p>
+<div class="tbl-wrap"><table><thead><tr><th>k</th><th>d = 0.9 (cap)</th><th>d = 0.58 (one car, 15 m)</th><th>at 60 m/s, full draft</th></tr></thead><tbody><tr><td>0.050</td><td>+4.50 %</td><td>+2.90 %</td><td>60 -&gt; 62.7 m/s</td></tr><tr><td><b>0.055</b></td><td><b>+4.95 %</b></td><td><b>+3.19 %</b></td><td><b>60 -&gt; 62.97 m/s</b></td></tr><tr><td>0.060</td><td>+5.40 %</td><td>+3.48 %</td><td>60 -&gt; 63.24 m/s</td></tr></tbody></table></div>
+<p>k = 0.055 lands inside the 4-6 % window at the 0.9 cap (I, model above, not a measurement). Caveat: on the rev limiter in top gear the extra torque adds no speed and 4-6 % would need gearing. Side effects: +4.95 % grip in the tow, no drag (coefficient 0), and <code>0x456830</code> divides by 0x404, so rivals also predict the player 5 % faster. I.</p>
+<h2 id="probes-log-only-host-aitel-c">Probes (log only, host/aitel.c)</h2>
+<p><code>AIDR</code> 1/s per player (kind 1) and rival (kind 2): <code>draft</code> = <code>car+0x47c</code>, <code>sp</code>, <code>d</code>/<code>lat</code> to the player. <code>AIP</code> adds the player&#x27;s <code>draft</code> and <code>tow&gt;0.2 N/M x%</code> (seconds in tow over seconds in the race). <code>RN_AILOG=1</code> in a race ghost, <code>grep -E &quot;AIDR|AIP&quot;</code>; with <code>RN_DRAFT_K=0.055</code> compare <code>grep DRAFTK</code> against the speeds.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

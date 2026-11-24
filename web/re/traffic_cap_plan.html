@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Traffic cap plan: every fixed per-car array blocking 30 / 40 / 48 / 64 — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Read-only RE on pc/Speed.exe (base 0x400000). Every address below was read with">
+<link rel="canonical" href="https://nfsu.cc/re/traffic_cap_plan.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/traffic_cap_plan.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Traffic cap plan: every fixed per-car array blocking 30 / 40 / 48 / 64 — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Read-only RE on pc/Speed.exe (base 0x400000). Every address below was read with">
+<meta property="og:url" content="https://nfsu.cc/re/traffic_cap_plan.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Traffic cap plan: every fixed per-car array blocking 30 / 40 / 48 / 64 — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Read-only RE on pc/Speed.exe (base 0x400000). Every address below was read with">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Traffic cap plan: every fixed per-car array blocking 30 / 40 / 48 / 64", "description": "Read-only RE on pc/Speed.exe (base 0x400000). Every address below was read with", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/traffic_cap_plan.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Traffic cap plan: every fixed per-car array blocking 30 / 40 / 48 / 64", "item": "https://nfsu.cc/re/traffic_cap_plan.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Traffic Simulation</p>
+<article>
+<h1>Traffic cap plan: every fixed per-car array blocking 30 / 40 / 48 / 64</h1>
+<div class="badges">
+  <span class="badge">Traffic Simulation</span>
+  <span class="badge accent">75 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="traffic_cap_plan.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/traffic_cap_plan.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Read-only RE on <code>pc/Speed.exe</code> (base 0x400000). Every address below was read with <code>objdump -d</code>; bytes are quoted from that output. F = read in code, I = inference, NV = not verified. No build, no run. The entrant table alone buys <b>nothing</b> past 32: the car list <code>sorted[]</code> at <code>[0x7361f8]+0x28</code> is the first wall (row 0). Steps are ordered by that.</p>
+<h2 id="answers-first">Answers first</h2>
+<ul><li>Fixed per-car storage that blocks N, in bite order: car-list <code>sorted[]</code> (32), entrant table</li></ul>
+<p>(30 + RaceStatus behind it), collision bodies (30), AI slot pools (26/27/27 + 640 points), collision id table (0xde ids, 216-bit bitmap), loaded-car pools (40), neighbour list (16).</p>
+<ul><li>The 45-car fault is <em>layout</em>, not count: <code>sorted[]</code> is 32 dwords at <code>L+0x28</code> and the</li></ul>
+<p>checksum writes 0x10-byte records from <code>L+0xa8</code>, so they overlap (F).</p>
+<h2 id="0-car-list-sorted-blocks-33-the-real-32-f">0. Car list <code>sorted[]</code> — blocks 33+, the real 32 (F)</h2>
+<p>Object <code>L = [0x7361f8]</code>, malloc <code>0x17a0</code>, ctor <code>0x41f6e0</code> (F: <code>movl %esi,0x7361f8</code> at <code>0x41f7d4</code>). Fields: <code>+0x18</code> count, <code>+0x1c</code> players, <code>+0x20</code> players+opponents, <code>+0x24</code> first traffic index, <code>+0x28</code> <code>sorted[32]</code> ends at <code>+0xa8</code> (F: ctor sets <code>+0x18..+0x24</code> and leaves the rest zero; the next init in the ctor is <code>+0x300</code>).</p>
+<ul><li>Writer: sort <code>0x41fe50</code> does <code>movl %edi,0x28(%esi,%edx,4)</code> / <code>incl 0x18(%esi)</code> in four passes</li></ul>
+<p>(<code>0x41fe83</code>, <code>0x41feac</code>, <code>0x41fed8</code>, <code>0x41ff01</code>) with <b>no bound check</b> (F).</p>
+<ul><li>Reader that dies: <code>0x421170</code>, <code>leal 0x28(%edi),%ebp</code> (<code>0x42118d</code>) + <code>addl $0xa8,%edi</code></li></ul>
+<p>(<code>0x421191</code>), loop <code>movl (%ebp),%esi</code> / <code>flds 0x64(%esi)</code> (<code>0x421197</code>..<code>0x42119a</code>), count from <code>+0x18</code> (<code>0x42117d</code>), 0x10-byte record per car written at <code>edi-8..edi</code> (F). At count &gt; 32 the record for car 0 overwrites <code>sorted[32]</code>, so car 32 is read as a float pointer: fault in <code>0x42119a</code> (F for the overlap, NV for the exact index of the fault).</p>
+<ul><li>Lift: records out of the object. <code>0x421191</code> is 6 bytes (<code>81 c7 a8 00 00 00</code>); <code>bf imm32 90</code></li></ul>
+<p>(<code>mov $scratch,%edi; nop</code>) fits exactly. <code>sorted[]</code> then runs to 182 entries before the <code>+0x300</code> buffers; 64 needs <code>+0x128</code> (F).</p>
+<ul><li>Scratch: 64 x 0x10 = 0x400. <code>0x7e0000</code> assumed free (NV; entrants at <code>0x7c0000</code> end at <code>0x7dd400</code>).</li><li>Nothing else in the object is touched. Failure of this step: the same <code>0x42119a</code> fault, or a</li></ul>
+<p>new one in <code>0x4211xx</code>; if a reader of <code>L+0xa8..</code> exists it now reads stale memory (NV, see open question 1).</p>
+<h2 id="1-entrant-table-cap-blocks-31-f">1. Entrant table + cap — blocks 31+ (F)</h2>
+<ul><li>Array 30 x 0x750 at <code>0x77c790..0x78a2f0</code>; <code>RaceStatus</code> at <code>0x78a2f0</code> (F: ctor</li></ul>
+<p><code>0x431e9d</code> <code>mov ecx,0x36d8</code> dwords, <code>0x431ea2</code> <code>mov edi,0x77c790</code>, <code>0x431ec4</code> stores the pointer at <code>+0x128</code>).</p>
+<ul><li>Cap: <code>83 bd 2c 01 00 00 1e</code> at <code>0x4322e0</code>, immediate <b><code>0x4322e6</code></b> (F).</li><li>AddEntrant <code>0x4322a0</code>: index <code>count</code> x 0x750 + <code>[+0x128]</code> (<code>0x43231c</code>..<code>0x43232a</code>), then</li></ul>
+<p><code>incl 0x12c</code> (<code>0x432331</code>). 12 callers, all in <code>0x4b3xxx..0x4b6xxx</code> (F: <code>0x43b488</code>, <code>0x4b3c40</code>, <code>0x4b4332</code>, <code>0x4b4bde</code>, <code>0x4b4e1c</code>, <code>0x4b504c</code>, <code>0x4b5288</code>, <code>0x4b551c</code>, <code>0x4b594c</code>, <code>0x4b5bb3</code>, <code>0x4b613d</code>, <code>0x4b66c6</code>).</p>
+<ul><li>Old base (hard-coded): ctor <code>0x431ea2</code>/<code>0x431ec4</code> and the startup loop <code>0x689d22</code></li></ul>
+<p>(<code>mov esi,0x77cec4</code>, count <code>0x1e</code>, <code>call 0x417600</code>, byte <code>+0x734=0</code>). Every reader uses the pointer at <code>0x78a418</code> (14 sites, plus 0x4b6309 which does <code>sub $0x78a418</code>).</p>
+<ul><li>Lift: 64 x 0x750 = 0x1d400 zeroed at <code>0x7c0000</code>; write the pointer to <code>[0x78a418]</code> before the</li></ul>
+<p>race build; <code>0x4322e6</code> <code>1e</code> -&gt; <code>40</code>. Leave the two hard-coded sites alone only if the new block is zeroed (the init loop&#x27;s <code>0x417600</code> sub-object is then skipped: NV, doc traffic_cap says the same).</p>
+<ul><li>Raise <code>0x4322e6</code> alone: entrant 31 writes over <code>RaceStatus</code> (crash / silent corruption) (F).</li></ul>
+<h2 id="2-collision-bodies-blocks-31-f-size-i">2. Collision bodies — blocks 31+ (F, size I)</h2>
+<ul><li><code>CarCollisionBodySlotPool</code>: <code>bf 1e 00 00 00</code> at <code>0x4669be</code>, size 0x190 (<code>0x4669b9</code>), alloc</li></ul>
+<p><code>0x566dc0</code> (F). Also <code>WorldObjectCollisionBodySlotPool</code> <code>bf 20</code> / 0x410 at <code>0x46697e</code>.</p>
+<ul><li>Id table: <code>movl $0xde,(%esi)</code> <code>0x466b11</code>, <code>movl $0xde,%ecx</code> <code>0x466b55</code>; bitmap 0x1b bytes =</li></ul>
+<p>216 bits (F for the immediates; the 216-bit read is from <code>docs/re/traffic_limits.md</code>, NV here).</p>
+<ul><li>Lift: <code>0x4669bf</code> <code>1e</code> -&gt; <code>40</code>, and ids/bitmap together only when teleport recycles bodies past</li></ul>
+<p>216 (NV which pool id cars take). Failure if not raised: car 31 has no body, passes through walls, no contacts (I), or the pool grows by n/4+1 (NV, pool ctor).</p>
+<ul><li>30-entry array at <code>0x4632be</code> (<code>c6 46 05 1e</code>, object vtable <code>0x6b9694</code>, alloc <code>0x78</code> at</li></ul>
+<p><code>0x4632b8</code>) (F). What it holds is NV; if it is the AI contact list, 40 is its size too.</p>
+<h2 id="3-ai-slot-pools-blocks-27-f">3. AI slot pools — blocks 27+ (F)</h2>
+<p><code>0x45553c</code> 26 (0x18), <code>0x45557c</code> 27 (0x220), <code>0x4555bc</code> 27 (0xc4), <code>0x4555f9</code> 640 x 0x70 (0x280) (F, values from <code>re_racer_cap</code> §1.7, immediates re-checked in the disassembly). One goal + one action + ~24 future points per AI car. Lift: 64/64/64/1536. <code>patches.py</code> already has 48/49/49/1280 for these (F, main&#x27;s note) -&gt; at 64 traffic the pools are short again: 56 AI cars need 64. Not raised: <code>0x566dc0</code> returns 0 (NV what the caller does; likely no goal -&gt; car idles).</p>
+<h2 id="4-loaded-car-pools-blocks-41-f-meaning-nv">4. Loaded car pools — blocks 41+ (F, meaning NV)</h2>
+<p><code>0x58b1d3</code> (0x68), <code>0x58b213</code> (0x28 x 0x1f4), <code>0x58b250</code> (0x1c): all 40. Loaded by car <em>type</em>, not per car (I). Lift to 64 only if the log shows rides failing to load; 64 traffic over ~20 types does not need it (I).</p>
+<h2 id="5-physics-pools-automatic-f">5. Physics pools — automatic (F)</h2>
+<p><code>0x4764e0</code> reads <code>[0x78a41c]</code> (entrant count) and sizes RigidBody = count+0x20, <code>0x1f0</code>, <code>0xa0</code> x count, Wheel/Suspension x 4*count (<code>0x4764f0</code>, <code>0x476565</code> <code>leal (,%esi,4)</code>). No patch needed <b>if</b> it runs after every entrant is registered (NV, doc open item). If it runs first, 48 cars share 30 bodies: symptom is cars with no physics or bodies recycled.</p>
+<h2 id="order-of-steps-and-how-each-one-fails-visibly">Order of steps, and how each one fails visibly</h2>
+<ol><li><code>sorted[]</code> records out (row 0). Fail: still <code>STOP 0042119a</code>, or a new fault inside <code>0x4211xx</code>.</li><li>Entrant relocation + <code>0x4322e6</code> = 0x40. Fail: <code>RN_FREELOG</code> entrant count stays at 30 (silent</li></ol>
+<p>drop), or a write-fault near <code>0x78a2f0</code> if the pointer was not moved before the build.</p>
+<ol><li>Collision body 0x4669bf = 0x40. Fail: cars drive through geometry, COLLOG orphans climb.</li><li>AI pools 64/64/64/1536. Fail: some cars never move or never brake (no goal/action slot).</li><li>Loaded pools 64 only on evidence. Fail: a ride loads as a placeholder or the car is invisible.</li></ol>
+<h2 id="per-car-cpu-cost-that-grows-with-n-f-unless-mark">Per-car CPU cost that grows with N (F unless marked)</h2>
+<ul><li><code>0x421170</code>: ~20 instructions + 1 round per car, runs once per frame (NV how often it is</li></ul>
+<p>called; <code>0x4474b3</code> also calls it).</p>
+<ul><li>Neighbour/contact list: <code>0x57abad</code> <code>movl $0x10,0x4c(%esp)</code> caps each AI car&#x27;s neighbours at 16,</li></ul>
+<p>so the distance work is 16 x N, not N^2 (F for the constant, I for the loop shape).</p>
+<ul><li>Collision: per body <code>imull $0xde</code> at <code>0x466d79</code>, <code>0x466da8</code>, <code>0x466e93</code>, <code>0x466ecc</code>,</li></ul>
+<p><code>0x468315</code>, <code>0x4696df</code> (F: id -&gt; row math, 6 sites). Pairwise contact resolution cost at N cars is NV; expect the 30 -&gt; 48 step to cost more than the 48 -&gt; 64 step.</p>
+<h2 id="open-questions-valid-results-not-guesses">Open questions (valid results, not guesses)</h2>
+<ol><li>Does anything read the checksum records at <code>L+0xa8..</code>? If yes, the step-1 patch must move the</li></ol>
+<p>reader too; if no, the record block is dead weight and can be dropped.</p>
+<ol><li>Is <code>0x7e0000</code> mapped and writable in the guest (scratch for the records)?</li><li>Does <code>0x4764e0</code> run after the last AddEntrant? (decides whether 40+ physics bodies exist)</li><li>What is the 30-entry array at <code>0x4632be</code>?</li></ol>
+<h2 id="draft-patch-step-0-cap-all-off">Draft patch (step 0 + cap, all off)</h2>
+<p>The candidate file (not published): flip <code>when=lambda: False</code> -&gt; <code>True</code> and rebuild; the build stops if <code>old</code> stops matching. Step 0 is one site; step 1 is the immediate only (the entrant block is host memory: point <code>[0x78a418]</code> at <code>0x7c0000</code> from <code>host/</code> before the race build).</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

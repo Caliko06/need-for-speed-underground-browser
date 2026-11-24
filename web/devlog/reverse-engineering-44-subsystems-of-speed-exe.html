@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems) — NFSU.cc Devlog | NFSU.cc</title>
+<meta name="description" content="Every verified x86 address, struct, state machine, and subsystem note from Need for Speed Underground (2003, Speed.exe) is now published as a searchable web atlas and LLM-ready Markdown corpus.">
+<link rel="canonical" href="https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems) — NFSU.cc Devlog">
+<meta property="og:description" content="Every verified x86 address, struct, state machine, and subsystem note from Need for Speed Underground (2003, Speed.exe) is now published as a searchable web atlas and LLM-ready Markdown corpus.">
+<meta property="og:url" content="https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems) — NFSU.cc Devlog">
+<meta name="twitter:description" content="Every verified x86 address, struct, state machine, and subsystem note from Need for Speed Underground (2003, Speed.exe) is now published as a searchable web atlas and LLM-ready Markdown corpus.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)", "description": "Every verified x86 address, struct, state machine, and subsystem note from Need for Speed Underground (2003, Speed.exe) is now published as a searchable web atlas and LLM-ready Markdown corpus.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "Reverse Engineering, Ghidra, Hopper, AI Agents, NFS Underground"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)", "item": "https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Devlog</a></p>
+<article>
+<h1>Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)</h1>
+<p class="lead">Recompiling a 2003 binary without source code requires understanding how the game actually works inside. Today we are publishing all 44 reverse-engineering system notes from docs/re/ directly on nfsu.cc/re/.</p>
+<div class="badges"><span class="badge">Reverse Engineering</span><span class="badge">Ghidra</span><span class="badge">Hopper</span><span class="badge">AI Agents</span><span class="badge">NFS Underground</span></div>
+<div class="meta-bar">
+  <span><time datetime="2026-11-24">2026-11-24</time></span>
+  <span>Commits: <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/9776828" rel="noopener"><code>9776828</code></a></span>
+  <a href="reverse-engineering-44-subsystems-of-speed-exe.md">View raw Markdown (.md)</a>
+</div>
+<h2 id="why-publish-the-full-binary-atlas">Why publish the full binary atlas</h2>
+<p>Most retro web ports are black boxes. <code>RE-NFSU</code> was built on an evidence-first rule: every claim about <code>Speed.exe</code> (md5 <code>b6b9232c55376b3c38c56aac1f8a121d</code>, base <code>0x400000</code>, 3.18 MB) must cite the exact address or bytes read in the binary, tagged <b>V</b> (verified in code/bytes), <b>I</b> (inferred), or <b>U</b> (open).</p>
+<p>Across the repository, that effort produced:</p>
+<ul><li><b>44 subsystem monographs</b> in <a href="https://nfsu.cc/re/index.html"><code>docs/re/</code></a>: car physics, acceleration curves, tuning math, chase/speed/jump/crash cameras, rival rubber-banding and AI stuck detection, traffic pools and reactions, track splines and Road IDs, DirectX 8/9 render pipeline, motion blur, sound banks, garage/career gameflow, and asset pack formats.</li><li><b>57 symbol census tables</b> (<code>census/names_*.tsv</code>) naming thousands of <code>Speed.exe</code> functions across every subsystem.</li><li><b>14 surgical patch modules</b> (<code>tools/recomp/patches_*.py</code>), where every patch cites the exact <code>Speed.exe</code> address it modifies while leaving <b>Original 2003</b> mode untouched.</li></ul>
+<h2 id="built-for-humans-and-ai-coding-search-agents">Built for humans and AI coding/search agents</h2>
+<p>Every page in the <a href="https://nfsu.cc/re/index.html">Reverse Engineering Atlas</a> and <a href="https://nfsu.cc/devlog/index.html">Engineering Devlog</a> is served both as semantic HTML (<code>TechArticle</code> JSON-LD) and as a clean <b><code>.md</code> sibling</b> (<code>&lt;link rel=&quot;alternate&quot; type=&quot;text/markdown&quot;&gt;</code>), indexed in <a href="https://nfsu.cc/llms.txt"><code>/llms.txt</code></a>, <a href="https://nfsu.cc/llms-full.txt"><code>/llms-full.txt</code></a>, and <a href="https://nfsu.cc/feed.xml"><code>/feed.xml</code></a>.</p>
+<p>Whether you are researching static recompilation (alongside projects like N64Recomp, XenonRecomp, and NFSU2Recomp), digging into Black Box&#x27;s 2003 racing physics, or querying an AI assistant about how a 2003 x86 <code>.exe</code> runs on WebGPU, you can inspect the primary evidence directly.</p>
+<p class="repo"><b>Files in repo:</b> <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/README.md" rel="noopener"><code>docs/re/README.md</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/tree/main/census/" rel="noopener"><code>census/</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_feel.py" rel="noopener"><code>tools/recomp/patches_feel.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_race.py" rel="noopener"><code>tools/recomp/patches_race.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_render.py" rel="noopener"><code>tools/recomp/patches_render.py</code></a></p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

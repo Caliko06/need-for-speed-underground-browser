@@ -1,0 +1,47 @@
+# Race setup: NFSU1 data to running cars
+
+> Source: `docs/re/race_setup.md` in `https://github.com/Caliko06/need-for-speed-underground-browser` · Live game: https://nfsu.cc/
+> Verified `Speed.exe` (2003 PC, base `0x400000`) addresses cited: 69
+
+# Race setup: NFSU1 data to running cars
+Static read of pc/Speed.exe (base 0x400000, MD5 b6b9232c55376b3c38c56aac1f8a121d); no race placed or run.
+V = code read plus second tool; I = inference; UNKNOWN = unproved. Address-level proof: ../../census/names_racesetup.tsv (44 rows).
+G = census/ghidra/decomp_*.c; H = census/hopper/decomp.c; C = capstone on this executable; TSV gives file:line and instruction addresses.
+Prior art inspected: https://github.com/nfs-tools/Explorer (BUN asset tooling); race semantics below come from local binary reads.
+
+| Data / path | Layout or behavior | Proof (V unless stated) |
+|---|---|---|
+| Career definitions | FrontEnd/FrontB.lzc container 0x80034a00: 0x34a01 type rows, 0x20 bytes -> 0x733f78; 0x34a02 EventDesc rows, 0x14c bytes -> id index 0x733ff8. | 0x5a00a0, 0x5a0060 H+C |
+| Event -> race | Event +0 u32 id, +8 u32 mode; +0x78 eight stage slots (s16 track, u8 laps, u8 direction), +0x98 u32 stage count. 0x5a2350 copies event to runtime +0x58a0 and expands each stage to track/direction/laps s32. | 0x5a2350 G+C; tools/re/events.py:17-26 |
+| Career mode | +8: 1 drag, 3 drift, 4 timed, 5 knockout; standard otherwise. Stage -> track 0x78a2f0, direction 0x78a2fc, laps 0x78a31c; condition 0x78a30c, drag byte 0x78a344, drift byte 0x78a345. | 0x4b5df0 G+C |
+| Quick modes | Separate enum: 0 circuit, 1 sprint, 2 knockout, 3 free, 4 tournament, 5 drag, 6 drift. Options +0 racer count, +8 track, +0xc direction, +0x10 laps, +0x14 difficulty. Sprint forces 1 lap; knockout sets condition 3 and 3 laps. | 0x4b5c00, 0x4b49e0, 0x4b4c30, 0x4b4e60 G+C |
+| Track catalog | Global/GLOBALB.BUN (also GlobalB.lzc), 0x34201: 0xfc-byte TrackInfo, s16 +0x6c id, byte +0x69 open; array at 0x736168, count 0x73616c. | 0x442040 H+C; 0x441fe0 G+C |
+| Track loading | 0x449760 loads TRACKS/TRACKB<id>.LZC (BUN alternative); 0x4496a0 configures region/event streams. 0x449870 builds splines, applies reverse, initializes road graph. | H+C; G+C; `re_stream` |
+| Route != AI road | 0x80034147 children in order: 0x34148 path rows 0x28, 0x34149 nodes 0x14, 0x3414a zone rows 0xb4. Header +1 closed, +2 first node, +6 spline point count, +0xc length; node +0/+4 f32 xy, spline z=0. Road graph separately 0x34121/22. | 0x4434d0, 0x4432a0 G+C; docs/re/track.md:60; docs/re/traffic.md |
+| Position markers | 0x34146, aligned 0x30-byte rows: +8 u32 name hash, +0xc integer ordinal (not float), +0x10 f32 xyz, +0x20 u16 angle. | 0x441ed0 G+C; integer compare 0x422661 |
+| Grid positions | ForwardStartingPosition / BackwardStartingPosition, ordinal k=0..n-1, becomes entrant grid k+1. Missing count or ordinal regenerates whole grid at path distances 100+17*floor(k/2), lateral +/-3; ground query replaces z. | 0x422580 G+C, constants 0x6b7c34/2c/30 |
+| Grid -> cars | 0x421f00 constructs race, calls 0x422a70, then 0x434590. Grid matches entrant +3 (1..4 original), builds car 0x422410 -> 0x425350; kind 1 human mode 1, kind 2 rival mode 3; traffic separately 0x598bf0. | G+H+C |
+| Rival definition | Event +0xd4: 3 rows x0x1c, name[8], +0xc preset hash, +0x10 three s16 difficulty skills, +0x16 s16 rating (-1 auto), +0x18 aggression 0..2; +0x128 count, +0x12c catchup. | 0x4b4040 G+C; docs/re/rivals.md |
+| Rival entrants | Career takes count from event; quick one-human race uses total-1 (two-human setup uses 0 AI). 0x5809c0 creates id 100+k, kind 2, grid 1+k, skill +0x735, aggression +0x736; 0x4322a0 appends 0x750-byte entrant. Player id 0, kind 1; shuffle 0x4b4610 / career 0x4b6300. | 0x4b4040, 0x4b49e0, 0x5809c0 G+C |
+| Which AI | 0x4623d0 selects goal 1 normal, drag human 3 / rival 2. 0x435d30 reads optional TrackInfo +0xa8 s16 section[direction*4+carClass]; -1 auto-selects, drag auto uses 0x456e90 nearest traffic lane. Global tuning 0x34b00 -> 0x779c78, skill rows 0x779ff8+0x54*k. | G/H+C; loader 0x462070 H+C |
+| Boundaries | 0x434810 resolves ForwardStartLine/BackwardStartLine, SplitTimeBoundary1/2/3, ForwardFinishLine/BackwardFinishLine through 0x434640; marker xy projects to route percentage via 0x443a10. No independent checkpoint collision volume in this lap path. | G+C; literal loads 0x434836..0x4349a9 |
+| Defaults | Missing start -> 5%; splits -> start+33/+66 percentage points; third omitted; open finish -> start+95, closed finish=start. Finish selector 0x78a340 selects marker ordinal (forward finish or reverse start). | 0x434810, 0x434640 G+C |
+| Lap / finish | 0x434270 takes lap target, forces 1 for nonzero open/drag target. 0x433650 detects signed percentage crossing, wrap +/-50, rejects delta >25; 0x4338c0 counts forward finish laps, reverses backward crossing. 0x435570 ranks/knocks out; 0x4350d0 finishes a car and notifies player. | G+C; record +8 lap, +9 maximum, +0x1c previous %; race +0x530 target |
+| Drag | 0x4b55b0 options +0x20 finish selector, +0x24 longitudinal grid adjustment. Uses traffic lanes; 0x45cff0 plans lane route, 0x45d970 (I: lane-change controller) calls 0x456e90 / 0x5a7700. No separate drag-lane table proved. | G/H+C |
+| Drift | 0x43de90 builds four score records, synthetic opponents id100+k; physical rival spawn bypassed. 0x43e310 -> intensity 0x43e540, bonus 0x43e6e0, scores 0x43eb00; intensity uses speed/slip/yaw. Bonus requires >=2 wheels on surface 3 plus speed gate; not a placed 0x3414a scoring polygon in this path. | G+C, surface read 0x43e727/2c; authoring surface 3 UNKNOWN |
+| Current WORLD limit | Grid patch asks 10 slots and reorders close poses; RaceManager still ranks only 4, extra racers get external records with rank 0. Six WORLD rivals do not establish a seven-car classified race (I). | tools/recomp/patches_race.py:90-107; host/free.c:998,1028 |
+
+## A new race in UG2 space needs:
+Fields below are a semantic minimum, not a new serialized format. Reuse proven existing records; unspecified bytes stay UNKNOWN.
+| Data | Fields / units / coordinate frame | Required or optional; proof |
+|---|---|---|
+| Selection | Track id s16 in TrackInfo and career stage (WORLD 1010); race mode enum appropriate to career or quick; direction; difficulty; lap count. Event id u32 only if entering through career event index. | Required selection; career EventDesc optional for quick entry. 0x441fe0, 0x5a0060, 0x4b5df0, 0x4b49e0 |
+| Resources | TrackInfo and matching TRACKB route/marker/road chunks; stream-region association and loaded collision/render sections covering the chosen roads. | Required; existing WORLD resources reusable where present. 0x449760, 0x4496a0, 0x449870; docs/re/track.md |
+| Frame | All xy/xyz use NFSU1 world units (metres, z up); UG2 -> current WORLD: (y-1287.375, -x+812.25, z-6.203125); tangent (tx,ty)->(ty,-tx). | Required common frame, not raw UG2 coordinates. UG2 road tools (not published); [docs/re/ug2_bridge.md](https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/ug2_bridge.md) |
+| Progress route | 0x34148 closed flag, first/count, f32 length in metres; 0x34149 ordered f32 xy nodes in world frame, stride 0x14; consistent path metadata. | Required for lap/progress/grid fallback. 0x4432a0, 0x433650; node bytes beyond xy are not fully named (docs/re/track.md) |
+| Exact grid | 0x34146 hashed direction-specific StartingPosition; integer ordinal 0..n-1; f32 xyz metres; u16 heading, full turn 65536 (world XY); supporting collision for final z. | Markers optional only if generated grid is acceptable; required to choose exact poses. 0x422580; angle conversion 0x564bd0; ground query always runs |
+| Start / splits / finish | Named 0x34146 point markers in same frame; optional finish ordinal selector; start/finish projected onto route, percentages 0..100, not metre distances. Lap target integer. | Markers optional with defaults above; explicit markers needed to choose boundaries. Third split optional; closed finish reuses start. 0x434810/640, 0x4338c0 |
+| Physical rivals | Count, unique entrant id, kind 2, one-based grid slot, car/preset, skill per difficulty, aggression; career rating/catchup settings. Reachable AI road sections/nodes/links through chosen roads (0x34121/22). | Required for rival racing; preset may be randomized, rating -1 auto; TrackInfo start-section seed optional (-1 auto). 0x4b4040, 0x435d30; >4 classified entrants unresolved |
+| Drag additions | Drag mode, lane-bearing road nodes, legal lane transitions, finish selector and optional longitudinal grid adjustment in metres. | Lane route required for drag; selector/adjustment can retain defaults. 0x4b55b0, 0x422580, 0x45cff0; precise UG2 drag-compatible lane authoring UNKNOWN |
+| Drift additions | Drift mode, player route/laps; existing skill-score tuning and simulated rival records; wheel-contact surface 3 for bonus, speed/slip/yaw thresholds. | Surface-3 bonus optional for base scoring; physical rivals unnecessary in shipped path. 0x43de90, 0x43e540/6e0, 0x43eb00; collision material encoding UNKNOWN |
+| Zones / opaque bytes | 0x3414a supports route/reset/wrong-way zones (not the drift bonus above); path node tail, full zone subtype contracts and opaque EventDesc/TrackInfo fields remain only partially named. | New zone authoring necessity UNKNOWN for arbitrary UG2 route; preserve validated templates, not invented zero fills. docs/re/track.md:63-68,105; no placement validated here |

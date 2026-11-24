@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Systems tags (census/systems.tsv) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="One row per function start of pc/Speed.exe (17,368: Hopper 14,333 + 3,035 lifter starts Hopper lacks); all 13,739">
+<link rel="canonical" href="https://nfsu.cc/re/systems_method.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/systems_method.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Systems tags (census/systems.tsv) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="One row per function start of pc/Speed.exe (17,368: Hopper 14,333 + 3,035 lifter starts Hopper lacks); all 13,739">
+<meta property="og:url" content="https://nfsu.cc/re/systems_method.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Systems tags (census/systems.tsv) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="One row per function start of pc/Speed.exe (17,368: Hopper 14,333 + 3,035 lifter starts Hopper lacks); all 13,739">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Systems tags (census/systems.tsv)", "description": "One row per function start of pc/Speed.exe (17,368: Hopper 14,333 + 3,035 lifter starts Hopper lacks); all 13,739", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/systems_method.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Systems tags (census/systems.tsv)", "item": "https://nfsu.cc/re/systems_method.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / RE Methodology</p>
+<article>
+<h1>Systems tags (census/systems.tsv)</h1>
+<div class="badges">
+  <span class="badge">RE Methodology</span>
+  <span class="badge accent">10 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="systems_method.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/systems_method.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>One row per function start of pc/Speed.exe (17,368: Hopper 14,333 + 3,035 lifter starts Hopper lacks); all 13,739 lifted functions have a row. Columns: addr, system, confidence, how, evidence.</p>
+<h2 id="method-tools-census-systems-py-rules-in-tools-ce">Method (tools/census/systems.py; rules in tools/census/sys_rules.py)</h2>
+<ol><li>Seeds: strings (direct, tables, pool neighbours, decompile literals), imports (census/imports_sites.tsv), addresses</li></ol>
+<p>in docs and q_*.py (doc -&gt; system map; mixed docs skip lines with &gt;3 addresses), PATCH headers. Strings in an unwind funclet count for its owner. Static CRT band 0x672000-0x6830a0: string/import evidence is forced to runtime.</p>
+<ol><li>Propagation, 8 rounds: callers 1/sqrt(n), callees 0.5, vtable peers 0.5, pieces of one function 1.5, unwind owner 2.0,</li></ol>
+<p>nearest seeds in link order; far edges weigh less. Called from &gt;=3 systems = runtime (hub). Then shared globals, then neighbour sandwich. Leftovers: EH glue and padding = runtime/low; the rest unknown/low.</p>
+<ol><li>Confidence is rule-based, not a probability: high = seed score &gt;=3, share &gt;=0.6; med = &gt;=1.4, &gt;=0.5 (graph: early,</li></ol>
+<p>strong, &gt;8 instructions); low = the rest.</p>
+<h2 id="counts-lifted-functions-high-med-low">Counts, lifted functions (high/med/low)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>system</th><th>h/m/l</th><th>total</th><th>%</th><th>system</th><th>h/m/l</th><th>total</th><th>%</th></tr></thead><tbody><tr><td>canon</td><td>275/678/1103</td><td>2056</td><td>15.0</td><td>audio</td><td>83/322/894</td><td>1299</td><td>9.5</td></tr><tr><td>track</td><td>130/199/462</td><td>791</td><td>5.8</td><td>assets</td><td>12/39/103</td><td>154</td><td>1.1</td></tr><tr><td>traffic</td><td>67/52/78</td><td>197</td><td>1.4</td><td>props</td><td>33/51/99</td><td>183</td><td>1.3</td></tr><tr><td>rivals</td><td>258/368/459</td><td>1085</td><td>7.9</td><td>input</td><td>12/50/67</td><td>129</td><td>0.9</td></tr><tr><td>car</td><td>147/270/548</td><td>965</td><td>7.0</td><td>runtime</td><td>56/468/1247</td><td>1771</td><td>12.9</td></tr><tr><td>camera</td><td>44/42/175</td><td>261</td><td>1.9</td><td>online</td><td>126/171/394</td><td>691</td><td>5.0</td></tr><tr><td>render</td><td>179/730/1334</td><td>2243</td><td>16.3</td><td>unknown</td><td>0/0/1560</td><td>1560</td><td>11.4</td></tr><tr><td>hud</td><td>85/81/188</td><td>354</td><td>2.6</td><td>all</td><td>1507/3521/8711</td><td>13739</td><td>100</td></tr></tbody></table></div>
+<p>200 runtime/low rows are EH glue (how=eh-glue), not real functions: leave them out of per-system denominators.</p>
+<h2 id="manual-check-i-read-the-hopper-decompile-of-ever">Manual check (I read the Hopper decompile of every sampled function)</h2>
+<p><code>--sample N --seed S</code> prints tag, evidence and decompile. agree = content fits; plausible = fits region and neighbours; unverifiable = stub or thunk, tag only matches neighbours; wrong; unknown = tagged unknown.</p>
+<ul><li>Seed 31337, n=50, after one rule fix: agree 19, plausible 9, unverifiable 9, wrong 6, unknown 7. Strict 19/50,</li></ul>
+<p>agree+plausible 28/50, with unverifiable 37/50. Target 40/50 NOT met. The fix came from this sample (3 rows: camera mover ctor, Loaded*SlotPool = assets, CRT file I/O = runtime), so it is not held out.</p>
+<ul><li>Seed 4242, n=24, held out, same rules: agree 9, plausible 5, unverifiable 5, wrong 2, unknown 3 (19/24 lenient).</li><li>Wrong tags are about 8-12% in both; the gap is unverifiable tiny functions and 11% unknown.</li><li>External audit 2026-10-29: of the 886 named functions, 419 (47%) had a different system in systems.tsv than in names.tsv</li></ul>
+<p>(normalised sound-&gt;audio, tuning/garage-&gt;car, blur-&gt;render). The strict agreement of 19/50 (38%) is the better estimate of the graph&#x27;s accuracy, not &quot;8-12% wrong&quot;. Rule now: a name with a system (V or I) overrides the graph tag (tools/census/scoreboard.py); <code>tagged</code> counts only med/high confidence or named functions.</p>
+<ul><li>Tuning samples: seeds 7, 101, 202; earlier reads: 1029 (n=50), 2026 (n=30).</li></ul>
+<h2 id="rerun">Rerun</h2>
+<p><code>.venv/bin/python tools/census/systems.py</code> (10 s; needs capstone and pefile from .venv). Writes census/systems.tsv and prints the table. Hopper live, Ghidra live and REA are not used.</p>
+<h2 id="known-weak-spots">Known weak spots</h2>
+<ul><li>0x480000-0x4a0000 mixes camera, track, rivals; some camera movers stay track (0x48df00, 0x48c820).</li><li>FEng 2D UI (0x4f0000-0x520000): canon vs hud is ambiguous, mostly canon/low.</li><li>A doc naming an address in passing seeds a wrong system (0x566e60, a pool allocator, is rivals/high).</li><li>Tiny stubs and thunks follow neighbours only; 1,560 lifted functions have no evidence at all (unknown).</li><li>Tried and rejected: tag a constructor by strings near the vtable it stores (agreed 37% with string seeds).</li><li>0x684000+ holds ~4,400 unwind funclets, thunks, misaligned lifter seeds, padding (1,725 rows); they take the owner&#x27;s tag.</li><li>Not mined: ref/ PS2 and NFSU1 notes, runtime coverage (census/cov/union.json).</li></ul>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

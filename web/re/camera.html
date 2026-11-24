@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Cameras (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless">
+<link rel="canonical" href="https://nfsu.cc/re/camera.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/camera.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Cameras (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless">
+<meta property="og:url" content="https://nfsu.cc/re/camera.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cameras (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Cameras (Speed.exe PC)", "description": "Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/camera.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Cameras (Speed.exe PC)", "item": "https://nfsu.cc/re/camera.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Camera Systems</p>
+<article>
+<h1>Cameras (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Camera Systems</span>
+  <span class="badge accent">227 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="camera.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/camera.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in code or bytes this session, I = inferred, U = open. Tool after each claim: G = Ghidra 12.1.4 headless (<code>tools/ghidra/gpar.sh</code>), H = Hopper export <code>census/hopper/decomp.c</code>, C = capstone <code>tools/recomp/asm.py</code>, D = bytes read from the unpatched exe or <code>game/Global/GLOBALB.BUN</code> with python struct, M = PS2 map <code>ref/docs/re/out/x86-ps2-map.tsv</code> (class-name hint only, never proof). Names and addresses: <code>census/names_camera.tsv</code>. Blur side: <code>docs/re/blur.md</code>.</p>
+<h2 id="answer">Answer</h2>
+<ul><li><b>Selecting function.</b> <code>Player::ChangeCameraMover 0x42c6d0(player, type, flag)</code> is the factory. 23 types (0..0x16), jump</li></ul>
+<p>table <code>0x42d2f4</code>, byte index table <code>0x42d330</code> (V, G+C). Each type is one mover object whose update is vtable slot 1.</p>
+<ul><li><b>Default camera in a race.</b> <code>0x42c670</code> (DefaultDriveCamera) asks the factory for type <code>([0x700aa4] != 0) ? 0x11 : 1</code>.</li></ul>
+<p><code>[0x700aa4]</code> is <code>1</code> in the unpatched exe image and Ghidra finds only reads of it (no code writer, no data pointer), so the shipped default is <b>type 0x11 CubicCameraMover</b> (update <code>0x48bcb0</code>). Type 1 DriveCameraMover (update <code>0x489690</code>) is the fallback if that byte were 0 (V for the value and the reads, G+C+D; I for &quot;never written at runtime&quot;).</p>
+<ul><li><b>The key / option.</b> The camera button is joystick event <code>0x75</code> (<code>JOY_EVENT_CAMERA_POV_CHANGE</code>), looking back is <code>0x76</code></li></ul>
+<p>(<code>JOY_EVENT_CAMERA_LOOKBACK</code>); name pairs at <code>0x6f1850</code>/<code>0x6f185c</code> (D). Event <code>0x75</code> calls <code>Player::CyclePOV 0x42e020</code> (call at <code>0x431a32</code>, V, C). The physical key comes from the user&#x27;s control config and was not read (U).</p>
+<ul><li><b>View codes (POV).</b> 5 rows per car: id 0 far chase, 1 close chase, 2 hood, 3 bumper, 4 high chase (names I, from the</li></ul>
+<p>numbers). Cycle: <code>0x42e020</code> walks 4 slots stored in options <code>0x758938..0x758944</code>, 3 maps to 0, and the 4th slot needs <code>[0x78a345]</code> or <code>[0x7361a4]</code> (V code, G+C; names I).</p>
+<ul><li><b>Per-car or global.</b> Distance, height, lateral and a pitch word are <b>per car data</b> (CarTypeInfo chunk <code>0x34600</code>, 5 rows</li></ul>
+<p>per car, almost identical for all 35 cars: only chase height is 1.7 vs 1.9). FOV is a <b>global</b> table <code>0x6fbdf4</code>. The smoothing and collision constants are global (V, D+C).</p>
+<ul><li><b>Speed-dependent FOV or shake in chase.</b> None found in <code>0x489690</code> or <code>0x48b8c0</code>: FOV is <code>table[pov]</code> only. Camera shake</li></ul>
+<p>exists as a separate system (<code>0x575040</code>, <code>0x575200</code>) but I did not trace what triggers it in a normal race (U).</p>
+<ul><li><b>Free Run vs race vs garage.</b> Same factory and same default type in Free Run and a race (gates are identical; see below).</li></ul>
+<p>Garage and front-end show cars with <code>SelectCarCameraMover</code> (not read, U). Countdown, intro, flyby and end cameras are coordinators that call the same factory (I).</p>
+<h2 id="1-mover-types-v-g-c-jump-table-class-names-eh-gh">1. Mover types (V, G+C: jump table; class names: EH = Ghidra unwind map V, M = PS2 map I)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Ctor</th><th>Size</th><th>Vtable</th><th>Update (slot 1)</th><th>Class</th><th>Name source</th></tr></thead><tbody><tr><td>0</td><td>none</td><td></td><td></td><td></td><td>clears the mover</td><td>V</td></tr><tr><td>1</td><td>0x489360</td><td>0x3a0</td><td>0x6c7fc8</td><td>0x489690</td><td>DriveCameraMover</td><td>M</td></tr><tr><td>2</td><td>0x488420</td><td>0x4c</td><td>0x6c7d80</td><td>0x488ae0</td><td>DebugWorldCameraMover</td><td>EH</td></tr><tr><td>3</td><td>0x4892c0</td><td>0x2c</td><td>0x6c7c50</td><td>0x40a880 (a bare <code>ret</code>)</td><td>NullCameraMover (does nothing)</td><td>V, C</td></tr><tr><td>4..12</td><td>0x4840c0</td><td>0xd0</td><td>0x6c8018</td><td>0x4843e0</td><td>OrbitCarCameraMover</td><td>EH</td></tr><tr><td>0xd</td><td>0x48f090</td><td>0x368</td><td>0x6c7b98</td><td>0x4901e0</td><td>ZoneFreezeCameraMover</td><td>EH</td></tr><tr><td>0xe</td><td>0x490ea0</td><td>0x450</td><td>0x6c7b50</td><td>0x492700</td><td>ZonePreviewCameraMover</td><td>EH</td></tr><tr><td>0xf, 0x10</td><td>0x4854e0</td><td>0x470</td><td>0x6c7d28</td><td>0x485c00</td><td>TrackCarCameraMover (jump views)</td><td>M</td></tr><tr><td>0x11</td><td>0x48afd0</td><td>0x54</td><td>0x6c7e58</td><td>0x48bcb0</td><td>CubicCameraMover (default race camera)</td><td>EH</td></tr><tr><td>0x12</td><td>0x48c1f0</td><td>0x2c</td><td>0x6c7f80</td><td>0x48c220</td><td>name U; created after AutoPilotOn in <code>0x42d520</code></td><td>I</td></tr><tr><td>0x13</td><td>0x48c280</td><td>0x38</td><td>0x6c7ea8</td><td>0x48c820</td><td>DragRaceCameraMover</td><td>M</td></tr><tr><td>0x14</td><td>0x48c990</td><td>0x58</td><td>0x6c7dc8</td><td>0x48d3b0</td><td>DragRaceLeaderCameraMover</td><td>M</td></tr><tr><td>0x15</td><td>0x48d6e0</td><td>0xa0</td><td>0x6c7ce0</td><td>0x48df00</td><td>DragRaceAheadCameraMover</td><td>M</td></tr><tr><td>0x16</td><td>0x48e210</td><td>0x310</td><td>0x6c7c08</td><td>0x48e490</td><td>AnimationControllerCameraMover (NIS)</td><td>M</td></tr></tbody></table></div>
+<p>Notes.</p>
+<ul><li>Types 0x12, 0x13, 0x15 are refused while <code>[[0x7361f0]]</code> is 5, 6 or 10 (V, G+C). The mover&#x27;s base ctor <code>0x4834e0</code> takes a kind id</li></ul>
+<p>in edx (3 for the null mover, 6 for the rear mirror) (V, C).</p>
+<ul><li><b>Correction to earlier notes:</b> type 3 is not the rear-view mirror. The mirror is <code>RearViewMirrorCameraMover</code> (ctor</li></ul>
+<p><code>0x4852a0</code>, vtable <code>0x6c7e10</code>, update <code>0x485300</code>), created at <code>0x42c3c0</code> into <code>Player+0x288</code>, outside the factory (V, C+D).</p>
+<ul><li>Other factory call sites (V, C): <code>0x4241fc</code> (type 0), <code>0x42d881</code> (0x12), <code>0x42dbcf</code> (0xd), <code>0x42dc27</code> (0xe), <code>0x42dd0c</code> (0xf),</li></ul>
+<p><code>0x42dd48</code> (0x10), <code>0x42df30</code> (debug cycler: types ebx, 4, 2, 3), <code>0x430a25</code> (0xd), <code>0x430d49</code>, <code>0x430d6c</code> (0x11), <code>0x430da3</code> (1) in <code>0x430730</code>, <code>0x47f002</code>/<code>0x47f795</code> (0x16, NIS), <code>0x47ef00</code> (IntroNis coordinator).</p>
+<ul><li>Special strings: <code>CountdownCameraCoordinator</code> <code>0x6ca8dc</code>, <code>CubicCameraMover(DCC)</code> <code>0x6c8160</code>, <code>SpeedCam</code> <code>0x6c8060</code> (xref</li></ul>
+<p><code>0x48e949</code>), <code>DragCameras.bin</code> <code>0x6c806c</code> (<code>0x482fc0</code> = DragCameraManager::SaveData), <code>CAMERA SETTINGS</code> <code>0x6c80f4</code> (table <code>0x6fc59c</code>) (D).</p>
+<h2 id="2-special-modes-v-g-c-the-names-of-modes-3-5-are">2. Special modes (V, G+C; the names of modes 3..5 are I)</h2>
+<p><code>Player::StartSpecialCamera 0x42da40</code> writes <code>ctrl+0x60 = mode</code>:</p>
+<div class="tbl-wrap"><table><thead><tr><th>Mode</th><th>Name</th><th>Mover</th><th>Notes</th></tr></thead><tbody><tr><td>0</td><td>NONE</td><td></td><td></td></tr><tr><td>1</td><td>FREEZE</td><td>0xd ZoneFreeze</td><td></td></tr><tr><td>2</td><td>PREVIEW</td><td>0xe ZonePreview</td><td></td></tr><tr><td>3</td><td>SLOMO</td><td></td><td>slow motion <code>0x420050</code></td></tr><tr><td>4</td><td>SLOMO2</td><td></td><td></td></tr><tr><td>5</td><td>WARP</td><td></td><td>slow motion only</td></tr><tr><td>6</td><td>JUMPVIEW</td><td>0xf + <code>0x42c640</code></td><td>jump trigger <code>0x426930</code></td></tr><tr><td>7</td><td>JUMPVIEW2</td><td>0x10</td><td></td></tr></tbody></table></div>
+<p>Name table <code>0x700b1c</code>, enable bytes <code>0x700b44</code> = [0,0,0,1,1,1,1,1] (D). Gates (V, G+C): <code>[0x78a345]</code>, <code>[0x78a346]</code>, <code>[0x7361a0]</code>, <code>[0x7361a4]</code>, <code>[[0x7361f0]] == 9</code>, <code>[[0x73619c]] != 4</code>, a cooldown (<code>0x421a30</code>, <code>ctrl+0x70+mode*4</code>), two players (<code>[0x7361c4] == 2</code>) block it, modes 6 and 7 need byte <code>[0x78a3fa]</code> (from option <code>[0x758951]</code>, <code>0x4b47a0</code>), modes 1..5 need <code>[0x78a3fb]</code>. Callers of <code>0x42da40</code> (G callers): <code>0x426930</code> (jump trigger, every 8 frames), <code>0x465d00</code> (the earlier notes call it the crash camera, I), <code>0x431960</code> (three call sites). Each start sets <code>[0x73654c] = 1</code> (this is the flag that drives the blur n ramp) and <code>ctrl+0x270 = 1</code> (camera cut). Jump view (V, G+C+docs): curves <code>0x7062fc</code> speed, <code>0x7062cc</code> height, <code>0x7062e4</code> distance; the camera point is placed at the route-node edge +- 2.0 m (<code>0x6b7aac</code>), z + 1.0, ground check <code>0x440a40</code>; no collision after placement.</p>
+<h2 id="3-pov-selection-and-options-v-g-c">3. POV selection and options (V, G+C)</h2>
+<ul><li><code>0x42e020</code> cycles the 4 POV codes in <code>ctrl+0x2c..0x2f</code> (current mod 5). Valid codes 0..5 except 3 (else 0). It finds the</li></ul>
+<p>car&#x27;s row table with <code>0x47d680</code>, tells the mover through vtable slot <code>+0x20</code> (SetPOV), and stores the cycle index in <code>(&amp;0x758948)[player]</code> and the code in <code>(&amp;0x78a388)[player * 0x38]</code> = <code>(&amp;0x758938)[idx * 4]</code>.</p>
+<ul><li><code>0x4b47a0</code> (ApplyOptionsToPlayerSettings) copies the options to the player settings: <code>[0x78a3fa] = [0x758951]</code>,</li></ul>
+<p><code>[0x78a388] = (&amp;0x758938)[[0x758948] * 4]</code> (index 3 reset to 0 unless <code>[0x78a345]</code> or <code>[0x7361a4]</code>). Player 1 uses <code>0x78a3c0</code> and <code>[0x75894c]</code>. The options screen is <code>0x4be6c0</code> (I). The defaults of <code>0x758938</code> are not in the raw exe image (runtime data, U).</p>
+<h2 id="4-the-per-car-rows-v-d-c-names-of-the-codes-i">4. The per-car rows (V, D+C; names of the codes I)</h2>
+<p>Each <code>CarTypeInfo</code> record (chunk <code>0x34600</code> in <code>game/Global/GLOBALB.BUN</code>, file <code>0x199e00</code>, payload +8, 35 records of <code>0xc90</code>; the record name is at +8 in the file, the in-memory struct is 8 bytes earlier) holds a table at <code>info+0xb50</code>:</p>
+<ul><li><code>+0</code> count (5), <code>+4</code> second count (5), rows of 16 bytes at <code>+0x10</code> (normal) and at <code>+0x60</code> (second set, used when <code>[0x7364a0] == 3</code>).</li><li><code>0x47d680</code> (FindCameraRow) matches the first s16 of a row with the POV code (V, G+H+C).</li><li>Row layout: <code>{s16 id, s16 aux, f32 distance, f32 height, f32 lateral}</code>. <code>0x489690</code> uses <code>-distance</code>, so negative means behind</li></ul>
+<p>the car; <code>aux</code> goes to a mover field (500 and 3040 look like pitch words, 65536 = 360 degrees, I).</p>
+<p>First set, identical in all 35 records except the chase height (D; all 35 records read):</p>
+<div class="tbl-wrap"><table><thead><tr><th>POV id</th><th>Role (I)</th><th>distance</th><th>height</th><th>lateral</th><th>aux</th></tr></thead><tbody><tr><td>0</td><td>far chase</td><td>-5.8</td><td>1.7 (GOLF, FOCUS, PEUGOT: 1.9)</td><td>0</td><td>0</td></tr><tr><td>1</td><td>close chase</td><td>-4.7</td><td>1.7 (same three: 1.9)</td><td>0</td><td>0</td></tr><tr><td>2</td><td>hood</td><td>0.72</td><td>0.79</td><td>0</td><td>500</td></tr><tr><td>3</td><td>bumper</td><td>-0.19</td><td>0.81</td><td>-0.44</td><td>0</td></tr><tr><td>4</td><td>high chase</td><td>-5.8</td><td>3.45</td><td>0</td><td>3040</td></tr></tbody></table></div>
+<p>Second set (printed for GOLF and FOCUS only, the other 33 records NOT VERIFIED): 0: -8.2 / 1.85, 1: -6.8 / 1.7, 2: 0.72 / 0.64 aux -1342, 3: -0.26 / 0.77 lateral -0.31, 4: -8.2 / 3.45 aux 2027.</p>
+<p>In <code>0x489690</code>, POV 0, 1 and 4 add a speed-blend term to the distance: <code>(1 - v) * k - row.distance</code> with <code>v = 1 - 0.5 * (f + 1)</code>, <code>f</code> from <code>0x564b10</code> (constants <code>[0x6cc7bc]</code> = 1.0, <code>[0x6cc7dc]</code> = 0.5, <code>k</code> a local; the meaning of f and k is U); the other POVs use <code>-row.distance</code> (V, C). A tweaker (<code>[0x735ee8] != 0</code>) replaces the rows by <code>[0x6fbde8]</code>/<code>[0x6fbdec]</code> (2.3125)/<code>[0x6fbdf0]</code> (10000) defaults (I).</p>
+<h2 id="5-fov-v-g-c-d">5. FOV (V, G+C+D)</h2>
+<p>Global table <code>0x6fbdf4</code>, s16 per POV code, 65536 = 360 degrees: codes 0, 1, 4 = <code>0x32dc</code> = 13020 = 71.5 degrees; codes 2, 3 = <code>0x4000</code> = 90 degrees. Read by <code>0x489690</code> (write to <code>*(ctrl+0xc4)</code>, <code>+0xbc = [0x6fbf1c]</code> for POV 3), by the Cubic mover <code>0x48b8c0</code> and by <code>0x480750</code> (Ghidra scalar search of <code>0x6fbdf4</code>). The rear mirror forces <code>0x4e20</code> = 109.9 degrees when <code>[0x735f5c] == 0</code> (<code>0x485300</code>, also <code>+0xbc = 0.75</code> <code>[0x6b6cbc]</code>, <code>+0xc0 = 192.0</code> <code>[0x6b6cc0]</code>). Projection builder <code>0x40dd00</code>, focal <code>0x40dcb0</code> (I).</p>
+<h2 id="6-drivecameramover-type-1-the-fallback-0x489690">6. DriveCameraMover (type 1, the fallback) <code>0x489690</code></h2>
+<p>Verified structure (V, G+H+C): it picks the player&#x27;s car (<code>ebx[0xb]</code>, or a debug id <code>[0x6fbf18]</code>), moves a heading filter toward the car&#x27;s velocity heading, finds the row (<code>0x47d680</code>), builds an eye from distance and height, adds road-roughness noise (<code>0x441d80</code>, surface table <code>0x6ef2d0</code> stride 0x94), and runs the wall push-out <code>0x4838e0</code> (sweep <code>0x441030</code>, then up to 3 passes). Bumper and hood types clamp z to ground (<code>0x440a40</code>) + 0.7. Heading history lives at <code>ebx[0xcd..0xe5]</code>.</p>
+<p>Constants it reads (D values; <b>meaning of each is U</b> unless a note says otherwise): <code>0x6fbec0</code> = 1.0 (rewritten every frame, scale of all following), <code>0x6fbec4</code> 0.03, <code>0x6fbec8</code> 0.012, <code>0x6fbecc</code> 2.0, <code>0x6fbed0</code> 25, <code>0x6fbed4</code> 0.05, <code>0x6fbed8</code> 0.02, <code>0x6fbedc</code> 6.0, <code>0x6fbee0</code> 0.6, <code>0x6fbee4</code> 0.045, <code>0x6fbee8</code> 0.7, <code>0x6fbeec</code> -0.3, <code>0x6fbef0</code> 1.0, <code>0x6fbef4</code> 1.0, <code>0x6fbef8</code> 500, <code>0x6fbefc</code> 0.2, <code>0x6fbf00</code> 6.0, <code>0x6fbf04</code> -1, <code>0x6fbf08</code> 0.4, <code>0x6fbf0c</code> 3.0, <code>0x6fbf10</code> 250, <code>0x6fbf1c</code> 0.4. In the code <code>0x6fbee4 * scale * x</code> is compared with <code>0x6fbeec * scale</code> (I: a lateral-speed threshold and gain, each to pick a sign branch) and <code>0x6fbee0</code>/<code>0x6fbee8</code> form a second band (I). Values with <code>[0x7364a0] == 3</code>: <code>0x6b6c5c</code> = 18.0, <code>0x6b6c60</code> = -3.0, <code>0x6b6c64</code> = 16.0, <code>0x6b6c68</code> = -1.0 (blend distance and height between modes). Airborne ramp step <code>0x6b6c78</code> = 0.24316 (only read by <code>0x489690</code>, G xref), sweep trim <code>0x6b6c80</code> = 0.01, wall push-out <code>0x6b6c98</code> = 0.7, speed curve <code>0x705b20</code> through <code>0x583f20</code> (I).</p>
+<h2 id="7-cubiccameramover-type-0x11-the-default-0x48bcb">7. CubicCameraMover (type 0x11, the default) <code>0x48bcb0</code></h2>
+<p>What is verified (V, G+H+C unless noted): ctor <code>0x48afd0</code> allocates smoothing sub-objects of size 0x30 and 0x90 (<code>0x42ad10(x, 10.0)</code>, <code>0x4830f0(10.0)</code>) and calls <code>0x48ead0(0.5)</code>. Update <code>0x48bcb0</code> (about 2200 lines in Hopper, most of it duplicated branches) chooses the player&#x27;s car like <code>0x489690</code>, calls <code>0x48ec00</code> to produce the target and eye parameters, runs the sub-objects, applies <code>Camera::ApplyNoise 0x483640</code>, <code>ApplyCameraShake 0x575040</code>, <code>MinGapTopology 0x483b90</code>, and ends in <code>Camera::SetCameraMatrix 0x47d070</code>. <code>SetDesired 0x48b8c0</code> (M name) reads the desired distance, height and lateral from the car row (its first argument is the row, because it indexes the FOV table with the row&#x27;s first s16): V for the FOV read, I for &quot;same row data&quot;. Fallback numbers when the car&#x27;s dword at <code>car+0xa4</code> is 0 and mover flag <code>[0x45]</code> is set: table <code>0x705af0</code>, stride 16, set 0 = (-17.2, 6.0, aux 5200 <code>[0x6b6c58]</code>), set 1 (when <code>[0x7364a0] == 3</code>) = (-15.8, 4.4, aux 3540 <code>[0x6b6c5a]</code>) (D; use I). Debug values <code>0x705c60..68</code> = (-10, 0, 5). <b>Not done (U):</b> the per-constant meaning of the 10.0 smoothing parameters, the <code>0x48ec00</code> math, and the speed behaviour of this mover.</p>
+<h2 id="8-shake-and-noise-i-u">8. Shake and noise (I/U)</h2>
+<ul><li><code>ApplyCameraShake 0x575040(effect id, matrix)</code>: a switch on the effect id, table <code>0x73b220</code> (32-byte entries), rotation scales</li></ul>
+<p><code>0x704508</code>, <code>0x704514</code>, <code>0x704518</code>; called by <code>0x485300</code> (rear mirror, V) and by the Cubic update (V, call sites). The trigger is U.</p>
+<ul><li><code>MaybeCameraShake 0x575200</code>: caller <code>0x420fd2</code> (I).</li><li><code>Camera::ApplyNoise 0x483640</code> with parameter tables <code>0x6b6f08</code>/<code>0x6b6eb8</code> from <code>0x48c1b0</code> (I). <code>CameraMover::VelocityNoise 0x527480</code>: caller <code>0x52c7ce</code> (I).</li></ul>
+<h2 id="9-free-run-vs-race-vs-garage">9. Free Run vs race vs garage</h2>
+<ul><li><b>Race and Free Run (I).</b> The same <code>0x42c670</code> choice (type 0x11) and the same special-mode gates; an earlier WORLD runtime table</li></ul>
+<p>(<code>re_jumpcam</code>) shows the same gates in Free Run. A difference by game mode exists in the factory block list (<code>[[0x7361f0]] in {5, 6, 10}</code>) and in <code>[0x7364a0]</code> (row set, view count kind). Which row set a normal single-player race uses (<code>[0x7364a0]</code> value) is U: the values 0..3 are set by <code>0x408370</code>/<code>0x408410</code> from the view list <code>[0x740504]</code> (G xrefs, C).</p>
+<ul><li><b>Garage and front end (U).</b> Showcase cars are drawn by <code>0x570950</code>; the camera class is <code>SelectCarCameraMover</code> (M: ctor <code>0x486c80</code>, Update</li></ul>
+<p><code>0x4870c0</code>, GetMainStaticCameraPosition <code>0x487590</code>). Not read.</p>
+<ul><li><b>Cinematics (I, M).</b> Countdown <code>0x47edb0</code>/<code>0x47ee50</code>/<code>0x42c3e0</code>, IntroNis <code>0x47ef00</code>, EndingNis <code>0x47f680</code>, PreRace <code>0x47eae0</code>,</li></ul>
+<p>FlyBy <code>0x47ea20</code>, PostRace <code>0x47eca0</code>, DemoCamera <code>0x47e250</code>.</p>
+<h2 id="open-u">Open (U)</h2>
+<ul><li>The physical key bound to events <code>0x75</code> and <code>0x76</code>; defaults of options <code>0x758938..</code>.</li><li>Per-constant meaning of the block <code>0x6fbec0..0x6fbf1c</code>, and the whole Cubic mover maths.</li><li>Which row set (normal or <code>[0x7364a0] == 3</code>) applies in single-player races; second set of rows for 33 cars.</li><li>Replay cameras (<code>ReplayManager</code> strings <code>0x6cae54</code>, <code>RCSTATE_CAMERA_FLYBY</code> <code>0x6cb078</code> -&gt; <code>0x423070</code>), crash camera, finish camera <code>0x42d9a0</code>.</li><li>Speed-dependent shake in a normal race; the trigger of <code>0x575040</code> for effect ids.</li></ul>
+<h2 id="second-tool-agreement-10-names-drawn-with-random">Second-tool agreement (10 names drawn with <code>random.seed(20261029)</code> from the V/I rows of both registries)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Primary</th><th>Second tool and result</th><th>Result</th></tr></thead><tbody><tr><td><code>0x6b6c78</code> CamAirborneRampStep (blur doc not involved)</td><td>D value, C</td><td>G xref: one read, in <code>0x489690</code> at <code>0x48a3b6</code>; value 0.24316</td><td>agree on the read and value; the meaning stays I</td></tr><tr><td><code>0x6c7fc8</code> vtable_DriveCameraMover</td><td>D</td><td>G xref: data refs in the ctor <code>0x489360</code> and in <code>0x4894b0</code> (destructor); slot 1 = <code>0x489690</code> read from bytes</td><td>agree</td></tr><tr><td><code>0x6cc9d8</code> 4.0</td><td>C+D</td><td>G xref: four reads in <code>0x40cd40</code>, plus <code>0x438b60</code> and <code>0x606110</code></td><td>agree; shared constant</td></tr><tr><td><code>0x705b34</code> RearView_Offset_x</td><td>C+D</td><td>G xref: one read, in <code>0x485300</code></td><td>agree (0.5)</td></tr><tr><td><code>0x48c1f0</code> type 0x12 ctor</td><td>C</td><td>G decompile: ctor only sets vtable <code>0x6c7f80</code> and zeroes <code>camera+0x280</code> when <code>[0x735f5c] == 0</code></td><td><b>disagree on the name</b>: &quot;AutoPilotCameraMover&quot; dropped, now &quot;CameraMover_Type12&quot; (I)</td></tr><tr><td><code>0x7364a0</code></td><td>C</td><td>G xrefs: writers <code>0x408370</code>, <code>0x408410</code>; readers include <code>0x42e020</code>, <code>0x47d680</code>, <code>0x489690</code>, <code>0x592100</code>, <code>0x56dc30</code></td><td><b>disagree</b>: it is a view-count kind (0..3), not a game flow; renamed <code>gViewCountKind</code></td></tr><tr><td><code>0x465d00</code></td><td>C</td><td>G callers of <code>0x42da40</code>: <code>0x4662f3</code> in <code>0x465d00</code></td><td>agree on the call; &quot;crash camera&quot; not confirmed (I)</td></tr><tr><td><code>0x73641c</code></td><td>C</td><td>G xref: only <code>0x40cd40</code>, writes at <code>0x40cd8a</code>, <code>0x40cd9e</code></td><td>agree</td></tr><tr><td><code>0x4b47a0</code></td><td>C</td><td>G decompile: copies options to player settings (<code>[0x78a3fa] = [0x758951]</code>, <code>[0x78a388]</code> from <code>0x758938</code>)</td><td><b>disagree on the name</b>: not &quot;Save&quot;, it is &quot;Apply&quot;; renamed</td></tr><tr><td><code>0x700e9c</code> OPT_LIGHTSTREAKS</td><td>C</td><td>G xref: readers <code>0x40cb80</code> <code>0x40b3f0</code> <code>0x409580</code> <code>0x4160b0</code> <code>0x410ce0</code>; writers <code>0x410a00</code> <code>0x410ce0</code> <code>0x410ed0</code> <code>0x416a40</code></td><td>agree</td></tr></tbody></table></div>
+<p>Result: 7 agree, 3 corrected (two names, one class identity), all in the registry.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

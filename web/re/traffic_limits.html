@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Traffic limits: how many cars, which models, colours, lights (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Read only, nothing was run. Tools: Ghidra live on the named project (G), capstone tools/recomp/asm.py (C),">
+<link rel="canonical" href="https://nfsu.cc/re/traffic_limits.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/traffic_limits.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Traffic limits: how many cars, which models, colours, lights (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Read only, nothing was run. Tools: Ghidra live on the named project (G), capstone tools/recomp/asm.py (C),">
+<meta property="og:url" content="https://nfsu.cc/re/traffic_limits.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Traffic limits: how many cars, which models, colours, lights (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Read only, nothing was run. Tools: Ghidra live on the named project (G), capstone tools/recomp/asm.py (C),">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Traffic limits: how many cars, which models, colours, lights (Speed.exe PC)", "description": "Read only, nothing was run. Tools: Ghidra live on the named project (G), capstone tools/recomp/asm.py (C),", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/traffic_limits.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Traffic limits: how many cars, which models, colours, lights (Speed.exe PC)", "item": "https://nfsu.cc/re/traffic_limits.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Traffic Simulation</p>
+<article>
+<h1>Traffic limits: how many cars, which models, colours, lights (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Traffic Simulation</span>
+  <span class="badge accent">45 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="traffic_limits.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/traffic_limits.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Read only, nothing was run. Tools: Ghidra live on the named project (G), capstone <code>tools/recomp/asm.py</code> (C), <code>tools/re/carinfo.py</code> on GLOBALB.BUN (F), file listing of game/Cars (D). V = read in code, I = inferred, U = open. Names: <code>census/names_trafficpool.tsv</code>. Earlier notes (docs/re/traffic.md, <code>re_racer_cap_probe</code>) were leads.</p>
+<h2 id="answers-first">Answers first</h2>
+<ol><li><b>Count.</b> The first hard cap is 30 entrants (<code>0x4322a0</code>, <code>cmp [race+0x12c], 0x1e</code>). With 1 player + 6 rivals that leaves</li></ol>
+<p><b>23 traffic cars with no patch</b> (V, G+C). The 26 in <code>tools/recomp/caves/traffic.s</code> is the cave&#x27;s own clamp, not the game&#x27;s. The next real wall is the collision body id table: 0xde = 222 ids, bitmap of only 216 bits, no bound check (V, C+G). It is code, not data. Soft limits (pools grow, neighbour list 16) do not stop cars. Not run: nothing here proves 23 cars survive the id table.</p>
+<ol><li><b>Variety.</b> 35 rows, 15 with usage 2. In the real game district 0 (every shipped track id &gt;= 1000) gives weight 1.0 to only six</li></ol>
+<p>models, so only six traffic models can ever appear. The cave 0x63b270 gives all 12 normal traffic rows weight 1.0 and lets 8 racer cars in. Repeats come from the type count (6, then 12) and from the 100 re-picks that only try to avoid a type already in the entrant list. Paint is a per-model list of 1..8 ids. The teleporter keeps the model and re-rolls the paint on every move.</p>
+<ol><li><b>Lights.</b> <code>0x429100(ecx=car, A, B, C, lights, horn, gap)</code> is the one call. Shown in section 3.</li></ol>
+<h2 id="1-count-in-the-order-it-bites">1. COUNT, in the order it bites</h2>
+<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Limit</th><th>Address</th><th>Value</th><th>On overflow</th><th>Data or code</th></tr></thead><tbody><tr><td>1</td><td>Entrants</td><td>0x4322a0 (G, C)</td><td>30 (0x1e), stride 0x750, count [race+0x12c] = 0x78a41c</td><td>the entrant is dropped without any message; later code uses a smaller list</td><td>code: the immediate 0x1e. The array is a static pool 0x77c790..0x78a2f0 (30 x 0x750 = 0xdb60 bytes, ends at RaceStatus), cleared by <code>0x431df0</code> on return to the front end (sets [0x78a418] = 0x77c790, count 0); the cap 30 is structural, so raising 0x1e alone overruns into RaceStatus (V)</td></tr><tr><td>2</td><td>Collision body ids</td><td>0x466970 (C), id taken at 0x469b00 (C)</td><td>0xde = 222 ids; table 0x736050 = 0xde dwords; bitmap 0x736070 = 0x1b bytes = 216 bits</td><td>no check: id 216..222 writes past the bitmap, id 222 past the table (heap corruption)</td><td>code (two malloc sizes and 0xde)</td></tr><tr><td>3</td><td>Track polygon bodies</td><td>0x466970, 0x469810 (G)</td><td>pool n = 0xa0 (160), stops adding when full</td><td>cars late in the update get no road polygons (I: may fall through)</td><td>code; they also take ids from 2 (U how long they live)</td></tr><tr><td>4</td><td>Car body pool</td><td>0x466970: CarCollisionBodySlotPool n=0x1e, slot 0x190</td><td>30, flags 0xb</td><td>grows by n/4+1 = 8 slots (V, G 0x567160)</td><td>none needed</td></tr><tr><td>5</td><td>World object pool</td><td>0x466970 n=0x20 (props, not cars)</td><td>32</td><td>grows</td><td>none</td></tr><tr><td>6</td><td>AI slot pools</td><td>0x455530 (<code>re_racer_cap_probe</code>, not re-read)</td><td>26/27/27/640</td><td>grow (I)</td><td>optional</td></tr><tr><td>7</td><td>Neighbour list</td><td>0x57a910, <code>mov [esp+0x4c], 0x10</code> at 0x57abad (C)</td><td>16 cars per AI car</td><td>farther cars are invisible to that AI (soft)</td><td>code, not needed</td></tr><tr><td>8</td><td>World car array</td><td>0x41fe50 (G)</td><td>array at L+0x28 where L = [0x7361f8], layout room 150 until L+0x280; +0x18 total, +0x24 index of first traffic car</td><td>none up to 150</td><td>none</td></tr><tr><td>9</td><td>LoadedCar pool</td><td>0x58c3b0 (G), pool [0x734500]</td><td>40 (docs, I)</td><td>evicts unused entries, then grows</td><td>none</td></tr><tr><td>10</td><td>Model memory</td><td>not found</td><td>U</td><td>U</td><td>U</td></tr></tbody></table></div>
+<p>Not a cap but what really limits the world: placement. Measured 19 placed of 21 asked in WORLD (docs/traffic_placement.md, 31 m spacing +0xd4 and 520 nodes). That is data in the TrackInfo row (host can write it). Per-car sound/skid/shadow pools and model memory were not traced in the time given (U).</p>
+<p>Largest count with no patch: 23 traffic (30 - 1 - 6), if placement and the id table allow it. Fewest patches for more: the immediate 0x1e plus (V) a larger array (the static pool ends at RaceStatus 0x78a2f0); the id table then needs 0xde and the two mallocs raised together.</p>
+<h2 id="2-variety">2. VARIETY</h2>
+<p>Rows (F: carinfo.py, D: game/Cars). Columns: index name usage; skins +0xd9 and ids at +0xc80; weights +0xc60..+0xc70 (districts 0..4). Enable +0x40 is not a flag: it is the first byte of the geometry path (&quot;CARS\NAME\GEOMETRY.BIN&quot;, &#x27;C&#x27; = 67 in all 35), so <code>0x57cfa0</code> accepts every row. Skin test: +0xd9 &gt; 0 (0x57cfa0 skips the Lancer: 0 skins). All 35 have geometry; usage 0 files are 4.7 to 6.2 MB (full tuner models), usage 2 files are 60 to 90 KB (low detail). TEXTURES.BIN of usage 2 cars is 4616 bytes (U where their body texture comes from).</p>
+<div class="tbl-wrap"><table><thead><tr><th>i</th><th>name</th><th>use</th><th>skins</th><th>weights d0..d4</th><th>traffic now (stock / cave)</th></tr></thead><tbody><tr><td>0-12, 14-19</td><td>GOLF FOCUS MIATA NEON CIVIC PEUGOT CELICA ECLIPSE RX7 SUPRA S2000 RSX IMPREZA INTEGRA TIBURON 350Z SENTRA 240SX SKYLINE</td><td>0</td><td>1 each (id 1)</td><td>1.0 all</td><td>stock no; cave: GOLF FOCUS NEON CIVIC PEUGOT CELICA INTEGRA SENTRA at 0.375 each</td></tr><tr><td>13</td><td>LANCER</td><td>0</td><td>0</td><td>1.0 all</td><td>never (no skins)</td></tr><tr><td>20</td><td>TAXI</td><td>2</td><td>1</td><td>0 0 1 0 1</td><td>stock no; cave yes</td></tr><tr><td>21</td><td>4DR_SEDAN02</td><td>2</td><td>8 (1-8)</td><td>1 1 0 1 0</td><td>yes / yes</td></tr><tr><td>22</td><td>AMBULANCE</td><td>2</td><td>1</td><td>all 0</td><td>never</td></tr><tr><td>23</td><td>TAXI02</td><td>2</td><td>1</td><td>1 0 0 0 1</td><td>yes / yes</td></tr><tr><td>24</td><td>PANELVAN</td><td>2</td><td>6 (1-6)</td><td>1 1 0 0 0</td><td>yes / yes</td></tr><tr><td>25</td><td>COUPE</td><td>2</td><td>8</td><td>0 0 0 1 1</td><td>stock no; cave yes</td></tr><tr><td>26</td><td>FIRETRUCK</td><td>2</td><td>1</td><td>all 0</td><td>never</td></tr><tr><td>27</td><td>PARCELVAN</td><td>2</td><td>2</td><td>1 1 0 0 1</td><td>yes / yes</td></tr><tr><td>28</td><td>PICKUP</td><td>2</td><td>8</td><td>1 1 0 1 0</td><td>yes / yes</td></tr><tr><td>29</td><td>4DR_SEDAN</td><td>2</td><td>8</td><td>0 0 1 0 0</td><td>stock no; cave yes</td></tr><tr><td>30</td><td>BUS</td><td>2</td><td>3</td><td>all 0</td><td>never</td></tr><tr><td>31</td><td>SUV</td><td>2</td><td>8</td><td>1 1 0 1 0</td><td>yes / yes</td></tr><tr><td>32</td><td>MINIVAN</td><td>2</td><td>8</td><td>0 1 0 1 0</td><td>stock no; cave yes</td></tr><tr><td>33</td><td>HATCHBACK</td><td>2</td><td>5</td><td>0 0 1 0 1</td><td>stock no; cave yes</td></tr><tr><td>34</td><td>HATCHBACK02</td><td>2</td><td>8</td><td>0 0 1 0 1</td><td>stock no; cave yes</td></tr></tbody></table></div>
+<p>Stock: 6 models (21, 23, 24, 27, 28, 31). Cave: 12 traffic rows + 8 racer rows = 20 models. BUS, AMBULANCE, FIRETRUCK stay 0. The cave&#x27;s weights were checked against the cave source only, not run.</p>
+<p>Pick (V, G): <code>0x4b3ac0</code> calls <code>0x57d000</code>, which sums the weights of the rows <code>0x57cfa0</code> returns and walks with a random number. After the pick it scans the entrant list for an entrant kind 0 with the same type; if found it picks again, at most 100 times (<code>local &lt; 100</code>), then accepts the repeat. With 12 cars and only 6 stock types, repeats are certain (more cars than types). With 20 types the re-pick works and repeats fall. Tracks load all models up front: <code>0x448f70</code> asks <code>0x58c3b0</code> once per entrant (U: whether equal types share one LoadedCar entry). No per-track model list was found; the repeat the OWNER sees is the type table.</p>
+<p>Paint (V, G+C): <code>0x4b3ac0</code>: paint id = byte [row+0xc80 + rand mod [row+0xd9]], <code>Ride_Init(id)</code>, <code>0x57d340</code> fills the parts, <code>0x57e9a0</code> sets ride+0x4c4 to the first part of kind 0x1e. Usage 1 rows use id 1 or 2. Skins per model: 1, 8, 6, 2, 8, 8 for the six stock models (up to 8 for the others). At run time: call <code>0x569c30(ecx=car, id)</code> (sets [[car+0x10]+7], then 0x56c310). <code>0x59a7c0</code> (the teleporter move) ends with <code>0x59b5d0</code>, which calls <code>0x59b590</code> (random id of the same type) and <code>0x569c30</code> when it differs: so a recycled car keeps its model, and its colour changes with each move. A different model needs a new car (U). The <code>+0x17</code> entrant byte is overwritten at placement by 0x5992f0 with <code>0x59b590</code> too (G).</p>
+<h2 id="3-lights">3. LIGHTS</h2>
+<p>Fields (V, G+C): <code>0x429100</code> stores them, <code>0x429190</code> (every frame, not for human drivers) uses them. Time unit: <code>0x73ad34</code> runs at 4000 per second, 0.00025 converts to seconds.</p>
+<ul><li>+0x844 time of the last arm. <code>0x429100</code> refuses a new arm until A + B + C seconds have passed since it.</li><li>+0x848 A, +0x84c C, +0x850 B (floats, seconds). Pattern: on for A; if gap flag +0x840 = 1, off for A, else continuous; then on</li></ul>
+<p>until A + B + C counted from the start (I from the compare order in 0x429190).</p>
+<ul><li>+0x83e lights flag, +0x83f horn flag, +0x840 gap flag.</li><li>Output: +0x855 = light is on (the flash phase with +0x83e, else the base +0x854). The sound object car+0x30 gets vtable +0x48 (horn on)</li></ul>
+<p>when a flash phase and +0x83f, +0x4c (off) otherwise, +0x50 asks if it plays.</p>
+<ul><li>+0x854 is a base &quot;lights on&quot; byte. Only writers: init to 0 in <code>0x425350</code> and the network field list <code>0x425af0</code>. No game code sets it</li></ul>
+<p>(V, scalar scan). +0x855 is also set by the lights key, case 0x9a in <code>0x431960</code>, for human cars. The draw test <code>0x5693b0</code> returns 1 for every traffic car (kind 3), else +0x855 (I: traffic lights may be always on at the draw; U whether a flash is visible).</p>
+<p>Call in the game (V, <code>0x44c2e0</code> at 0x44c539): <code>ecx = car</code>; stack, last pushed first: gap (+0x840), horn (+0x83f), lights (+0x83e), C, B, A. The game rolls: horn flag is rolled first (probability 1.0 / 0.75 / 0.05 / 0.075 by who the other car is and its relative lane speed); only if the horn flag is set is the lights flag rolled (0.5, or 0.9 when the closing value [slot+4] &gt; 50). A = 0.1..0.5 s (rand * 0.4 + 0.1), B = 0.05..0.25 s, C = 0.1..0.5 s, +0.6 when closing &gt; 50. Trigger: the other car is a human, not traffic and not usage 1 (<code>0x57a6b0</code>), and it is in the traffic car&#x27;s slot list. The older &quot;within 50 m&quot; is not what the code compares: 50 is tested against slot +4 (a closing speed, per <code>re_traffic_rivals</code>).</p>
+<p>To flash and honk from the host: <code>0x429100</code> with ecx = traffic car, A = 0.3, B = 0.15, C = 0.3, lights = 1, horn = 1, gap = 1 (chosen values, not game values). It is silently ignored if the last arm is too recent.</p>
+<h2 id="flash-visible-one-byte-not-applied-tools-recomp-">Flash visible: one byte (not applied, tools/recomp/patches.py is the orchestrator&#x27;s)</h2>
+<p>0x5693b0 (C): <code>cmp [ecx+4],3 / jne +3 / mov al,1 / ret / mov al,[eax+0x855]</code>: a traffic car&#x27;s head flare is always on (caller 0x56da42 in 0x56d8d0), so 0x429100&#x27;s lights flag cannot show. Byte 0x5693b7 <code>75</code> -&gt; <code>eb</code> makes every car read +0x855. host/rivals.c traffic_tick already keeps the base +0x854 at 1 for traffic and at 0 for 48 frames during a flash, so the lights blink. Without the byte nothing changes on screen; the horn works either way.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

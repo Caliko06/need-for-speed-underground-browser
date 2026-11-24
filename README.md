@@ -70,12 +70,21 @@ flowchart LR
 
 Changes to the game are small patches in [`tools/recomp/patches_*.py`](tools/recomp), each naming the address in `Speed.exe` that justifies it. **Original 2003** keeps the game as it shipped; the extra effects and handling options belong to **Remaster**.
 
+## Reverse Engineering Atlas, Devlog & Architecture
+
+`RE-NFSU` is part of the static recompilation wave (alongside projects like N64Recomp, XenonRecomp, and NFSU2Recomp), with all binary evidence published openly:
+
+- **[Architecture Blueprint (`ARCHITECTURE.md`)](ARCHITECTURE.md)** — end-to-end x86-to-C-to-WASM pipeline (`Speed.exe` 3.18 MB, 13,764 lifted functions, dead-flag pruning, `CHK_SP` coalescing, `RN_S3TC` BC1/2/3 WebGPU/WebGL 2, 448 MB mobile WASM).
+- **[Reverse Engineering Atlas (44 Subsystems)](https://nfsu.cc/re/index.html)** ([`docs/re/`](docs/re/README.md)) — verified `Speed.exe` addresses and structs for physics, camera, rivals, traffic, tracks, rendering, audio, garage, and assets (HTML + raw `.md` mirrors).
+- **[Engineering Devlog & Updates](https://nfsu.cc/devlog/index.html)** ([`CHANGELOG.md`](CHANGELOG.md) · [Atom RSS](https://nfsu.cc/feed.xml)) — commit-backed write-ups on compiler passes, WebGPU draw batching, and production crash telemetry.
+- **AI / LLM Index**: [`llms.txt`](https://nfsu.cc/llms.txt) · [`llms-full.txt`](https://nfsu.cc/llms-full.txt)
+
 ## Guides
 
 | Play | [Play online](https://nfsu.cc/blog/en/play-need-for-speed-underground-online.html) | [Controls](https://nfsu.cc/blog/en/need-for-speed-underground-controls-keyboard-gamepad-phone.html) | [Browsers, phones, settings](https://nfsu.cc/blog/en/browsers-phones-performance-settings.html) |
 |---|---|---|---|
 | **How it runs** | [How it runs in a browser](https://nfsu.cc/blog/en/how-need-for-speed-underground-runs-in-a-browser-webassembly.html) | [Static recompilation](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) |
-| **Inside the game** | [Reading the binary](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html) | [AI agents on the binary](https://nfsu.cc/blog/en/reverse-engineering-a-game-with-ai-agents.html) | [All guides](https://nfsu.cc/blog/en/index.html) |
+| **Inside the game** | [RE Atlas (44 subsystems)](https://nfsu.cc/re/index.html) | [Engineering Devlog](https://nfsu.cc/devlog/index.html) | [All guides](https://nfsu.cc/blog/en/index.html) |
 
 ## FAQ
 

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Feel probe fix — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Run that exposed the bugs: runs/w_d_a/log.txt, 682 FEEL lines, every one cam 0 pov -1 row 00000000 dist 0.00 h 0.00 fov 0,">
+<link rel="canonical" href="https://nfsu.cc/re/feel_probe_fix.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/feel_probe_fix.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Feel probe fix — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Run that exposed the bugs: runs/w_d_a/log.txt, 682 FEEL lines, every one cam 0 pov -1 row 00000000 dist 0.00 h 0.00 fov 0,">
+<meta property="og:url" content="https://nfsu.cc/re/feel_probe_fix.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Feel probe fix — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Run that exposed the bugs: runs/w_d_a/log.txt, 682 FEEL lines, every one cam 0 pov -1 row 00000000 dist 0.00 h 0.00 fov 0,">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Feel probe fix", "description": "Run that exposed the bugs: runs/w_d_a/log.txt, 682 FEEL lines, every one cam 0 pov -1 row 00000000 dist 0.00 h 0.00 fov 0,", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/feel_probe_fix.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Feel probe fix", "item": "https://nfsu.cc/re/feel_probe_fix.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Driving &amp; Physics</p>
+<article>
+<h1>Feel probe fix</h1>
+<div class="badges">
+  <span class="badge">Driving &amp; Physics</span>
+  <span class="badge accent">20 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="feel_probe_fix.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/feel_probe_fix.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Run that exposed the bugs: <code>runs/w_d_a/log.txt</code>, 682 <code>FEEL</code> lines, every one <code>cam 0 pov -1 row 00000000 dist 0.00 h 0.00 fov 0</code>, plus 5-line bursts of <code>FEEL A … 0-60 0.02 s</code>. Nothing was built or run for this fix; every offset below was read in <code>pc/Speed.exe</code> (<code>tools/recomp/asm.py</code> + capstone) and cross-checked against the same run&#x27;s <code>JC</code> lines, which were correct.</p>
+<h2 id="what-was-wrong">What was wrong</h2>
+<ol><li><b>The FOV read was the angle, not the index.</b> <code>view+0xc4</code> is the word <code>0x485ff1</code> <em>writes</em> into the view, i.e. the FOV already</li></ol>
+<p>resolved to 1/65536 turn units (<code>0x32dc</code> = 13020 = 71.5°, <code>0x0e38</code> = 3640 = 20° for the jump cam). The old probe took it as the POV code, so <code>pov</code> came out 13020 (guarded to -1 by <code>pov &lt; 16</code>) and never matched a row. Same <code>JC</code> run shows the value is exactly this angle: <code>fov 13020</code> on the chase camera, <code>fov 3640</code> in mode 6.</p>
+<ol><li><b>The chase row was looked up with that wrong number.</b> <code>feel_row</code> scanned 5 rows against 13020, found nothing, and printed</li></ol>
+<p><code>row 00000000 dist 0.00 h 0.00</code>. The five-row loop also ignored the count and the second row set.</p>
+<ol><li><b><code>cam 0</code> is not a bug.</b> <code>ctrl+0x60</code> is the camera <em>mode</em>; 0 is the normal chase camera and 6/7 are the jump views. The same</li></ol>
+<p>run&#x27;s <code>JC</code> lines print <code>mode 0</code> on normal driving. The field is now named <code>mode</code> so it stops looking broken.</p>
+<ol><li><b>False starts.</b> The old rule was &quot;speed &lt; 0.3 then anything above 60 mph&quot;, and a car-pointer change between two frames</li></ol>
+<p>turned into a 0.02 s run. The new rule needs the car under 1 m/s for 30 frames, and throws the run away on a car change, a stop or a jump of 8 m/s in one frame.</p>
+<h2 id="what-each-field-reads-now">What each field reads now</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Field</th><th>Source in Speed.exe</th></tr></thead><tbody><tr><td><code>mover</code></td><td><code>[ctrl+0x27c]</code>, <code>ctrl = [0x7361bc]</code> while race state <code>[0x77a920] == 6</code>. It is the camera object <code>0x48bcb0</code> updates; <code>mover+0x2c</code> is the car it drives (<code>0x48bd19</code> stores the <code>0x41ffe0</code> result there) and <code>mover+0x1c</code> the view it writes (<code>0x485fee</code>). The <code>JC</code> probe already used this pair and printed valid eyes and FOVs</td></tr><tr><td><code>mode</code></td><td><code>[ctrl+0x60]</code> (0 = chase, 6/7 = jump views)</td></tr><tr><td><code>pov</code></td><td><code>(s16)[mover+0x40]</code>. <code>0x48bf43</code> loads it and <code>0x48bf4e</code> passes it in <code>edi</code> to FindCameraRow <code>0x47d680</code>; when that returns no row the code at <code>0x48bf5b</code> retries with <code>edi = 0</code>, the far chase row, which only makes sense if this field is the POV code</td></tr><tr><td><code>row</code></td><td>FindCameraRow <code>0x47d680</code> rebuilt: base <code>[[car+0xc]+0xb50]</code>, <code>cmp [0x7364a0],3</code> picks count at <code>+4</code> / rows at <code>+0x60</code>, else count at <code>+0</code> / rows at <code>+0x10</code>; rows are 16 bytes and match on their s16 id. <code>+0</code> count is 5, second count 5 (<code>docs/re/camera.md</code> 4)</td></tr><tr><td><code>dist</code>, <code>h</code></td><td><code>row+4</code> and <code>row+8</code>. <code>0x48b8c0</code> reads exactly those two at <code>0x48ba2a</code> (<code>mov ecx,[esi+4]</code>, <code>mov eax,[esi+8]</code>) and <code>0x489690</code> uses <code>-distance</code>, so a negative <code>dist</code> means behind the car. R34 far chase: -5.80 / 1.70</td></tr><tr><td><code>fov</code></td><td><code>(s16)[view+0xc4]</code>, the word <code>0x485ff1</code> writes from <code>ebx = mover</code>: <code>mov ecx,[ebx+0x1c]; mov [ecx+0xc4], ax</code>. It is what the projection got, so it follows <code>?speedfov</code>, the caves and the jump cam without guessing</td></tr><tr><td><code>tab</code></td><td><code>(s16)[0x6fbdf4 + 2*pov]</code>, the per-POV angle the game resolves (<code>0x480750</code>: <code>sign_extend(s16[row]) * 2 + 0x6fbdf4</code>). POV 0/1/4 = <code>0x32dc</code> = 71.5°, POV 2/3 = <code>0x4000</code> = 90°. This is the word FEEL-C3 edits</td></tr><tr><td><code>set</code></td><td><code>[0x7364a0] == 3</code>, the second row set</td></tr><tr><td><code>sp</code></td><td><code>car+0x3d4</code> m/s (HUD unit, <code>0x6cc9f0</code> x 2.237 = mph). Nitrous on: <code>[0x73654c]</code></td></tr><tr><td><code>FEEL A</code></td><td>Present clock, 60 per second: a run starts on the first frame at or over 1 m/s after 30 frames under 1 m/s, and logs 0-60 / 0-100 mph. Any stop, car change or 8 m/s single-frame jump cancels it</td></tr></tbody></table></div>
+<h2 id="how-to-read-a-line">How to read a line</h2>
+<pre><code>FEEL f2892 sp 0.00 m/s (0 mph) mode 0 mover 0119a800 pov 0 row 0119b0f0 dist -5.80 h 1.70 fov 13020 (71.5 deg) tab 13020 (71.5 deg) nit 0 set 0</code></pre>
+<p><code>pov 0</code> + <code>row</code> non-zero + <code>fov</code>/<code>tab</code> at 71.5° is the normal chase camera; <code>fov</code> going up while <code>tab</code> stays is <code>?speedfov</code>; <code>dist</code>/<code>h</code> moving while <code>fov</code> does not is <code>?chasecam</code> / <code>?nitrocam</code> on the host side.</p>
+<h2 id="still-open">Still open</h2>
+<ul><li><code>pov</code> depends on <code>[mover+0x40]</code> holding a 0..4 row id. The first <code>w_*</code> run after this fix confirms it in one line: if it</li></ul>
+<p>prints <code>pov -1</code> with a live <code>fov</code>, <code>mover+0x40</code> is something else in that build and the fallback is <code>tab</code> plus POV 0.</p>
+<ul><li>The probe still does not read the eye in world space, so &quot;distance&quot; is the row target, not the smoothed camera of the moving</li></ul>
+<p>average <code>0x48ec00</code>. That is the number a <code>?chasecam</code> A/B moves, so it is the right one for the plan.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

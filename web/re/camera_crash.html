@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Jump cam refusals and the crash cam — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Source: OWNER log nfsu-session-2026-11-01T00-54-07 (WORLD 1010), disasm of pc/Speed.exe, Ghidra export. Nothing was run.">
+<link rel="canonical" href="https://nfsu.cc/re/camera_crash.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/camera_crash.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Jump cam refusals and the crash cam — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Source: OWNER log nfsu-session-2026-11-01T00-54-07 (WORLD 1010), disasm of pc/Speed.exe, Ghidra export. Nothing was run.">
+<meta property="og:url" content="https://nfsu.cc/re/camera_crash.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Jump cam refusals and the crash cam — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Source: OWNER log nfsu-session-2026-11-01T00-54-07 (WORLD 1010), disasm of pc/Speed.exe, Ghidra export. Nothing was run.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Jump cam refusals and the crash cam", "description": "Source: OWNER log nfsu-session-2026-11-01T00-54-07 (WORLD 1010), disasm of pc/Speed.exe, Ghidra export. Nothing was run.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/camera_crash.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Jump cam refusals and the crash cam", "item": "https://nfsu.cc/re/camera_crash.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Camera Systems</p>
+<article>
+<h1>Jump cam refusals and the crash cam</h1>
+<div class="badges">
+  <span class="badge">Camera Systems</span>
+  <span class="badge accent">45 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="camera_crash.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/camera_crash.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Source: OWNER log nfsu-session-2026-11-01T00-54-07 (WORLD 1010), disasm of pc/Speed.exe, Ghidra export. Nothing was run. V = read in code, I = inference, NV = not verified (needs the OWNER&#x27;s F10 log).</p>
+<h2 id="1-why-eye-check-refuses-host-free-c-eye-check-li">1. Why eye_check refuses (host/free.c eye_check, line 940)</h2>
+<ul><li><code>dist 0</code> in <code>JCPICK ... refused</code> is NOT a measurement: line 981 prints the literal <code>e &gt; k ? dist : 0.0f</code>. (V)</li></ul>
+<p>A refusal says only: for every e in k+1..e0 no edge passed the portal test with dist &gt;= 30 m.</p>
+<ul><li>The args to 0x457300 are right (V): eax = k, ecx = route, stack = car+0x60, eye, e-1, caller pops 12 (game call 0x42cf02);</li></ul>
+<p>lane/offset math equals the game&#x27;s 0x42cd24..0x42cf6e. 0x457180 is a plain 2D segment-segment crossing (t,u in [0,1]).</p>
+<ul><li>0x457300 needs the car-&gt;eye segment to CROSS the cross-section of every node k..e-1 (loop esi..eax inclusive, 0x457360..0x4573da).</li></ul>
+<p>If the car is already past node k, the segment can never cross it: the test is false for every e, both edges. (V) The game does not mind: on failure it takes the other edge unchecked (0x42cf12). Our eye_check turns that into a refusal.</p>
+<ul><li>Why k is behind the car (I): <code>k</code> = 0x5a6150(route, car+0x60) = 0 in all 9 queries (even while the car moved 56 m in the 8</li></ul>
+<p>consecutive refusals f4482..f4538, speed 55 m/s). The route head is the driver cursor, refreshed only every 60 frames (0x426b63: <code>frame % 0x3c</code>, TrackPath__UpdateCursor), so at 55 m/s it lags up to ~55 m = 5 nodes (node gap ~11 m: 124 m / 12 nodes). The one <code>clear</code> (f16681) was at 5 m/s (crash cam, car at rest), k = 0 ahead of the car, dist 142 m. Fits.</p>
+<ul><li>Second cause (I): even without the lag, e can only go DOWN from e0 = end-2 (= 5..6 here), so e*11 m is 11..60 m from node 0,</li></ul>
+<p>and nodes 0..4 are behind or at the car: no candidate is both ahead and &gt;= 30 m.</p>
+<ul><li>Minimal fix in eye_check (not applied):</li></ul>
+<ol><li>f = first node i in k..e-1 whose centre is ahead of the car: <code>node_point(c, node_i, 0.5*(ldf(node+0x20)+ldf(node+0x3c)), 0, scratch)</code></li></ol>
+<p>(scratch = jump_scr+48, the 64 B block is big enough), ahead means <code>dot(p - car+0x60, car+0x70..78) &gt; 0</code>. Call 0x457300 with eax = f (skip the test when f &gt; e-1: nothing between car and eye).</p>
+<ol><li>Loop e UP from f+1 to count-1 (<code>count = ld(route+4)</code>), take the first e with portal ok and dist &gt;= 40 m (JUMP_MIN_M).</li></ol>
+<p>[5cc] rule stays: <code>e-k&lt;=4 ? e : e+2</code> (only 0x42ca9b reads [5cc], V grep; node k+2 stays valid, k unchanged).</p>
+<ol><li>Make the log honest: print the best dist seen and how many e failed the portal vs the distance.</li></ol>
+<h2 id="2-other-reasons-the-jump-cam-is-rare-log-71-fast">2. Other reasons the jump cam is rare (log: 71 fast airborne samples, ~14 episodes, 9 queries)</h2>
+<ul><li>0x42c4b0 itself returns 0 when the route has &lt; 5 nodes over 75 m: the log shows episodes with <code>nodes 1 last 0</code> (f8605, f13625..13821</li></ul>
+<p>at 69 m/s): the host never sees them. The route is 1 node for long stretches of this session. (V from 0x42c4b0 code, log)</p>
+<ul><li>Trigger gate <code>ctrl+0x4ac == 0</code> (0x426930, Ghidra line 30068; ctrl = car+0x18). ctrl+0x4ac is the WRONG WAY flag, stored every frame</li></ul>
+<p>from 0x430e00 at 0x430730 (V). 0x430e00 = heading vs route direction (car+0x818/0x81c) more than a threshold apart, car moving (|car+0x3d0*..| &gt; [0x6b7b14]), velocity also against it. In WORLD, driving against the route direction is common and the HUD hides it (free_hud), so this gate can block the jump cam half the time. Value in the log: NV. Add <code>ctrl+0x4ac</code> to jumpcam_log.</p>
+<ul><li>Episodes with 10..14 nodes and no JCPICK (f9487, f9597, f9709, f10306, f16524, f17332): flight predictor under the curves</li></ul>
+<p>(1.5 m height, 1.5 m distance at x=128), or 0x4ac = 1. NV.</p>
+<h2 id="3-crash-cam-0x465d00-specialcamcaller-465d00-v-g">3. Crash cam: 0x465d00 (SpecialCamCaller_465d00) (V, Ghidra 72405 + asm 0x465d00..0x466330)</h2>
+<ul><li>Not a separate camera: it calls 0x42c4b0 (our cave at 0x4662e0) then 0x42da40(mode 6,0,1,1) = the same JUMPVIEW shot</li></ul>
+<p>(slow motion 0.4 for 8 s, mover 0xf). No mode 7/other mover for crashes. Mode 7 (landing) follows only after mode 6.</p>
+<ul><li>Caller chain: rigid-body pair resolver 0x46bae0 -&gt; 0x465830(body_pair, contact, impulse, |v|) -&gt; 0x465d00(pair, contact pt, impulse vec).</li></ul>
+<p>pair+0x64 -&gt; bodies at +0x258 / +0x25c. local = |impulse| clamped to [0x6b72c0] = 50.0.</p>
+<ul><li>Gates, all must hold (asm 0x466286..0x4662e5):</li></ul>
+<ol><li><code>[0x78a345] == 0</code> and <code>[0x7361a4] == 0</code> (global &quot;no special cam&quot; flags; 0 in WORLD per re_jumpcam RN_WATCH).</li><li>0x4663a0: BOTH bodies have type byte <code>+0x15 == 0</code> (vehicle vs vehicle). A wall or prop (type 4, I) never gives the cam.</li><li>|impulse| &gt;= <code>[0x6b72b8]</code> = <b>35.0</b>. (Same value is compared as <code>&lt;=</code> in Ghidra; asm: <code>fcomp; test ah,1; jne</code> skips when &lt; 35.)</li><li>The body is the human player: 0x424d60: <code>[veh+0x14]+4 == 1</code> and <code>[[veh+0x14]+0x734] == 0</code>. Traffic and rivals: never.</li><li>camera ctrl mode <code>[ctrl+0x60]</code> not 6 or 7.</li><li>0x42c4b0 returns non-zero (route &gt;= 5 nodes over 75 m) -- our eye_check sits here too.</li><li>0x42da40(6): <code>[0x78a3fa] != 0</code> (jump-cam option, 0x80), cooldown 5.0 s <code>[0x6b7a88]</code> per mode (shared with the jump cam),</li></ol>
+<p><code>[0x7361c4] != 2</code>, <code>[[0x73619c]] == 4</code>, <code>[[0x7361f0]] != 9</code>, <code>[0x78a346]</code>, <code>[0x7361a0]</code> = 0, no other player in modes 3..7. [0x7361e8] and ctrl+0x4ac are NOT read on this path (only the jump trigger reads them).</p>
+<ul><li>Crash state, separate from the cam (first block of 0x465d00): impulse &gt;= <code>[0x6b72bc]</code> = <b>30.0</b>, body <code>+0x38 == 0</code>, both bodies</li></ul>
+<p>vehicles (or vehicle + type-4): sets <code>car+0x38 = 1</code>, <code>car+0x4cc = 0</code>, <code>car+0x4c8 = now</code> (0x426930 ends mode 6 0.5 s after 4 wheels down). Other constants: 0x6b72b4 = -0.97 (head-on dot), 0x6b72c8 = 35.0 / 0x6b72cc = 15.0 (impulse gate of the [0x78a344]/[0x7361a8] branch, not the cam).</p>
+<ul><li>No crash-cam option byte exists: the only user byte on this path is <code>[0x78a3fa]</code> (jump cam option, 0x80 in the log = on). (V)</li><li>Fired in WORLD: yes, once in this log (f16681, 21.6 -&gt; 5.1 m/s, right after a respawn, <code>clear</code> 142 m) and in the 2026-10-28 runs</li></ul>
+<p>(taxi). Why it is rare: needs a car-vs-car hit with |impulse| &gt;= 35 by the player, then the same eye_check. The unit of the impulse is NOT known (NV): add one rn_log of <code>local</code> (esp+0x1c) at 0x4662b0 in the probe build and ask for F10.</p>
+<h2 id="patch-proposal">Patch proposal</h2>
+<p>host/free.c eye_check as in section 1 (f = first node ahead; e ascends f+1..count-1; min 40 m; honest log); log ctrl+0x4ac and the crash impulse too. patches.py unchanged.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

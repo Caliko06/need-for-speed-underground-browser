@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Rivals: how often they get stuck, and what GetUnstuck really is — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Question: how often are rivals stuck or sideways, what triggers GetUnstuck (type 0xa, update 0x452070),">
+<link rel="canonical" href="https://nfsu.cc/re/ai_stuck.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/ai_stuck.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Rivals: how often they get stuck, and what GetUnstuck really is — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Question: how often are rivals stuck or sideways, what triggers GetUnstuck (type 0xa, update 0x452070),">
+<meta property="og:url" content="https://nfsu.cc/re/ai_stuck.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rivals: how often they get stuck, and what GetUnstuck really is — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Question: how often are rivals stuck or sideways, what triggers GetUnstuck (type 0xa, update 0x452070),">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Rivals: how often they get stuck, and what GetUnstuck really is", "description": "Question: how often are rivals stuck or sideways, what triggers GetUnstuck (type 0xa, update 0x452070),", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/ai_stuck.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Rivals: how often they get stuck, and what GetUnstuck really is", "item": "https://nfsu.cc/re/ai_stuck.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rivals &amp; Race AI</p>
+<article>
+<h1>Rivals: how often they get stuck, and what GetUnstuck really is</h1>
+<div class="badges">
+  <span class="badge">Rivals &amp; Race AI</span>
+  <span class="badge accent">36 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="ai_stuck.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/ai_stuck.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Question: how often are rivals stuck or sideways, what triggers GetUnstuck (type 0xa, update 0x452070), how long does the recovery last, what does it do to the car, and is the trigger or the timer the cause. V = read in code (address) or measured in the logs; I = inference; U = doubt. Nothing was run.</p>
+<h2 id="answer">Answer</h2>
+<ol><li>The game&#x27;s stuck test is <b>not</b> &quot;speed &lt; 2 m/s&quot;. It is: the car has been within 0.4 s of a contact/keep</li></ol>
+<p>list entry <b>and</b> its speed is below <b>5.0 m/s</b>, <b>or</b> it is more than <b>20 m</b> off its route line, <b>or</b> two special modes (vehicle+0x24 == 3 at &lt; 25 m/s, == 4 at &lt; 20 m/s) with <code>0x44e9c0(...)==1</code>. V</p>
+<ol><li>Trigger cost is tiny: 0.4 s under 5 m/s is enough, and the returned priority is <b>500</b>, the highest in the</li></ol>
+<p>race selector. A rival that is merely slowed behind traffic or another car burns the recovery. V</p>
+<ol><li>The recovery is a <b>reverse</b>, not a reset: the action&#x27;s own speed target (racer+0x1e4) is set to</li></ol>
+<p><b>-15.0 m/s</b> when vehicle+0x24 == 3, else <b>-6.0 m/s</b>, and route-node speed is disabled (racer+0x1f0 = 0). V Duration from the ctor slot 0x462ae0 = <b>1.3 s</b> default, <b>1.6 s</b> (float 0x3fa66666 / 0x3fcccccd) under one condition. Cooldown <b>6.0 s</b> since the last creation (racer+0x408, 0x462aa0). V</p>
+<ol><li>Measured: rivals spend <b>2.7 % to 8.8 %</b> of their sampled seconds below 2 m/s (telemetry definition), with</li></ol>
+<p>single stops of <b>13.7 s to 17.9 s</b>. GetUnstuck is entered <b>7 to 25 times per minute</b> across 8 rivals (~1 to 3 per rival-minute), and <b>27 % to 38 % of those entries happen at speed &gt;= 5 m/s</b>, i.e. above the game&#x27;s own threshold: those reversals are false positives, not recoveries. V (numbers below)</p>
+<ol><li>So: yes, the trigger is the cause, and the timer makes it worse (0.4 s is far too short for a 5 m/s test on a</li></ol>
+<p>car that is 0.4 s behind traffic). A patch is drafted, opt-in, data only.</p>
+<h2 id="the-trigger-line-by-line-asm-sub-451b00-finder">The trigger, line by line (asm, sub_451b00 = finder)</h2>
+<ul><li>Gate: <code>0x435ca0</code> early-out (race not live), slot list head <code>ctx+0x38c</code> must be non-zero, <code>0x57a7d0</code> must pass. V</li><li>Off-route branch: cross product of (car - route point) with the route segment &gt; <b>20.0</b> (0x6b7690) = off road</li></ul>
+<blockquote><p>20 m, flag stuck. V for the constant and the compare at 0x451b87.</p></blockquote>
+<ul><li>Contact/speed branch (loop over the list at ctx+0x3c, 0x451be0..0x451c76): for each entry it needs</li></ul>
+<p><code>(now - entry+8) * 0.00025 &gt;= 0.4</code> (0x6b7680) and then own speed <code>&lt; 5.0</code> (0x6b7684), with a fuzz call <code>0x424b50(speed, 5.0, 0.001)</code> that can still veto (I: a rare escape roll; U: exact semantics). On a hit the local flag is set to 1. V for constants and flow, I for what the list membership means.</p>
+<ul><li>Mode branch (0x451b94..0x451bdb): vehicle+0x24 == 3 and speed &lt; 25.0 (0x6b7688) or == 4 and speed &lt; 20.0</li></ul>
+<p>(0x6b768c), then <code>0x44e9c0(ctx+0x38c, 1) == 1</code> sets the flag. V for constants; U for what modes 3/4 are.</p>
+<ul><li>Return: flag set -&gt; <code>mov eax,0x1f4</code> = <b>priority 500</b> at 0x451c9b, else -1. V</li><li>Two selector sites call it (0x44d924 in the race selector <code>sub_44d8c5</code>, 0x44dd89 in a second goal selector at</li></ul>
+<p>0x44dd45); both require current type != 0xa, current priority &lt;= 500, and the 6.0 s cooldown vt+0x6c (<code>0x462aa0</code>), then set racer+0x408 = now and take the duration from vt+0x70 (<code>0x462ae0</code>). V</p>
+<ul><li>Lower levels also fire it: ctor 0x4519f0 is also called directly from 0x462656 (<code>sub_4624d0</code>, the &quot;make action&quot;</li></ul>
+<p>entry), so at least one path can create the action without the finder. I (callers V, semantics I).</p>
+<h2 id="the-update-0x452070-what-it-does-to-the-car">The update, 0x452070 (what it does to the car)</h2>
+<ul><li><code>racer+0x1f0 = 0</code> (speed no longer from route nodes), <code>+0x1f1 = 1</code>, <code>+0x1f2 = 0</code>, <code>+0x1e0 = 1</code> (keep alive). V</li><li>Steer/lane target: <code>0x45c370(racer+0x20, ctx, 1.0, 2, 0, 25.0)</code> (25.0 = 0x47c34f80) every tick. V</li><li>Then <code>[vehicle+0x24] == 3</code> -&gt; <code>racer+0x1e4 = [0x6b7674] = -15.0</code>, else <code>[0x6b7678] = -6.0</code>. V</li></ul>
+<p>The telemetry contract says +0x1e4 is the action&#x27;s own speed target when +0x1f0 is 0, so the car drives backwards at 6 to 15 m/s, on a lane target, for 1.3 to 1.6 s. V for the stores, I for &quot;reverse&quot;.</p>
+<ul><li>If <code>ctx+0x38c</code> is empty (no slot) it sets <code>+0x1e0 = 0</code>, the action dies, and <code>0x44bbd0</code> requests type 4</li></ul>
+<p>(Draft, priority 100, duration -1) at 0x44bc11. That is the sideways behaviour at low speed. V (addresses), I (link to the visible sideways drift).</p>
+<ul><li>No position reset, no teleport, no invulnerability: the recovery only reverses. V</li></ul>
+<h2 id="numbers-air-logs-1-hz-per-rival-users-angeldamia">Numbers (AIR logs, 1 Hz per rival; <code>/Users/angeldamian/RE-NFSU/runs/w_*</code>)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>run</th><th>span</th><th>rivals</th><th>stuck &lt;2 m/s</th><th>max stop</th><th>entries</th><th>per min</th><th>entries at &gt;=5 m/s</th><th>time in 0xa</th></tr></thead><tbody><tr><td>w_ai_s1</td><td>234 s</td><td>8</td><td>5.3 %</td><td>17.7 s</td><td>29</td><td>7.4</td><td>34 %</td><td>3.1 %</td></tr><tr><td>w_ai_s2</td><td>243 s</td><td>8</td><td>4.9 %</td><td>13.9 s</td><td>46</td><td>11.4</td><td>28 %</td><td>5.2 %</td></tr><tr><td>w_ai_s3</td><td>225 s</td><td>8</td><td>8.8 %</td><td>14.1 s</td><td>94</td><td>25.1</td><td>27 %</td><td>10.3 %</td></tr><tr><td>w_x_base</td><td>190 s</td><td>8</td><td>6.6 %</td><td>13.7 s</td><td>57</td><td>18.0</td><td>35 %</td><td>7.3 %</td></tr><tr><td>w_b</td><td>314 s</td><td>8</td><td>3.3 %</td><td>17.9 s</td><td>78</td><td>14.9</td><td>38 %</td><td>3.7 %</td></tr><tr><td>w_L3</td><td>618 s</td><td>8</td><td>2.7 %</td><td>8.1 s</td><td>149</td><td>14.5</td><td>30 %</td><td>5.8 %</td></tr></tbody></table></div>
+<ul><li>Worst single stops: SAMANTHA 17.9 s (w_b), WART 16.7 s (w_ai_s1), ISHII 13.7 s and PRISS 13.9 s (w_x_base, w_ai_s2). V</li><li>Action-length streaks (samples in 0xa): mostly 1 to 2 samples (the 1.3 s action), but bursts of 4 to 7 samples</li></ul>
+<p>exist (w_L3 CARL 5, 5, 6 s; w_b FISH 2-3 s runs), so the action is re-created inside the 6 s cooldown or the duration taken was longer. I/U (1 Hz sampling cannot tell a re-create from one long action).</p>
+<ul><li>Where (nearest AIP position of the player at each entry, 400-unit cells): w_ai_s1-2 cluster around</li></ul>
+<p>(800,-400) and (2000,0); w_x_base (2000,-400) and (1600,0); w_b (2000,0), (1600,400); w_L3 (1600,0). Those are the same corners where AIHIT wall hits cluster; w_ai_s3 has all 94 entries on one cell (2000,-800), which is a single bad corner, not a global problem. V for the cells, I for &quot;bad corner&quot;.</p>
+<ul><li>31 % to 83 % of the entries happen with the rival behind the player (d &lt; 0), i.e. in traffic, not alone. V</li><li>The player&#x27;s own frame counter is 60 frames per second in the s1-s3 baselines (measured: 1.00 s between AIP</li></ul>
+<p>lines by distance/speed), 2.4 s in w_a (that run is not usable for timing). V</p>
+<h2 id="proposed-patch-opt-in-data-only-reason-trigger-t">Proposed patch (opt-in, data only, reason: trigger + timer)</h2>
+<p><code>tools/recomp/patches.py</code>, both floats are read only by the three stuck finders (refs: 0x451c2e, 0x451eaf, 0x451ffb for the timer; 0x451c48/0x451c54, 0x451ec5, 0x45201b/0x452027 for the speed):</p>
+<ul><li><code>0x6b7680  cdcccc3e -&gt; 0000c03f</code>  0.4 s -&gt; 1.5 s (a car must be slow for 1.5 s, not 0.4 s)</li><li><code>0x6b7684  0000a040 -&gt; 00004040</code>  5.0 m/s -&gt; 3.0 m/s (18 km/h, not 11 km/h, counts as stopped)</li></ul>
+<p>Both behind <code>RN_AI_STUCK=1</code>, so original mode stays untouched and the log prints what changed. Not done here: the 20 m off-route branch and the mode 3/4 branch (needs to know what vehicle+0x24 is), and the -15 m/s strength (a 15 m/s reverse at speed is what looks clumsy; halving it is a separate experiment).</p>
+<h2 id="not-verified-u">Not verified (U)</h2>
+<ul><li>Meaning of ctx+0x3c list membership and of <code>0x44e9c0</code> (I read its call sites, not its body).</li><li>Whether <code>0x424b50(speed, 5.0, 0.001)</code> is a random escape; if it is, the 0.4 s rule is per-tick fuzzed.</li><li>Real wall clock of w_a (frames per second is not 60 there); its percentages are shares, not rates.</li></ul>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

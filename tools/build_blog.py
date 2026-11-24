@@ -342,6 +342,7 @@ def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=N
 <meta name="twitter:image:alt" content="{alt_txt}">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="{SITE}/feed.xml">
 <link rel="stylesheet" href="../blog.css">
 <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
 </head>
@@ -350,6 +351,8 @@ def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=N
   <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
   <nav>
     <a href="index.html">{u['guides']}</a>
+    <a href="/re/{'es/' if lang == 'es' else ''}index.html">{'Atlas RE' if lang == 'es' else 'RE Atlas'}</a>
+    <a href="/devlog/{'es/' if lang == 'es' else ''}index.html">{'Bitácora' if lang == 'es' else 'Devlog'}</a>
     <a href="../{other}/{names[other]}.html" hreflang="{other}" lang="{other}">{u['other']}</a>
     <a href="{REPO}" rel="noopener">GitHub</a>
     <a class="play" href="/">{u['play']}</a>
@@ -358,7 +361,7 @@ def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=N
 <main>
 {inner}
 </main>
-<footer><span>{u['foot']}</span><a href="/">{u['play']}</a><a href="index.html">{u['guides']}</a><a href="{REPO}" rel="noopener">{u['code']}</a><a href="../{other}/{names[other]}.html" hreflang="{other}" lang="{other}">{u['other']}</a></footer>
+<footer><span>{u['foot']}</span><a href="/">{u['play']}</a><a href="index.html">{u['guides']}</a><a href="/re/{'es/' if lang == 'es' else ''}index.html">{'Atlas RE' if lang == 'es' else 'RE Atlas'}</a><a href="/devlog/{'es/' if lang == 'es' else ''}index.html">{'Bitácora' if lang == 'es' else 'Devlog'}</a><a href="/llms.txt">llms.txt</a><a href="/feed.xml">RSS</a><a href="{REPO}" rel="noopener">{u['code']}</a><a href="../{other}/{names[other]}.html" hreflang="{other}" lang="{other}">{u['other']}</a></footer>
 </body>
 </html>
 """
@@ -445,10 +448,20 @@ for lang, name, names in pages:
     links = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, names[l])) for l in LANGS)
     links += '<xhtml:link rel="alternate" hreflang="x-default" href="%s"/>' % url("en", names["en"])
     sm.append("<url><loc>%s</loc><lastmod>%s</lastmod>%s</url>" % (url(lang, name), lm, links))
+
+import build_re_devlog
+extra_urls = build_re_devlog.build_all()
+for loc, lm, alts in extra_urls:
+    links = ""
+    if alts:
+        links = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, u) for l, u in alts.items())
+        if "en" in alts:
+            links += '<xhtml:link rel="alternate" hreflang="x-default" href="%s"/>' % alts["en"]
+    sm.append("<url><loc>%s</loc><lastmod>%s</lastmod>%s</url>" % (loc, lm, links))
 sm.append("</urlset>")
 open(os.path.join(W, "sitemap.xml"), "w", encoding="utf-8").write("\n".join(sm) + "\n")
 
-# robots: pages, scripts and pictures stay open (search engines render the launcher); heavy data & manifests stay closed
+# robots: pages, guides, RE atlas, devlog, feeds & LLM compendiums stay open; heavy binary data & manifests stay closed
 open(os.path.join(W, "robots.txt"), "w", encoding="utf-8").write("""User-agent: *
 Allow: /
 Disallow: /game/
@@ -464,6 +477,26 @@ Disallow: /data-chunks.json
 Disallow: /manifest.json
 Disallow: /seed_save.json
 
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Allow: /
+Allow: /re/
+Allow: /devlog/
+Allow: /blog/
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /feed.xml
+Disallow: /game/
+Disallow: /data-chunks/
+Disallow: /pc/
+Disallow: /remaster/
+Disallow: /world/
+Disallow: /out/
+
 Sitemap: %s/sitemap.xml
 """ % SITE)
-print("blog: %d pages, sitemap.xml, robots.txt" % len(pages))
+print("blog: %d pages + %d RE/devlog URLs, sitemap.xml, robots.txt" % (len(pages), len(extra_urls)))

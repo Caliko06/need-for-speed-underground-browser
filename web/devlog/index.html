@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>NFSU.cc Engineering Devlog &amp; Updates | NFSU.cc</title>
+<meta name="description" content="Engineering updates on statically recompiling Need for Speed Underground (2003, x86) to WebAssembly and WebGPU/WebGL 2: compiler passes, DXT/BC textures, 448 MB mobile WASM, and production crash telemetry.">
+<link rel="canonical" href="https://nfsu.cc/devlog/index.html">
+<link rel="alternate" hreflang="en" href="https://nfsu.cc/devlog/index.html">
+<link rel="alternate" hreflang="es" href="https://nfsu.cc/devlog/es/index.html">
+<link rel="alternate" hreflang="x-default" href="https://nfsu.cc/devlog/index.html">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="NFSU.cc Engineering Devlog &amp; Updates">
+<meta property="og:description" content="Engineering updates on statically recompiling Need for Speed Underground (2003, x86) to WebAssembly and WebGPU/WebGL 2: compiler passes, DXT/BC textures, 448 MB mobile WASM, and production crash telemetry.">
+<meta property="og:url" content="https://nfsu.cc/devlog/index.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NFSU.cc Engineering Devlog &amp; Updates">
+<meta name="twitter:description" content="Engineering updates on statically recompiling Need for Speed Underground (2003, x86) to WebAssembly and WebGPU/WebGL 2: compiler passes, DXT/BC textures, 448 MB mobile WASM, and production crash telemetry.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Blog", "name": "NFSU.cc Engineering Devlog & Updates", "description": "Engineering updates on statically recompiling Need for Speed Underground (2003, x86) to WebAssembly and WebGPU/WebGL 2: compiler passes, DXT/BC textures, 448 MB mobile WASM, and production crash telemetry.", "url": "https://nfsu.cc/devlog/index.html", "inLanguage": "en", "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "blogPost": [{"@type": "TechArticle", "headline": "Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB", "datePublished": "2026-11-24", "url": "https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html"}, {"@type": "TechArticle", "headline": "Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87", "datePublished": "2026-11-23", "url": "https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html"}, {"@type": "TechArticle", "headline": "DirectX 9 to WebGPU & WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline", "datePublished": "2026-11-23", "url": "https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html"}, {"@type": "TechArticle", "headline": "One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds", "datePublished": "2026-11-22", "url": "https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html"}, {"@type": "TechArticle", "headline": "Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)", "datePublished": "2026-11-24", "url": "https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html"}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / Devlog</p>
+<h1>NFSU.cc Engineering Devlog &amp; Updates</h1>
+<p class="lead">Engineering updates on statically recompiling Need for Speed Underground (2003, x86) to WebAssembly and WebGPU/WebGL 2: compiler passes, DXT/BC textures, 448 MB mobile WASM, and production crash telemetry.</p>
+<div class="meta-bar">
+  <a href="es/index.html">Ver índice en Español</a>
+  <a href="/feed.xml">Atom RSS Feed</a>
+  <a href="/re/index.html">Reverse Engineering Atlas (44 systems)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/CHANGELOG.md" rel="noopener">CHANGELOG.md</a>
+</div>
+<div class="re-grid" style="grid-template-columns:1fr"><a class="re-card" href="production-crash-hardening-and-448mb-phone-wasm.html"><b>Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB</b><span>How real production crash telemetry from r2:nfsu-crash uncovered a CPU vertex buffer leak, WebGPU format edge cases, and got Need for Speed Underground running inside a 448 MB mobile WebAssembly heap.</span><small>2026-11-24 · commits 511830f, 921e827 · .html / .md</small></a><a class="re-card" href="recompiler-dead-flags-chk-sp-fast-x87.html"><b>Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87</b><span>How we cut generated C/WebAssembly overhead across 13,764 lifted x86 functions from Speed.exe using liveness-based flag pruning, stack-pointer check coalescing, and differential testing.</span><small>2026-11-23 · commits 8444027, 69f51fb, fc8ef2e · .html / .md</small></a><a class="re-card" href="zero-waste-webgpu-draw-pipeline-and-bc-textures.html"><b>DirectX 9 to WebGPU &amp; WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline</b><span>Eliminating CPU texture decompression and per-draw bindGroup churn by keeping DXT1/3/5 textures compressed on the GPU and caching dynamic UBOs in host/d3d9.c and web/gpu.js.</span><small>2026-11-23 · commits deb8f28, 00e474c · .html / .md</small></a><a class="re-card" href="adaptive-frame-time-quality-and-dual-wasm-builds.html"><b>One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds</b><span>How nfsu.cc measures its own 256-frame present ring, scales resolution and effects automatically via web/quality.js, ships a brotli speed_lite.wasm for phones, and never cuts the 2003 soundtrack.</span><small>2026-11-22 · commits 40e6aff, b9c9753, e19daa6, c8e94a4, 9545ee5 · .html / .md</small></a><a class="re-card" href="reverse-engineering-44-subsystems-of-speed-exe.html"><b>Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)</b><span>Every verified x86 address, struct, state machine, and subsystem note from Need for Speed Underground (2003, Speed.exe) is now published as a searchable web atlas and LLM-ready Markdown corpus.</span><small>2026-11-24 · commits 9776828 · .html / .md</small></a></div>
+<div class="cta"><a href="/">Play now at nfsu.cc</a></div>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

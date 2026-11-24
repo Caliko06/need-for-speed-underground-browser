@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Runtime: MSVC CRT, SEH/EH and the engine base layer (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in bytes/code and a second tool agrees (Hopper H, Ghidra G incl. its Function-ID library match &quot;FID&quot;, capstone C),">
+<link rel="canonical" href="https://nfsu.cc/re/runtime.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/runtime.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Runtime: MSVC CRT, SEH/EH and the engine base layer (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in bytes/code and a second tool agrees (Hopper H, Ghidra G incl. its Function-ID library match &quot;FID&quot;, capstone C),">
+<meta property="og:url" content="https://nfsu.cc/re/runtime.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Runtime: MSVC CRT, SEH/EH and the engine base layer (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in bytes/code and a second tool agrees (Hopper H, Ghidra G incl. its Function-ID library match &quot;FID&quot;, capstone C),">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Runtime: MSVC CRT, SEH/EH and the engine base layer (Speed.exe PC)", "description": "Marks: V = read in bytes/code and a second tool agrees (Hopper H, Ghidra G incl. its Function-ID library match \"FID\", capstone C),", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/runtime.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Runtime: MSVC CRT, SEH/EH and the engine base layer (Speed.exe PC)", "item": "https://nfsu.cc/re/runtime.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Assets, Runtime &amp; Shipping</p>
+<article>
+<h1>Runtime: MSVC CRT, SEH/EH and the engine base layer (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Assets, Runtime &amp; Shipping</span>
+  <span class="badge accent">108 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="runtime.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/runtime.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in bytes/code and a second tool agrees (Hopper H, Ghidra G incl. its Function-ID library match &quot;FID&quot;, capstone C), I = inferred, U = open. Names: census/names_runtime.tsv (126 rows: 90 V, 36 I). Same-address rows in other names_*.tsv were skipped.</p>
+<h2 id="answer">Answer</h2>
+<ul><li>The CRT is <b>Visual Studio 2003 (7.1) release, static</b>, in 0x670c6c..0x6849d0 (about 540 functions). It starts at <code>__amsg_exit 0x670c6c</code></li></ul>
+<p>(PE entry <code>0x670cb5</code> = WinMainCRTStartup) and ends with <code>__allshr/__allshl 0x6849a0/0x6849d0</code>. Ghidra&#x27;s FID names 232 of them as &quot;Single Match&quot;.</p>
+<ul><li><b>Most of the &quot;runtime&quot; tag is not CRT.</b> census/systems.tsv has 3,765 runtime functions: 1,228 of them are 6..10-byte SEH</li></ul>
+<p>unwind funclets at 0x684a00..0x6896e0 (<code>Unwind@...</code>, <code>mov eax,FuncInfo; jmp ___CxxFrameHandler</code>), 608 are real CRT, 29 are the engine base library, 235 are the online/network stack (0x660000..0x670bd0), and 641+619 are game code tagged by address band. Funclets are not callable functions; count them apart when you compute &quot;named %&quot;.</p>
+<ul><li>The engine base layer is EA&#x27;s <code>b*</code> library: allocator (<code>bMalloc</code> 0x565b60 over named pools, first one &quot;Main Pool&quot;), <code>SlotPool</code></li></ul>
+<p>(fixed-size slots, 0x30-byte header), circular lists, string hash x33, 16-bit-angle trig, vector/matrix helpers, own printf (<code>bPrintf</code>).</p>
+<ul><li>Two float-to-int helpers exist: <code>__ftol 0x672fc8</code> (changes the control word, 38 callers) and <b>0x674898</b> (341 callers; `fld st0; fst; fistp; fild;</li></ul>
+<p>fsub<code> then rounds by the remainder, no control-word write). census/names_blur.tsv names 0x674898 </code>_ftol<code>; the bytes say it is the CW-free variant (</code>__ftol2`-style). Not edited here (outside scope); the lifter treats both as float to int64.</p>
+<h2 id="address-map-v-unless-marked">Address map (V unless marked)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Range</th><th>What</th><th>Evidence</th></tr></thead><tbody><tr><td>0x401000..0x4010c0</td><td>engine helpers: <code>bMalloc_NoSite</code> 0x401000, <code>ScratchAlloc16</code> 0x401010 (bump allocator [0x7355b4..0x7355b8]), <code>CallNTimes</code> 0x4010a0</td><td>H+G</td></tr><tr><td>0x564000..0x568800</td><td>engine base lib &quot;bLib&quot;: pools, lists, strings, math, printf (116 functions)</td><td>G strings: &quot;Main Pool&quot;, &quot;bPNode SlotPool&quot;, &quot;bPrintf:invalid pointer&quot;</td></tr><tr><td>0x565b60..0x565d70</td><td>allocator: <code>bMalloc</code>, <code>bInitMemoryPool</code>, <code>bMemoryPool_Alloc/Validate/TotalAllocated/LargestBlock</code>; pool table 0x7301d4 (index = flags&amp;7), pool object: lists at +4/+0xc/+0x14, CRITICAL_SECTION at +0x3c</td><td>H+G</td></tr><tr><td>0x566dc0..0x567270</td><td><code>SlotPool::Create/BuildFreeList/Grow/Alloc/Destroy</code>, <code>bList::AddTail</code> (list node = {next,prev}); pool header: +0x10 free head, +0x18 used, +0x1c high water, +0x24 slots, +0x28 stride, +0x14 flags</td><td>H+G</td></tr><tr><td>0x564990, 0x5649f0</td><td><code>bList::Sort</code> (insertion sort with callback), <code>bPNode_SlotPool_Init</code></td><td>H+G</td></tr><tr><td>0x564b10..0x564db0</td><td><code>bSin</code>, <code>bATan</code>(0x564cd0, I), <code>bATan2</code> (angles are 16-bit, 0x4000 = 90 deg)</td><td>H+G</td></tr><tr><td>0x565020..0x567450</td><td><code>bIdentityMatrix</code>, <code>bMatrixCopy</code>, <code>bNormalize2/3</code>, <code>bScaleToLength2/3</code>, <code>bDistance3</code></td><td>H+G</td></tr><tr><td>0x567c70 (0x4fd230 is named FEng::HashName in names_hud.tsv)</td><td>string hash <code>h=h*0x21+c</code> seed -1: case-sensitive (upper-folded twin at 0x4fd230)</td><td>H+G</td></tr><tr><td>0x567cc0..0x567de0</td><td><code>bStrLen/bStrCpy/bStrCmp/bStrICmp/bStrCat2</code></td><td>H+G</td></tr><tr><td>0x565da0, 0x565df0</td><td><code>bSPrintf</code> (80 callers), <code>bVPrintf</code> core</td><td>H+G</td></tr><tr><td>0x63f150..0x63f1a0, 0x64b580..0x64b5a0</td><td><code>CriticalSection</code> wrappers (obj+4), global mutex [0x713c50]</td><td>H+G</td></tr><tr><td>0x642450..0x642540</td><td>log/assert: <code>Log_Printf</code>, <code>Error_Printf</code> (&quot;ERROR: %s&quot;, &quot;FILE %s LINE %d&quot;)</td><td>G</td></tr><tr><td>0x640000..0x64a000</td><td>also holds the RCMP/AV decoder (&quot;RCMP_ASSERT in %s at %d&quot;, rcmpbase.cpp, mad codec): not runtime</td><td>G strings</td></tr><tr><td>0x660000..0x670bd0</td><td>online/network stack (&quot;GmUtil&quot;, &quot;connecting to %08x:%d&quot;, TAPI): system online, tagged runtime by band</td><td>G strings</td></tr><tr><td>0x670bd0..0x670c66</td><td>26 six-byte import thunks (<code>Ordinal_n</code> = wsock32, plus <code>WSAIoctl</code>)</td><td>G</td></tr><tr><td>0x670c6c..0x6849d0</td><td><b>CRT</b></td><td>below</td></tr><tr><td>0x684a00..0x6896e0</td><td>2,700+ SEH unwind funclets (<code>Unwind@...</code>), 10-byte stubs into <code>___CxxFrameHandler 0x673078</code></td><td>G names, H sizes</td></tr><tr><td>0x6896e0..0x697000</td><td>static initialisers and MFC bits (<code>afxGlobalUtils</code> 0x6961d0, CGlobalUtils at 0x648920): not CRT</td><td>G</td></tr></tbody></table></div>
+<p>CRT sub-map (V): heap <code>_free 0x671102</code> / <code>_malloc 0x67121a</code> / <code>__nh_malloc 0x6711ee</code> / <code>__heap_alloc 0x671173</code> / <code>_calloc 0x67906d</code> / small-block heap 0x677404..0x677c2b, handle [0x79321c], heap type [0x793220]==3 (SBH) ; stdio <code>_iob</code> at 0x6eb1c0 (stride 0x20, stdout 0x6eb1e0), <code>__lock_file 0x6718b6</code>, <code>_fwrite/_fread/_fclose/_fopen</code>; printf family <code>_printf 0x67147f</code>, <code>_sprintf 0x67101f</code>, <code>_vsprintf 0x671077</code>, <code>_snprintf 0x673533</code>, <code>_vsnprintf 0x6734dd</code>, <code>_vfprintf 0x674839</code>, formatter <code>_output 0x67604e</code>; strings/mem 0x672630 (<code>_memmove</code>), 0x678d30 (<code>_memcpy</code>), <code>_strlen 0x674c30</code>, <code>_strcmp 0x67efe0</code>, <code>_memset 0x67ef80</code>; threads <code>__getptd 0x6758cb</code> (TLS slot [0x6eb864], ptd 0x88 bytes: errno +8, doserrno +0xc, locale info +0x64), locks <code>__lock 0x6773d3</code> / <code>__unlock 0x67733f</code> (table 0x6eb878); EH <code>___CxxFrameHandler 0x673078</code>, <code>__SEH_prolog 0x675b84</code>, <code>__SEH_epilog 0x675bbf</code>, vector iterators 0x672188/0x6721e8; FPU <code>__control87 0x67236a</code>, <code>__controlfp 0x67239c</code>, <code>__ftol 0x672fc8</code>; float to text <code>__cfltcvt 0x67a337</code> -&gt; <code>_cftoe/_cftof/_cftog</code> 0x67a11f/0x67a22f/0x67a297; errors <code>__NMSG_WRITE 0x674f09</code> (table 0x6eb728, 18 messages incl. R6002 &quot;floating point not loaded&quot;), <code>__FF_MSGBANNER 0x675080</code>, /GS <code>__security_check_cookie 0x674ec2</code> (cookie [0x6eb720]).</p>
+<h2 id="re-derived-with-a-second-tool-result">Re-derived with a second tool (result)</h2>
+<p>Method: I read the bytes with capstone (tools/recomp/asm.py) and wrote down what the function does, then compared with Ghidra&#x27;s FID name. Caveat: I had already seen Ghidra&#x27;s name list for the CRT before reading the first 14 of these, so for them the independence is &quot;the name was confirmed against the code&quot;, not a blind guess. The last 6 have no FID hit or a wrong one, so they are fully from code (H + G decompile + capstone).</p>
+<div class="tbl-wrap"><table><thead><tr><th>Addr</th><th>My reading from bytes</th><th>Second tool</th><th>Result</th></tr></thead><tbody><tr><td>0x674c30</td><td>1 arg, dword zero-byte scan (0x7efefeff / 0x81010100)</td><td>G FID <code>_strlen</code></td><td>match</td></tr><tr><td>0x67efe0</td><td>2 args, per-dword byte compare, returns on first diff or NUL</td><td>G <code>_strcmp</code></td><td>match</td></tr><tr><td>0x67ef80</td><td>(dst,c,n), replicate c into a dword, aligned fill</td><td>G <code>_memset</code></td><td>match</td></tr><tr><td>0x6849a0</td><td>64-bit arithmetic shift right by cl, 0x20/0x40 cases</td><td>G <code>__allshr</code></td><td>match</td></tr><tr><td>0x673c3b</td><td>locale-aware case-insensitive compare, ASCII fast path 0x67e180</td><td>G <code>__stricmp</code></td><td>match</td></tr><tr><td>0x670f00</td><td>find length, scan backwards with <code>std</code></td><td>G <code>_strrchr</code></td><td>match</td></tr><tr><td>0x6716c8</td><td>locale ctype lookup, mask 4</td><td>G <code>_isdigit</code></td><td>match</td></tr><tr><td>0x6734a0</td><td>page-by-page stack probe</td><td>G <code>__chkstk</code></td><td>match</td></tr><tr><td>0x6758cb</td><td>TLS per-thread block, calloc 0x88 on first use</td><td>G <code>__getptd</code></td><td>match</td></tr><tr><td>0x6773d3</td><td>lock table at 0x6eb878, EnterCriticalSection</td><td>G <code>__lock</code></td><td>match</td></tr><tr><td>0x672fc8</td><td>fnstcw / or 0xc00 / fistp / restore</td><td>G <code>__ftol</code></td><td>match</td></tr><tr><td>0x67f980</td><td>(a,b,n) dword/byte compare</td><td>G <code>_memcmp</code></td><td>match</td></tr><tr><td>0x6723c0</td><td>copy then zero-pad to n</td><td>G <code>_strncpy</code></td><td>match</td></tr><tr><td>0x674800</td><td>length by scasb, compare with cmpsb</td><td>G <code>_strncmp</code></td><td>match</td></tr><tr><td>0x670efa</td><td>single <code>jmp 0x670e72</code></td><td>G <code>_atol</code> (both)</td><td>partial: identical bytes, I name it <code>_atoi</code></td></tr><tr><td>0x67147f</td><td>locks stdout (0x6eb1e0), _stbuf, narrow <code>_output</code>, _ftbuf</td><td>G <code>FID_conflict:_wprintf</code></td><td><b>FID wrong</b>, it is <code>_printf</code></td></tr><tr><td>0x674839</td><td>same with a FILE arg</td><td>G <code>FID_conflict:_vfwprintf</code></td><td><b>FID wrong</b>, it is <code>_vfprintf</code></td></tr><tr><td>0x67101f</td><td>FILE{0x42,cnt 0x7fffffff} on stack, <code>_output</code>, NUL</td><td>G decomp only (no FID name)</td><td><code>_sprintf</code> (H same shape)</td></tr><tr><td>0x677f42</td><td><code>__getptd()+8</code></td><td>H + G decomp (no FID name)</td><td><code>__errno</code></td></tr><tr><td>0x67733f</td><td>LeaveCriticalSection(table[n])</td><td>H + G decomp (no FID name)</td><td><code>__unlock</code></td></tr><tr><td>0x674f09</td><td>table 0x6eb728 of 18 messages, console or MessageBox</td><td>G decomp (no FID name); strings R6002 etc.</td><td><code>__NMSG_WRITE</code></td></tr></tbody></table></div>
+<p>Score: 14/14 FID matches, 2 FID conflicts resolved against FID, 1 partial, 4 names Ghidra does not have.</p>
+<h2 id="open">Open</h2>
+<ul><li>0x67c200 (46 callers) is an 80-bit x87 divide helper behind the stubs 0x67c35f..0x67c767; exact MSVC name unknown (row is low).</li><li>0x6896e0..0x697000 is a mix of static initialisers and MFC; no per-function names yet.</li><li>Systems tagging: the 1,228 funclets and 235 net functions should leave &quot;runtime&quot; in census/systems.tsv (not edited here).</li></ul>
+<p>HANDOFF: names_runtime.tsv done (126 rows); next: tag funclets 0x684a00..0x6896e0 as <code>unwind_funclet</code> and name the 0x6896e0+ static initialisers by their owning class.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

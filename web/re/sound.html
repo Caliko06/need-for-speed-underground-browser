@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Sound (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tools: G = Ghidra 12.1.4 (REA MCP / headless">
+<link rel="canonical" href="https://nfsu.cc/re/sound.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/sound.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Sound (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tools: G = Ghidra 12.1.4 (REA MCP / headless">
+<meta property="og:url" content="https://nfsu.cc/re/sound.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sound (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in code or bytes this session, I = inferred, U = open. Tools: G = Ghidra 12.1.4 (REA MCP / headless">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Sound (Speed.exe PC)", "description": "Marks: V = read in code or bytes this session, I = inferred, U = open. Tools: G = Ghidra 12.1.4 (REA MCP / headless", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/sound.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Sound (Speed.exe PC)", "item": "https://nfsu.cc/re/sound.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Audio &amp; Soundtrack</p>
+<article>
+<h1>Sound (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Audio &amp; Soundtrack</span>
+  <span class="badge accent">128 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="sound.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/sound.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in code or bytes this session, I = inferred, U = open. Tools: G = Ghidra 12.1.4 (REA MCP / headless <code>tools/ghidra/gpar.sh</code>), H = Hopper export <code>census/hopper/decomp.c</code>, C = capstone <code>tools/recomp/asm.py</code>, D = data read with <code>tools/re/ast.py</code> / <code>tools/re/abkbank.py</code>. Earlier work: <code>docs/re_audio_default.md</code> (the 9 volume sliders, <code>0x4aa200</code>, category volume <code>0x51cb70</code>), <code>tools/recomp/abk.py</code> (ABK code modules lifted ahead of time).</p>
+<h2 id="answer">Answer</h2>
+<ul><li><b>Two kinds of files.</b></li><li><b>ABK</b> (<code>game/Sound/**</code>, 106 files): a small x86 code module (the &quot;patch&quot; that plays a sound) plus a <code>BNKl</code></li></ul>
+<p>bank of short samples. There are 94 banks with 469 samples, 6.7 min in all. V (D)</p>
+<ul><li><b>AST</b> (<code>game/SNDSTREAMS</code>, <code>game/SpeechStreams</code>): banks of long EA <code>SCxl</code> streams packed back to back.</li></ul>
+<p>Music has 27 streams (97 min), stereo ambience 320, mono point ambience 102, special 33, English speech 277. V (D)</p>
+<ul><li><b>One name table drives every load.</b> <code>0x521c80</code> turns a request {class <code>+0x38</code>, index A <code>+0x3c</code>, index B <code>+0x40</code>} into a</li></ul>
+<p>file name (table <code>0x6f7f10..0x6f80e8</code>) and a directory (table <code>0x6f7eb0</code>, 23 entries). Classes: 0 FE, 1 stream (name + second name per language/variant), 3 environment, 6 impact/scrape, 7 skids (A×5+B), 8 nitrous, 10 shifting, 12 engine <code>C&lt;A&gt;U&lt;B&gt;_M0_ENG_MB</code>, 13 exhaust <code>C&lt;A&gt;U&lt;B&gt;_M0_EXH_MB</code>, 14 turbo (A×5+B). V (G)</p>
+<ul><li><b>Engine sound = family × upgrade level.</b> There are 4 engine families (<code>Car_0..3</code>) × 4 engine levels</li></ul>
+<p>(<code>Eng_UG_0..3</code>). Each pair has an ENG bank and an EXH bank (3 mono loops of ~1.5 s at 22,050 Hz each), a shift bank (SML/MED/LRG by level) and a spark-chatter bank. So buying engine upgrades swaps the engine <em>recording</em>, not only the pitch. V for the file layout and the resolver (G, D). Which car field picks the family: U (asked of the sound agent; see below).</p>
+<ul><li><b>Music is a playlist, not random.</b> V (G):</li><li>The song table <code>0x6f4d08</code> (26 × {title, artist, album, &quot;IG&quot;|&quot;FE&quot;}) holds 19 in-game and 7 menu songs.</li><li>The picker <code>0x53c3a0</code> walks the order array at <code>0x758b58</code> (stride 8) from the position at <code>player+0xf8</code></li></ul>
+<p>(wraps at 26).</p>
+<ul><li>It skips songs whose bit is off in <code>0x758930</code> (in race: <code>[0x77a920]==3</code> or player mode 8) or in <code>0x758934</code></li></ul>
+<p>(menus). These are the EA Trax jukebox toggles in the options block <code>0x7588c4</code>.</p>
+<ul><li>It plays stream <code>song+1</code> of <code>STRM_Music_UG0_MB.ast</code>. Stream 0 (30 s) is outside the playlist.</li><li>Mode 99 at <code>player+0xf0</code> plays one chosen song (the jukebox preview).</li><li><code>0x51c7b0</code> points the sound manager&#x27;s <code>+0xa8</code> at the now-playing record (title/artist on screen).</li></ul>
+<h2 id="1-files">1. Files</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Dir (table 0x6f7eb0)</th><th>Files</th><th>Content (D)</th></tr></thead><tbody><tr><td><code>Car_&lt;0..3&gt;\Eng_UG_&lt;0..3&gt;\</code></td><td>16 dirs × {C?U?_M0_ENG_MB, C?U?_M0_EXH_MB, shifting_*, SparkChatter_0?}</td><td>engine + exhaust loops, shifts</td></tr><tr><td><code>TURBO\</code></td><td>TURBO_00..02, 00A..02C (3 sizes × 4 variants)</td><td>turbo spool / blow-off</td></tr><tr><td><code>NOS\</code></td><td>nitrous_00/01</td><td>nitrous</td></tr><tr><td><code>Skids\</code></td><td>SKID_PAV(2), SKIDS_DRIFT(2)</td><td>tyre squeal by surface / drift</td></tr><tr><td><code>IG_GLOBAL\</code></td><td>ENV_COMMON, ENV_CHINA01, WIND_00/01, IMPACT, SCRAPE, ROADNOISE_00</td><td>in-game shared</td></tr><tr><td><code>FE\</code>, <code>Global\</code></td><td>FE_MB, FE_COMMON_MB</td><td>menus</td></tr><tr><td><code>Evt_Sys\</code>, <code>STRMBANK\</code></td><td>event system banks, stream-bank descriptors</td><td>U: role of STRMBANK</td></tr></tbody></table></div>
+<p><code>tools/re/abkbank.py check</code>: 106 files parse; every non-empty <code>BNKl</code> slot is a PT header whose data offset lies inside the bank, and the header field <code>+0x14</code> equals the file size. V (D, 2026-10-29). ABKC header: <code>+0x10</code> module id, <code>+0x14</code> file size, <code>+0x18</code> header size, <code>+0x20/+0x24</code> bank offset/size, <code>+0x30/+0x34</code> relocation tables (<code>tools/recomp/abk.py</code>). BNKl: <code>u16 version=5, u16 slots, u32 size</code>; slots at <code>+0x10</code> are self-relative offsets (0 = empty) to PT tag lists.</p>
+<p><code>tools/re/ast.py check</code> walks all 5 AST files byte by byte: every stream is <code>SCHl SCCl SCDl* SCEl</code>, and the gaps are zero padding only. Coverage is 100 % of the bytes of all five files. V (D). PT tags used: 0x82 channels, 0x84 rate (absent = 22,050), 0x85 samples. Ambience and special streams are 24 kHz; music and speech carry no rate tag (22,050 Hz default).</p>
+<h2 id="2-load-path">2. Load path</h2>
+<ul><li><code>0x51d240</code> is the sound manager&#x27;s per-frame service (manager at <code>[0x7356a8]</code>; G). It drains the pending-load</li></ul>
+<p>queue (entries 0x1c bytes at <code>mgr+0x1ec</code>, <code>mgr+0x7c</code> → <code>mgr+0x78</code>). For each entry it calls <code>0x522020</code>, which resolves the name through <code>0x521c80</code> and starts the load. Then it updates the object lists <code>mgr+0xc4</code>, <code>+0xd0</code> and <code>+0xe4</code> (vtable <code>+0x30</code> = update) and the stream manager <code>mgr+0x104</code>. V (G); object names: see <code>census/names_sound.tsv</code>.</p>
+<ul><li><code>0x51c5f0</code> switches the stream set (arg 1..4, 9 → set 5..9) and blocks, servicing loads (<code>0x58a850</code>) until no</li></ul>
+<p>slot in <code>0x72ce58..0x72cfd7</code> is busy. V (G); I that this runs between front end and race.</p>
+<h2 id="3-music-selection-detail">3. Music selection (detail)</h2>
+<p>Song table record (16 bytes, <code>0x6f4d08..0x6f4ea8</code>): <code>char* title, artist, album, where</code> with where = &quot;IG&quot; (songs 0..18) or &quot;FE&quot; (19..25). V (D). Picker <code>0x53c3a0</code> (V, G). It reads <code>p = player</code>, <code>order = 0x758b58[pos*2]</code>, where <code>pos = p+0xf8</code>.</p>
+<ul><li>In race, it advances while <code>!(0x758930 &amp; 1&lt;&lt;(order+1))</code>; otherwise it uses <code>0x758934</code>.</li><li>It gives up after 26 tries and leaves the music off.</li><li>It then sets <code>stream = order+1</code> into the stream request (+0x4c/+0x54/+0x58) and <code>p+0xfc = stream-1</code>, and</li></ul>
+<p>advances <code>pos</code>.</p>
+<h2 id="4-engine-sound-chain-sonnet-exec-agent-ghidra-na">4. Engine sound chain (sonnet-exec agent, Ghidra; names checked against Hopper, census/names_sound.tsv)</h2>
+<ul><li><b>Bank choice.</b></li><li><code>0x51dec0</code> (LoadInGameSoundBanks) walks the race entrants: 0x750 bytes each at <code>[0x78a418]</code>, <code>+0x10</code> RideInfo.</li></ul>
+<p>It keeps local human entrants only (<code>+4==1</code>, <code>+0x734==0</code>). When <code>[0x734658]!=0</code>, every level is forced to 3.</p>
+<ul><li><b>Family A</b> (classes 12/13) = fixed table <code>0x6f8100</code> indexed by car index (<code>RideInfo+0</code>, mapped by the</li></ul>
+<p>20-case switch <code>0x520320</code>; the switch bytes at 0x5203d4 are not read byte by byte, I). It is not a CarTypeInfo field. Car index→family: 0→2, 1→0, 2→0, 3→0, 4→0, 5→0, 6→2, 7→2, 8→1, 9→3, 10→2, 11→2, 12→3, 13→2, 14→2, 15→3, 16→1, 17→0, 18→2, 19→1.</p>
+<ul><li><b>Level B</b> = spec <code>level[2]</code>, the engine path. TunerCar::Initialize <code>0x526420</code> stores it at <code>this+0x1efc</code></li></ul>
+<p>(<code>mov eax,[edx+0x20]</code> at 0x526494) and the family at <code>+0x1ef4</code>.</p>
+<ul><li>Turbo: B = <code>level[3]</code>, A = <code>clamp(byte [entrant+0x435], 0..3)</code> (field U).</li><li>Nitrous: B = <code>level[4]</code>. Skids: B = <code>level[7]</code>.</li><li>The shifting class 0xa is never queued: its <code>0x521c80</code> branch is dead, and shift sounds come from the engine</li></ul>
+<p>bank.</p>
+<ul><li>AI and traffic cars reuse one of two already loaded engine banks (<code>[mgr+0x68+k*4]</code>, alternating by</li></ul>
+<p><code>[0x78eae4]</code>, 0x526500..0x526516).</p>
+<ul><li><b>Per frame.</b></li><li><code>EAXTunerCar::Update 0x52c620</code> → <code>0x52c3f0</code> reads RPM <code>car+0x3e0</code> (/ <code>this+0x1f24</code>) into <code>this+0x1f20</code> and</li></ul>
+<p>torque <code>car+0x3ec</code> into <code>this+0x1f90</code>.</p>
+<ul><li><code>UpdateTorque 0x527080</code> / <code>UpdateRPM 0x527180</code> smooth them with curve <code>0x5326f0</code>.</li><li><code>UpdateEngineVol 0x529cd0</code> (AI <code>0x5235a0</code>) crossfades two volume layers by load <code>this+0x2ac</code> (0..0x400) with</li></ul>
+<p>table <code>0x6f7220</code>.</p>
+<ul><li><code>0x52bf70</code> pushes L/R volume, four 0..0x400 values, load and pan to the engine&#x27;s Csis instance</li></ul>
+<p>(<code>this+0x1760</code>, created by <code>InitializeEngine 0x529b60</code> in class <code>0x7441c8</code>).</p>
+<ul><li><b>Down to dsound.</b></li><li>EA&#x27;s SND software mixer owns the buffers: <code>DirectSoundCreate</code> from <code>0x654340</code>/<code>0x654880</code>, primary <code>0x71406c</code>,</li></ul>
+<p>500 ms streaming secondary <code>0x714070</code>.</p>
+<ul><li>The pump <code>0x654050</code> runs the 100 Hz server <code>0x64e330</code>, then the mixer <code>0x656d70</code>, then Lock/Unlock.</li><li><code>EAXSND8Wrapper::Initialize 0x532a20</code> sets 32 voices and 22,050/44,100 Hz from <code>0x6f7e88</code>.</li><li><code>EAXMixMgr 0x5364e0</code> holds 4 groups × 11 channels, with presets at <code>0x743ca8</code> (stride 0x6c).</li><li>Names and the 20 corrections to the x86-ps2 map: agent TSV (<a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/dd1146b/docs/re/night_log.md" rel="noopener">night_log.md</a> handoff), to be merged into</li></ul>
+<p><code>census/names_sound.tsv</code>.</p>
+<h2 id="5-engine-patch-from-rpm-to-the-four-voice-chains">5. Engine patch: from RPM to the four voice chains (night-opus-a2)</h2>
+<ul><li><b>Parameters.</b> <code>0x52bf70</code> writes the engine Csis instance (<code>[this+0x1760]</code>) every frame. Then <code>0x64bc30</code></li></ul>
+<p>commits it. V (H, 2026-10-29). The Csis param slots are ints:</p>
+<div class="tbl-wrap"><table><thead><tr><th>slot</th><th>value</th><th>scale</th></tr></thead><tbody><tr><td><code>+0x14</code>, <code>+0x18</code></td><td>RPM <code>this+0x1f1c</code></td><td>× 0.1024, clamped 0..0x400 (0x400 = 10,000 rpm)</td></tr><tr><td><code>+0x1c</code>, <code>+0x20</code></td><td>torque/load <code>this+0x1f8c</code></td><td>× 10.24, clamped 0..0x400 (0x400 = 100)</td></tr><tr><td><code>+0x24</code>, <code>+0x28</code></td><td>volume L/R <code>this+0x238</code>/<code>+0x23c</code></td><td>clamped 0..0x7fff</td></tr><tr><td><code>+0x44</code></td><td><code>this+0x2ac</code> (the load used by UpdateEngineVol)</td><td>clamped 0..0x400</td></tr><tr><td><code>+0x48</code></td><td><code>this+0x6c</code></td><td>clamped 0..0x10000</td></tr><tr><td><code>+0x4c</code></td><td>pan from the car&#x27;s i16 <code>+0x52</code></td><td>−0x3fff..0x3fff</td></tr></tbody></table></div>
+<p>The constants 0.1024 and 10.24 come from <code>0x3dd1b717</code> and <code>0x4123d70a</code>.</p>
+<ul><li><b>The patch is a node graph, not code with formulas.</b> The ENG module (for example <code>C0U0_M0_ENG_MB.abk</code>, module</li></ul>
+<p>id 121576) has one patch function at <code>+0xa8</code>. It is 0x5a2 bytes of straight-line code: <code>push esi; call node; mov [esi+k],eax; add esi,size</code>. Each call evaluates one node whose state block lives in the instance, and each result is written into the input slots of later nodes. V (C, capstone on the relocated header, <code>tools/recomp/abk.py</code> relocate). The node functions live in Speed.exe:</p>
+<div class="tbl-wrap"><table><thead><tr><th>node</th><th>what it does (H, C)</th></tr></thead><tbody><tr><td><code>0x64cdd0</code> (27 uses)</td><td>curve: clamps the input to [min,max] of a curve record, then reads an int8/int16 table at <code>+0x10</code>, with a float scale at <code>+0xc</code></td></tr><tr><td><code>0x64d0b0</code> (23)</td><td>product: <code>a * b * scale</code></td></tr><tr><td><code>0x64db50</code> (10)</td><td>pass-through/copy of three values</td></tr><tr><td><code>0x64cb90</code> (4)</td><td>gate with hysteresis: on inside window [a,b], off inside window [c,d]</td></tr><tr><td><code>0x64cf90</code> (4)</td><td>select: <code>list[index]</code></td></tr><tr><td><code>0x64da70</code> (4)</td><td>ramp/slew toward a target over N steps</td></tr><tr><td><code>0x64d960</code> (3)</td><td>oscillator (phase wrap, sine through <code>0x713ca0</code>)</td></tr><tr><td><code>0x64d860</code> (3)</td><td>voice node: state 0 stop / 1 start / 2 update; picks the sample from a list by index <code>+0x14</code>, then calls the voice-type handlers <code>0x6e9a98</code> (start), <code>0x6e9aa8</code> (stop), <code>0x6e9ab8</code> (update)</td></tr></tbody></table></div>
+<ul><li><b>Shape (V, C; <code>tools/re/csiscurves.py</code>).</b> The patch instance is a copy of a template in the module header</li></ul>
+<p>(<code>T = hdr+0x664</code> for ENG, <code>+0x65c</code> for EXH). Every curve node&#x27;s block starts with a relocated pointer to its curve record, so the reader finds T from the relocation table and dumps every curve. The order of the patch is:</p>
+<ol><li>A fan-out of the inputs <code>in0..in17</code> (<code>P+0x2c..</code>).</li><li>Two pairs of hysteresis gates on <code>in0</code>/<code>in1</code>, feeding the trigger node <code>0x64cc60</code>.</li><li>Three oscillators (<code>in8..in13</code>).</li><li>A copy node <code>N194</code> (from <code>in3</code>) that drives 11 curves.</li><li>Four identical voice chains: <code>curve → select → ramp → curve → product → voice 0x64d860</code> (4 voice nodes,</li></ol>
+<p>corrected from 3). <code>python3 tools/re/csiscurves.py check</code> reports 32 ENG/EXH patches and 864 curves, every table the length its record states.</p>
+<ul><li><b>The curves (V, D; meaning I).</b> Seven curves take input 0..1024, which is the 0..0x400 scale of <code>0x52bf70</code>, as</li></ul>
+<p>128 int16 points. ENG <code>C0U0</code>, 8 samples from input 0 to 1024:</p>
+<div class="tbl-wrap"><table><thead><tr><th>node</th><th>values</th><th>reads as (I)</th></tr></thead><tbody><tr><td>N1a0</td><td>11526 → 30862 → 30005</td><td>loop gain, rising</td></tr><tr><td>N1b0</td><td>25333 → 32767</td><td>loop gain, saturating</td></tr><tr><td>N1c0, N1d0</td><td>1024 → 0 by ~60 %</td><td>low loop fades out</td></tr><tr><td>N1e0</td><td>861 → 1024</td><td>high loop fades in</td></tr><tr><td>N1f0</td><td>0 → 190</td><td>small added term (detune?)</td></tr><tr><td>N200</td><td>691 → 20994, linear</td><td>pitch ramp</td></tr></tbody></table></div>
+<p>Other curves: <code>0x1bd0</code> has 1024 points from 32767 down (a crossfade law), and <code>0x23e0</code>/<code>0x2470</code> are int8 0/1 selectors over 0..32767 that pick a loop. Upgrade levels of one family share the ENG curves (C0U0 = C0U1); EXH differs. Which Csis param is <code>in3</code> (RPM or load) is U: a dispatcher in the SND layer sits between <code>0x52bf70</code>&#x27;s block and the patch argument (<code>0x64bc30</code> calls <code>node+8</code> with <code>H+4</code>).</p>
+<h2 id="6-speech-who-plays-the-277-lines-night-opus-a2-s">6. Speech: who plays the 277 lines (night-opus-a2 + sonnet-exec)</h2>
+<ul><li>All 277 lines are played by ONE path: <code>EAXSound::PlaySpeechStream 0x51c830</code> and 3 direct callers. All are front-end</li></ul>
+<p>screens (map, garage, Junkman, perf tuner). No race code touches the speech stream. V (C, H)</p>
+<ul><li>The unit is an EVENT id 0..94, not a line. Table <code>0x6f6bc8</code> (95 dwords) = number of lines per event. It sums to 277.</li></ul>
+<p>Stream index = sum(count[0..event)) + line. V (D, C 0x539b10)</p>
+<ul><li>Two ways in:</li></ul>
+<ol><li>Normal events, vfunc <code>+0x90(event)</code>: the line is chosen at random inside the event. 90 events, 244 streams.</li><li>Event <code>0x59</code> (89), vfunc <code>+0x98(0x59, line)</code>: the line is fixed by table <code>0x6f8728</code>. 15 lines (streams 236..250).</li></ol>
+<ul><li>Reachable: 259 of 277. Never asked for: events 10, 27, 86, 87 (streams 39-40, 102-105, 231-234) and lines 15..22 of</li></ul>
+<p>event 0x59 (streams 251..258). 18 streams. V (D) for the tables; I that no other table feeds them.</p>
+<ul><li><code>0x6f8728</code> has 15 set entries (lines 0..14). An earlier version of this doc said 7, from reading only 24 dwords. V (D)</li><li><code>STRM_English_Speech_MB.abk</code> (id 1497) holds NO event/line table. It is a stream directory: u32 count 277 at file</li></ul>
+<p><code>+0x1d0</code>, then 277 records {1, AST byte offset, 0} at <code>+0x1d4</code>. All 277 offsets equal <code>ast.py list</code> offsets. V (D)</p>
+<h3 id="evidence">Evidence</h3>
+<ol><li>Class and manager. V (C, H)</li></ol>
+<ul><li>Stream manager = <code>EAXSound+0x104</code> (ctor <code>0x537930</code>); <code>mgr+0x24</code> = speech stream. <code>0x537a60</code> makes it for type</li></ul>
+<p>4..9 (ctor <code>0x537830</code>, vtable <code>0x6bde10</code>, name <code>EAXS_SpeechStream</code> at <code>0x6be21c</code>). Other types: 0 music, 1 stereo ambient, 2 mono ambient (<code>0x6be150</code>), 3 TCM.</p>
+<ul><li>It is created at front-end load <code>0x51dce4</code> (args: type 4, 0x5f groups, <code>[0x6f6d44]</code>=0x6f6bc8, <code>0x6f6f9c[slot]</code>)</li></ul>
+<p>and at in-game load <code>0x51eb5b</code>. Created in race, never called in race.</p>
+<ul><li>Vtable slots: <code>+0x90 = 0x53dc30</code> (mode 1), <code>+0x98 = 0x53db60</code> (mode 0). <code>+0x14</code> of the manager is the MUSIC stream;</li></ul>
+<p>its <code>+0x98</code> callers (0x4afe00, 0x4cf194, 0x4d4aa6, 0x4d4bd4, 0x51c749, 0x53c200, 0x5a45e2) are not speech.</p>
+<ul><li>String xrefs: &quot;SPEECHSTREAMS\&quot; <code>0x6bf4a8</code> only in the path resolver <code>0x521e8c</code>; &quot;STRM_English_Speech_MB&quot; <code>0x6bec7c</code></li></ul>
+<p>only in the name table <code>0x6f7f30</code>. &quot;EAXS_SpeechStream&quot; only in an unwind funclet <code>0x68520e</code>.</p>
+<ol><li>How the line is chosen. V (C 0x5396a0, 0x53dc30, 0x53db60), partly I</li></ol>
+<ul><li>Play stores: <code>obj+0x268 = event</code>, <code>obj+0x26c = line</code>, <code>obj+0x230 = mode</code> (0 for <code>+0x98</code>, 1 for <code>+0x90</code>).</li><li><code>0x5396a0</code> jump table <code>0x539aac</code>: mode 0 = use the given line; mode 1 = line = PRNG(<code>[0x7356d8]</code>) mod count[event]</li></ul>
+<p>(inline xorshift); modes 2..4 = repeat / other random picks (not used by speech callers).</p>
+<ul><li>A flag array (<code>obj+0x2b0</code>) marks lines already played; code at <code>0x539833</code> skips played lines and resets with</li></ul>
+<p><code>0x539dd0</code>. I: no repeats until the event is used up.</p>
+<ul><li>Final index: <code>0x539b10</code> adds count[0..event) to the line and stores it at <code>obj+0x270</code>. Streams <code>0..276</code> = AST order.</li><li>Per-event gain table: <code>0x6f6e48</code> / <code>0x6f6ec8</code> via <code>0x6f6f9c[slot]</code> (volumes, 0x7fff = full). I</li></ul>
+<ol><li>Callers and tables (event sets by D read of each table). V</li></ol>
+<div class="tbl-wrap"><table><thead><tr><th>Caller (screen)</th><th>Source of the event</th><th>Events</th><th>Streams</th></tr></thead><tbody><tr><td><code>0x4c5320</code> career map</td><td>table <code>0x6fa5d0</code>, 45 pairs {key, event}</td><td>43</td><td>151</td></tr><tr><td><code>0x4c5320</code>/<code>0x4c5fa0</code></td><td>switch <code>0x4c52d0</code> (calls 0x4c55a2, 0x4c634c)</td><td>23,25,29,31,46,47,52,59,61</td><td>29</td></tr><tr><td><code>0x4c6cb0</code> Junkman</td><td>switch <code>0x4c6c00</code> (<code>GetJunkmanRewardSpeech</code>)</td><td>24,26,28,30,32</td><td>12</td></tr><tr><td><code>0x4c7790</code></td><td>switch <code>0x4c76d0</code></td><td>48,53,60</td><td>10</td></tr><tr><td><code>0x4c3db0</code> garage, <code>0x4cd490</code>, <code>0x50a5d0</code> perf tuner</td><td>table <code>0x6fa7f0</code>, 25 pairs {flag bit, event}; one-shot, bit set in <code>[0x76029c]</code> after play</td><td>62..85, 88</td><td>30</td></tr><tr><td><code>0x4cd3e0</code></td><td>table <code>0x6fa738</code>, 15 pairs {key, event}</td><td>5,12,19,22,39,45,49,50,51,54..58,94</td><td>48</td></tr><tr><td><code>0x4c5fa0</code> (0x4c6319), <code>0x4c5320</code> (0x4c54ec)</td><td><code>0x4c5200</code> returns id; <code>0x6f8728[id*2+variant]</code> = line of event 0x59</td><td>0x59</td><td>15 lines</td></tr><tr><td><code>0x513780</code> (called by 0x513610)</td><td>ids from <code>0x6f88f8</code> (27 entries) -&gt; <code>0x6f872c[id*2]</code> -&gt; <code>+0x98(0x59, line)</code></td><td>0x59</td><td>same 15</td></tr></tbody></table></div>
+<ul><li>Union of the event sets (events overlap between callers): 90 events, 244 streams. Plus 15 lines of event 0x59 = 259.</li><li>Screen meaning is I (names from <code>census/names*.tsv</code>: 0x4c3db0 garage main, 0x4c6cb0 Junkman, 0x50a5d0 perf tuner;</li></ul>
+<p>0x4c5320 / 0x4c5fa0 are career map openers per <code>tools/hopper/q_hub.py</code>). Race start, rival taunts: no caller found.</p>
+<ol><li>Event 0x59 table <code>0x6f8728[id*2+v]</code> (id 1..26): id2 -&gt; 0,1; id5 -&gt; v1 2; id6 -&gt; v1 3; id7 -&gt; v1 4; id11 -&gt; 5,6;</li></ol>
+<p>id12 -&gt; 7,8; id13 -&gt; 9,10; id15 -&gt; v1 11; id16 -&gt; v1 12; id17 -&gt; 13,14; all else -1 = stop (<code>+0x90(0x59)</code>). Entry 0 holds two string pointers (&quot;Fabolous&quot; ...), skipped because the caller tests <code>id &gt;= 1</code>. V (D)</p>
+<h2 id="open-u">Open (U)</h2>
+<ul><li><code>entrant+0x435</code> (turbo variant); the 0x520320 switch read byte by byte.</li><li>Engine patch: which Csis param feeds each patch input (in0..in17); the curve values are dumped (§5), their roles are I.</li><li>Speech: what each of the 95 events says (needs a listen); modes 2..4 of 0x5396a0; whether any caller reaches the</li></ul>
+<p>speech object without its <code>+0x90</code>/<code>+0x98</code> slots (§6 scanned only those).</p>
+<ul><li>Mixer path to dsound: the categories and sliders are in <code>docs/re_audio_default.md</code>. The voice/3D mixer names</li></ul>
+<p>are in <code>census/names_sound.tsv</code> (EAXS_3DMixer, EAXMixMgr, EAXSND8Wrapper).</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

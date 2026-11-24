@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Misc: the &quot;unknown&quot; bucket of census/systems.tsv (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in code or bytes and a second tool agrees, I = inferred (one tool, or shape of code), U = open. Tools: H = Hopper export">
+<link rel="canonical" href="https://nfsu.cc/re/misc.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/misc.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Misc: the &quot;unknown&quot; bucket of census/systems.tsv (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in code or bytes and a second tool agrees, I = inferred (one tool, or shape of code), U = open. Tools: H = Hopper export">
+<meta property="og:url" content="https://nfsu.cc/re/misc.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Misc: the &quot;unknown&quot; bucket of census/systems.tsv (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in code or bytes and a second tool agrees, I = inferred (one tool, or shape of code), U = open. Tools: H = Hopper export">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Misc: the \"unknown\" bucket of census/systems.tsv (Speed.exe PC)", "description": "Marks: V = read in code or bytes and a second tool agrees, I = inferred (one tool, or shape of code), U = open. Tools: H = Hopper export", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/misc.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Misc: the \"unknown\" bucket of census/systems.tsv (Speed.exe PC)", "item": "https://nfsu.cc/re/misc.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Assets, Runtime &amp; Shipping</p>
+<article>
+<h1>Misc: the &quot;unknown&quot; bucket of census/systems.tsv (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Assets, Runtime &amp; Shipping</span>
+  <span class="badge accent">50 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="misc.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/misc.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in code or bytes and a second tool agrees, I = inferred (one tool, or shape of code), U = open. Tools: H = Hopper export <code>census/hopper/decomp.c</code>, G = Ghidra export <code>census/ghidra/decomp_*.c</code>, C = capstone over pc/Speed.exe (<code>.venv/bin/python</code>, helpers from <code>tools/verify_re.py</code>). Files: <code>census/names_misc.tsv</code> (67 names), <code>census/systems_override.tsv</code> (601 rows, each with the evidence read).</p>
+<h2 id="answer">Answer</h2>
+<ul><li>Of the 1,560 lifted functions tagged unknown, 1502 had no name in names_*.tsv and are not listed in names_seed.tsv. 857 of those ran in the coverage scenarios (census/cov/union.json).</li><li>601 are reassigned in <code>census/systems_override.tsv</code> (503 of them ran). 67 get a name in <code>census/names_misc.tsv</code> (names are my reading, all I except</li></ul>
+<p>the ones marked V in the file).</p>
+<ul><li>The bucket is not &quot;unknown code&quot;. 42% of it (625 functions, all above 0x684000) is compiler glue: static initializers, <code>atexit</code> registrations and</li></ul>
+<p>destructor funclets. Their system is the system of the global or object they build, which only the readers of that global tell. The rest (0x401000-0x684000) is small helpers that sit under a named parent.</p>
+<ul><li>Still unclassified after this pass: 904 functions (357 ran): 264 ran functions below 0x684000 that I did not read, 93 ran glue</li></ul>
+<p>functions above 0x684000 (83 are <code>ctor + atexit</code> stubs whose ctor is itself unnamed), 547 never ran.</p>
+<ul><li>Nothing here changes game behaviour. No edit outside the three files.</li></ul>
+<h2 id="clusters">Clusters</h2>
+<div class="tbl-wrap"><table><thead><tr><th>cluster</th><th>where</th><th>count in override</th><th>what it is</th><th>system</th><th>evidence</th></tr></thead><tbody><tr><td>Derived math constants</td><td>0x689930-0x696170</td><td>422</td><td><code>fld [rdata const]; fmul/fadd [const]; fstp [global]</code> run once at startup: the compiler&#x27;s dynamic init of <code>static const float X = a*b</code> (pi<em>0.5, 2</em>pi, deg2rad multiples; 0x6cc7dc = 0.5, 0x6b5c24 = pi, C reads). The written global has no code reader in a disp32 scan of .text.</td><td>runtime</td><td>C: instruction pattern of each function (shown in the evidence column)</td></tr><tr><td>Static init / dtor funclets with a reader</td><td>0x689xxx-0x696xxx</td><td>65</td><td><code>mov esi, G; call ctor; push dtor; call 0x67100d (atexit)</code> or a funclet that calls a destructor. System = majority of named functions that read G (&gt;=60 % of votes; shown in the evidence column). 22 of them have two or more readers and get a <code>StaticInit_&lt;reader&gt;_G&lt;addr&gt;_&lt;func&gt;</code> name.</td><td>assets 32, car 13, camera 5, audio 4, traffic 3, others 8</td><td>C refs scan of .text (disp32/imm32) + names.tsv</td></tr><tr><td>String-hash initializers</td><td>0x68ab60, 0x68abc0, 0x692530, 0x692cb0, 0x692ce0</td><td>5</td><td><code>h = 0xffffffff; for c in str: h = h*0x21 + c</code> over an rdata string, stored in a global: &quot;Bip01&quot;, &quot;SALLY&quot; (NIS rig names), &quot;EXHAUST_TIP_DECAL&quot;, &quot;Rotate_360_t/q&quot;. The same loop is <code>bStringHashSeeded</code> 0x567ca0.</td><td>camera, car</td><td>C: string bytes read from rdata</td></tr><tr><td>Vector / matrix math</td><td>0x401xxx-0x402xxx</td><td>see below</td><td>Matrix4 inverse (0x4020b0) and its cofactor helper, vec3 copy/scale, <code>DegToRad</code> 0x4055e0 (= x * 0.017453292), angle16 conversion</td><td>runtime</td><td>H+C (DegToRad: constant read at 0x6cca50)</td></tr><tr><td>Runtime utilities</td><td>0x4010xx, 0x50xxxx, 0x56xxxx, 0x58xxxx</td><td>see below</td><td>circular list head init <code>IList_InitEmpty</code> 0x589260 (<code>*eax=eax; eax[1]=eax</code>), <code>RandomInt</code> 0x564a50 (state 0x6f227c, <code>% n</code>), wchar buffer class (<code>WString_Grow/Assign/Free</code> 0x5040e0/0x504080/0x504010), <code>StringList_Find</code> 0x53e4f0, <code>FileSystem_Create</code> 0x63a3f0, CPU detect 0x41e860</td><td>runtime</td><td>H+C, G for 3</td></tr><tr><td>SNDSTRM request queue</td><td>0x411be0-0x412930</td><td>see below</td><td>request alloc/push/service around <code>SNDSTRMI_queue</code>, <code>STRM</code> magic 0x4d525453 checks, size formula <code>SNDSTRM_OverheadBytes</code> 0x4124d0</td><td>audio</td><td>H+G (formula identical in both)</td></tr><tr><td>FEng screen base and helpers</td><td>0x4134d0-0x41f4d0, 0x4f08f0-0x4f89d0</td><td>see below</td><td>object lookup chain 0x4f65d0 / 0x4ffb70 / 0x4ef050 (same as <code>HudWidget::RegisterObjectByHash</code>), screen base ctor 0x41f0c0, message handler 0x41f240 (hash 0xc98356ba), list node alloc 0xabadcafe fill</td><td>canon</td><td>H</td></tr><tr><td>Player / Car / RaceManager sub-functions</td><td>0x421xxx-0x4a4xxx</td><td>see below</td><td>one-caller helpers of <code>Player::ComputeHudFlags</code>, <code>RaceManager::UpdateAIScore</code>, <code>Car::ServiceResetRequest</code>, <code>Player::StartRaceCameras</code>; Car field tables</td><td>rivals, hud, car, camera</td><td>H, parent named</td></tr><tr><td>Renderer sub-functions</td><td>0x4016e0, 0x542xxx-0x570xxx</td><td>see below</td><td>D3D device reset (0x4016e0), car lit-body paths A and B (0x5437f0 2951 B, 0x542e40 2455 B), frame car draw 0x570db0</td><td>render</td><td>H</td></tr><tr><td>Hud / audio / assets leaves</td><td>various</td><td>see below</td><td>callees of <code>HudSmokeApplause::Update</code>, <code>HudTachDrag::Update</code>, <code>EAXSound::Update</code>, <code>LightPack_Load</code> (chunk-id switch 0x40c4b0), <code>CarLoader::AllocateSkin</code></td><td>hud, audio, assets</td><td>H</td></tr></tbody></table></div>
+<p>Counts of the 114 rows below 0x684000 by system (from the override file): runtime 20, audio 16, car 15, render 11, camera 11, hud 10, canon 9, rivals 7, assets 5, traffic 4, track 3, online 1, input 1, props 1. 101 of the 114 ran.</p>
+<h2 id="what-is-weak">What is weak</h2>
+<ul><li>The 422 math-constant initializers are tagged runtime because the function is startup glue; the module that owns the constant is unknown (no</li></ul>
+<p>reader). They are honest about what they are, not about who uses them. If the OWNER prefers, they can be dropped from the override and stay unknown: the 179 other rows do not depend on them.</p>
+<ul><li>The 65 funclet rows with readers trust that a global is used by one system. Rows whose readers split are skipped, not guessed.</li><li>Names are readings. Only rows with a V mark in names_misc.tsv were seen identically in two tools.</li><li>Not checked: whether tools/census/systems.py applies <code>systems_override.tsv</code> (it does not read it today; I did not edit it).</li></ul>
+<h2 id="re-derived-with-a-second-tool-10-rows">Re-derived with a second tool (10 rows)</h2>
+<p>First tool H, second tool C (capstone over pc/Speed.exe) or G, run in this session.</p>
+<div class="tbl-wrap"><table><thead><tr><th>#</th><th>addr</th><th>claim</th><th>second tool</th><th>result</th></tr></thead><tbody><tr><td>1</td><td>0x4055e0</td><td>DegToRad: <code>x * 0.0174533</code></td><td>C: <code>fld [esp+4]; fmul [0x6cca50]; ret</code>, f32 at 0x6cca50 = 0.01745329238</td><td>agrees</td></tr><tr><td>2</td><td>0x567ca0</td><td><code>eax = eax*0x21 + byte</code> loop (bStringHash with seed)</td><td>C: <code>imul eax,eax,0x21 ... add eax,ecx</code>, loop to NUL</td><td>agrees</td></tr><tr><td>3</td><td>0x589260</td><td>circular list head init</td><td>C: <code>mov [eax],eax; mov [eax+4],eax; ret</code>; G: called as <code>FUN_00589260(param_1, ...)</code> from ctors</td><td>agrees</td></tr><tr><td>4</td><td>0x564a50</td><td><code>RandomInt</code>: <code>state % n</code>, xor 0x1d872b41, shifts 5 and 0x1b</td><td>C: <code>div dword [esp+4]</code>, <code>xor ecx,0x1d872b41</code>, <code>shr 5</code>, <code>shl 0x1b</code>; G: <code>DAT_006f227c % param_1</code>, same xor/shifts</td><td>agrees (both tools)</td></tr><tr><td>5</td><td>0x4124d0</td><td><code>a*0x128 + (b*3+0x7b)*4 + (c&lt;&lt;4)</code></td><td>C: <code>imul ecx,ecx,0x128; lea eax,[eax+eax*2+0x7b]; lea [ecx+eax*4]; shl edx,4</code>; G: <code>param_1*0x128 + (param_2*3+0x7b)*4 + param_3*0x10</code></td><td>agrees (both tools)</td></tr><tr><td>6</td><td>0x41e860</td><td>CPU detection with cpuid</td><td>C: <code>cpuid</code> present in the first 80 instructions</td><td>agrees</td></tr><tr><td>7</td><td>0x692ce0</td><td>static hash of &quot;Rotate_360_q&quot;</td><td>C: rdata string at 0x6ba5e8 reads &quot;Rotate_360_q&quot;; same loop; hash 0x7799e3f6 computed offline</td><td>agrees on string and loop; stored value (0x73b0b8) NOT VERIFIED at run time</td></tr><tr><td>8</td><td>0x4134a0</td><td>thin wrapper over <code>_malloc</code></td><td>C: <code>push eax; call 0x67121a; add esp,4; ret</code></td><td>agrees</td></tr><tr><td>9</td><td>0x504010</td><td>WString_Free: free if non-null</td><td>C: <code>mov eax,[ecx]; test; je; push eax; call 0x671102</code></td><td>agrees</td></tr><tr><td>10</td><td>0x42ad10</td><td>CameraMoverBase_InitFields (zeroes fields)</td><td>C: 18 <code>mov dword [eax+...]</code> stores in 120 bytes, starts with <code>xor ecx,ecx; mov [eax],ecx; mov [eax+4],ecx</code></td><td>agrees on shape; that the 5 named camera ctors call it comes from H only, so it stays V on shape and I on role</td></tr></tbody></table></div>
+<h2 id="rerun">Rerun</h2>
+<p>Scratch scripts (candidate list, dossier, global-reader index) were in the session scratchpad, not in the repo. To redo: lifted list = <code>f_&lt;hex&gt;(</code> in build/gen/f*.c; unknown = systems.tsv; reader index = capstone linear sweep of 0x401000-0x697000 for disp32/imm32 operands in 0x697000-0x7a0000.</p>
+<p>HANDOFF: next pass reads the 265 unread ran functions below 0x684000 (list = unknown, not in override, in union.json, sorted by callers), then asks the OWNER whether tools/census/systems.py should read census/systems_override.tsv.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

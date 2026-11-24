@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Chase camera map (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Tool for every line: G = Ghidra export census/ghidra/decomp_.c (read this session), C = capstone tools/recomp/asm.py dis,">
+<link rel="canonical" href="https://nfsu.cc/re/camera_chase.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/camera_chase.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Chase camera map (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Tool for every line: G = Ghidra export census/ghidra/decomp_.c (read this session), C = capstone tools/recomp/asm.py dis,">
+<meta property="og:url" content="https://nfsu.cc/re/camera_chase.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chase camera map (Speed.exe PC) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Tool for every line: G = Ghidra export census/ghidra/decomp_.c (read this session), C = capstone tools/recomp/asm.py dis,">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Chase camera map (Speed.exe PC)", "description": "Tool for every line: G = Ghidra export census/ghidra/decomp_.c (read this session), C = capstone tools/recomp/asm.py dis,", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/camera_chase.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Chase camera map (Speed.exe PC)", "item": "https://nfsu.cc/re/camera_chase.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Camera Systems</p>
+<article>
+<h1>Chase camera map (Speed.exe PC)</h1>
+<div class="badges">
+  <span class="badge">Camera Systems</span>
+  <span class="badge accent">37 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="camera_chase.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/camera_chase.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Tool for every line: G = Ghidra export <code>census/ghidra/decomp_*.c</code> (read this session), C = capstone <code>tools/recomp/asm.py dis</code>, D = bytes read with python struct from the unpatched exe. V = read in code or bytes. I = inferred. U = still open. Earlier notes: <code>docs/re/camera.md</code>. No <code>q_*.py</code> or new DecompAt run was needed: the export already had every function below.</p>
+<h2 id="flow-of-one-frame-default-race-camera-mover-type">Flow of one frame (default race camera, mover type 0x11)</h2>
+<ol><li><code>0x48bcb0</code> (update, G+C). Picks the player car <code>mover+0x2c</code> (via <code>0x41ffe0</code>, V). Calls <code>0x48ead0(0.5)</code> (<code>[0x6b6e28]</code>) and <code>0x48ec00</code>.</li><li><code>0x48ec00</code> is a <b>moving average</b>, not a spline (V, G). Ring buffer of 16-byte entries: count <code>+5</code>, filled <code>+6</code>, index <code>+7</code>,</li></ol>
+<p>buffer <code>+8</code>, running sum <code>+0x10</code>, average <code>+0x20</code>. It adds the new vector, removes the oldest, divides by the filled count.</p>
+<ol><li><code>0x47d680</code> finds the row of the POV code in the car&#x27;s CarTypeInfo rows <code>[[car+0xc]+0xb50]</code> (V, C; set 2 at <code>+0x60</code> when <code>[0x7364a0] == 3</code>).</li><li><code>0x48b8c0</code> SetDesired (V, G+C). For POV 0, 1, 4 it builds an eye and a target relative to the car:</li></ol>
+<ul><li><code>0x48b530</code> makes the look direction: blend of the car forward <code>car+0x90..0x98</code> and the velocity direction <code>car+0x70..0x78</code></li></ul>
+<p>(if forward dot velocity is negative the velocity is flipped by <code>[0x6ccc08]</code> = -2.0). The blend weight is the piecewise curve <code>0x705b20</code> (ptr <code>0x705b10</code>, 2 points: (8, 0) and (13, 1)) read at <code>car+0x3d4</code> (D). Below 8 the camera looks along the car, above 13 along its velocity. This is the existing drift/slide follow. The unit of <code>car+0x3d4</code> is U (I: speed).</p>
+<ul><li>The z part is scaled by a ramp <code>(now - mover[0x13]) * 0.00025 / 2.0</code>, clamped 0..1 (<code>[0x6cca38]</code>, <code>[0x6b6e2c]</code>): after a camera cut</li></ul>
+<p>(<code>mover[0x13]</code> = clock <code>0x73ad34</code>) the camera rises over 2 s.</p>
+<ul><li>eye offset = look * row.distance + row.height (up); lateral = row <code>+0xc</code>. Result is written as targets <code>+8</code> of three small</li></ul>
+<p>interpolators <code>mover[0xc], [0xd], [0xe]</code> (<code>0x4831c0</code>); <code>0x483220</code> makes the cubic coefficients (<code>[0x6cc7ac]</code>).</p>
+<ul><li>FOV: <code>[0x6fbdf4 + 2 * pov]</code> goes to <code>mover[0xc]+8</code> (speedfov path, do not touch).</li><li>Wall/clearance: <code>0x483430</code> clamps the offset vector between two limit vectors (min/max per axis).</li><li>When the car is in contact (<code>car+0x38 != 0</code> and <code>car+0x3cc &lt; 3</code>, vtable slot <code>+0x24</code> true) the eye is scaled by <code>[0x6b6eb0]</code> = 1.3.</li></ul>
+<ol><li>Back in <code>0x48bcb0</code>: <code>0x575040(mover[4])</code> camera shake, <code>0x483640</code> noise (tables <code>0x6b6eb8</code> normal, <code>0x6b6f08</code> when <code>[0x78a344]</code> or <code>[0x7361a8]</code>),</li></ol>
+<p><code>0x483b90</code> MinGapTopology (camera vs world), <code>0x47d070</code> SetCameraMatrix. Smoothing constants: sub-objects are created with 10.0 in the ctor <code>0x48afd0</code>.</p>
+<h2 id="what-each-wish-maps-to">What each wish maps to</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Wish</th><th>Where it lives</th><th>State</th></tr></thead><tbody><tr><td>Per-car distance, height</td><td>rows <code>[[car+0xc]+0xb50]</code> (see camera.md section 4)</td><td>V, used by <code>?chasecam</code> and <code>?nitrocam</code></td></tr><tr><td>Lag / follow</td><td>moving average <code>0x48ec00</code> + 10.0 smoothers <code>0x48afd0</code></td><td>V structure, constants meaning U</td></tr><tr><td>Look-ahead in curves</td><td>none by distance; only the forward-to-velocity blend <code>0x705b20</code> (8..13)</td><td>V</td></tr><tr><td>Collision</td><td><code>0x483430</code> clamp, <code>0x483b90</code>, wall push-out <code>0x4838e0</code> (type 1 only)</td><td>V names, maths U</td></tr><tr><td>Nitro</td><td><b>no camera code reads nitro</b> (text search of <code>+0x3bc</code> in decomp_0x401000_0x4a6800.c: no hit between lines 97000 and 100000, where the 0x48xxxx camera code is)</td><td>V (G text search)</td></tr><tr><td>Drift</td><td>only the velocity blend above</td><td>V</td></tr><tr><td>Shake</td><td><code>0x575040</code> called from <code>0x48bcb0</code>; its trigger is U</td><td>U</td></tr></tbody></table></div>
+<h2 id="nitro-state-v-g">Nitro state (V, G)</h2>
+<p>Car state <code>car+0x3b0</code> / <code>+0x3b8</code> = tank ticks (4000 per second, <code>[0x6cca38]</code> = 0.00025 converts to seconds), <code>+0x3b4</code> = ticks per shot, <code>+0x3bc</code> = clock stamp of the running shot (<code>0x4654f0</code> writes it from <code>0x73ad34</code>; <code>0x465530</code> clears it to 0). <code>0x465430</code> returns &quot;firing&quot; when the stamp is not 0 or 0x7fffffff and <code>(now - stamp) &lt;= +0x3b8</code> (G). Whether <code>car</code> (list node of <code>[0x7361f8]</code>) is the same object as that state is I: the camera uses <code>car+0x3cc</code>, <code>+0x3d4</code>, <code>+0x540</code> on the same pointer, and <code>0x4654f0</code> takes the state in edx; the Mac must confirm with the <code>CHASE nitro on/off</code> log line.</p>
+<h2 id="the-improvement-shipped-from-this-nitrocam">The improvement shipped from this: ?nitrocam</h2>
+<p>While the stamp <code>car+0x3bc</code> is set, the rows go 10% farther and 5% lower (half-second low pass), on top of <code>?chasecam</code>. It changes only the row values the mover already reads at <code>0x48ba2a</code>; nothing in the exe is patched. Off with <code>?nitrocam=0</code> (Original mode sets it to 0).</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

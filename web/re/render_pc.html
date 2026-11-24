@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>PC renderer of Speed.exe: what the Remaster needs — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in code or bytes this session (tool named), I = inferred, U = open.">
+<link rel="canonical" href="https://nfsu.cc/re/render_pc.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/render_pc.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="PC renderer of Speed.exe: what the Remaster needs — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in code or bytes this session (tool named), I = inferred, U = open.">
+<meta property="og:url" content="https://nfsu.cc/re/render_pc.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-24">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PC renderer of Speed.exe: what the Remaster needs — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in code or bytes this session (tool named), I = inferred, U = open.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "PC renderer of Speed.exe: what the Remaster needs", "description": "Marks: V = read in code or bytes this session (tool named), I = inferred, U = open.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/render_pc.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "PC renderer of Speed.exe: what the Remaster needs", "item": "https://nfsu.cc/re/render_pc.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rendering &amp; Shaders</p>
+<article>
+<h1>PC renderer of Speed.exe: what the Remaster needs</h1>
+<div class="badges">
+  <span class="badge">Rendering &amp; Shaders</span>
+  <span class="badge accent">120 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <a href="render_pc.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/render_pc.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in code or bytes this session (tool named), I = inferred, U = open. Tools: C = capstone sweep of .text (<code>build/canon/w2/va.py</code> reads the PE by address), P = Ghidra pseudocode <code>census/canon/c/401000.c</code>, D = bytes of the unpatched <code>pc/Speed.exe</code>, X = the seven <code>fx/*.efx</code>, decoded (XOR 0xAA, same as the loader 0x40e180 does; decoded copies in <code>build/canon/w2/*.efx.txt</code>). Older notes stay valid: <code>render.md</code> (device, queue, frame flow) and <code>blur.md</code> (speed blur). This file adds what they lacked.</p>
+<h2 id="answer-the-four-things-the-remaster-asked-for">Answer (the four things the Remaster asked for)</h2>
+<ol><li><b>Frame pass order</b>: see &quot;Frame&quot; below. World, then speed blur, then cars, then emitters/particles, then flares; reflection views first.</li><li><b>Fog does not exist in the PC game</b> (V, C+X+D). The only <code>D3DRS_FOGENABLE</code> (28) write in all of .text is <code>0x408bb0</code>, inside</li></ol>
+<p><code>RenderState_ResetDefaults 0x408b20</code>, with value 0. No other fog render state (34..38) is ever set. <code>filter.efx</code> writes <code>fog = 1.0</code>; the six other .efx have no fog code. The effect parameter table (0x701860) still lists <code>FogOffset, FogScale, FogFalloffY, FogColor</code> (names 35..38) but no shipped .efx declares them. So the Remaster fog has no original values to copy; any fog is new.</p>
+<ol><li><b>Blur / depth of field</b>: speed blur constants are in <code>blur.md</code> (start 25, full at 125, cap 0.65, half-res 320x240 chain). There is **no depth of field and no</li></ol>
+<p>depth weighting** on PC (V, blur.md G+C). Nothing else blurs the scene.</p>
+<ol><li><b>Reflective road flag</b> (V, P+D): a track mesh is drawn with <code>worldreflect.efx</code> when bit <b>0x40</b> of its flags (<code>mesh+0xc</code>) is set.</li></ol>
+<p>Details below. The reflection itself is a <b>320 x 240 planar render target</b>, only when option <code>[0x700e90] != 0</code> (graphics level &gt;= 1).</p>
+<h2 id="which-effect-draws-a-mesh-v-p-d">Which effect draws a mesh (V, P+D)</h2>
+<p><code>Mesh_FixupGroups 0x40c890</code> (once per solid at load) picks the effect slot from <code>mesh+0xc</code> with the table at <b>0x701440</b> (stride 12: mask, slot, 0), first match wins, no match = slot 0:</p>
+<div class="tbl-wrap"><table><thead><tr><th>flags &amp; mask</th><th>slot</th><th>effect</th><th>note</th></tr></thead><tbody><tr><td>0x01</td><td>4</td><td>worldbone.efx</td><td>skinned/bone geometry</td></tr><tr><td><b>0x40</b></td><td><b>2</b></td><td><b>worldreflect.efx</b></td><td><b>reflective surface (wet-looking road, glass)</b></td></tr><tr><td>0x80</td><td>5</td><td>car.efx</td><td>car body</td></tr><tr><td>otherwise</td><td>0</td><td>world.efx</td><td></td></tr></tbody></table></div>
+<p>Slots: base 0x71abb8 + k*0xe0. Slot 1 = worldheadlight.efx and 3 = worldheadlightreflect.efx are never chosen by flags; they come from the substitution below. Slot 6 = filter.efx (blur filter). File names: strings at 0x7014e0.. in .data, table 0x7010c0 (stride 0x80) (D).</p>
+<p><b>Substitution at draw time</b> (<code>0x40c910</code>, V, P+D): the slot index is remapped through a table of 7 pointers:</p>
+<div class="tbl-wrap"><table><thead><tr><th>condition</th><th>table</th><th>remap</th></tr></thead><tbody><tr><td>view flag 0x200 off, or headlights option <code>[0x700e80]</code>==0, and road-reflection <code>[0x700e90]</code>==0</td><td>0x706898</td><td>slot 2 -&gt; slot 0 (<b>reflective road drawn plain</b>)</td></tr><tr><td>flag 0x200 on, <code>[0x700e80]</code>!=0, <code>[0x700e90]</code>==0</td><td>0x706818</td><td>0-&gt;1, 2-&gt;1 (headlight, no reflection)</td></tr><tr><td>flag 0x200 on, <code>[0x700e80]</code>!=0, <code>[0x700e90]</code>!=0</td><td>0x706798</td><td>0-&gt;1, 2-&gt;3 (headlight + reflection)</td></tr><tr><td><code>[0x700e90]</code>!=0 and no headlights</td><td>none</td><td>slot 2 stays (reflection)</td></tr></tbody></table></div>
+<p>Meaning of view flag 0x200 (I: night/headlight pass; set by the caller 0x446730). Also: a slot-1 material with <code>mat+0x56 != 0</code> and count &gt; 1 falls back to slot 0.</p>
+<p><b>What the reflective pixel does</b> (X, <code>worldreflect.efx</code> ps_1_1): <code>out = 2 * diffuse * vertexColor + vertexColor.a * diffuse.a * reflectedSample</code>. So the amount of reflection per pixel is <b>vertex alpha x diffuse-texture alpha</b>, i.e. the artists paint where it is wet. Projection: <code>t1 = clip-space position, y flipped, (xy + w) * 0.5</code> (screen-space lookup into the reflection texture). Fallback techniques in the same file: <code>world</code> (vs_1_1/ps_1_1), <code>world_fixed_single_pass</code>, <code>world_fixed_2pass</code>, <code>world_fixed</code> (fixed function, <code>ReflectedProj</code> texture transform). <code>Effects_CreateAll 0x40e180</code> takes the first technique that validates (+0xf4), skipping some old GPUs (vendors 0x1039, 0x8086/0x2572, 0x10de 0x153..0x1f0, 0x102b); it sets <code>[0x736418]=1</code> when technique 0 (shaders) is used, <code>[0x736414]=1</code> for a fixed-function fallback (V, P). Per-slot init callbacks (table 0x702420, V, D): 0 Null <code>0x40a880</code>, 1 <code>Effect_BindHeadlightTextures 0x40e740</code>, 2 <code>Effect_BindSceneParams 0x40e7b0</code>, 3 <code>Effect_BindHeadlightParams 0x40e900</code>, 4 Null, 5 <code>0x40eb30</code>, 6 <code>0x40eb60</code>. The reflection callback (2) binds <code>ReflectedTex = [0x71aa28]</code>, sets <code>ReflectedTexMin = 0.1</code> (0x3dcccccd; the shipped .efx does not declare it, so it has no effect) and <code>ReflectedProj</code> = view matrix x (0.5 scale/bias).</p>
+<h2 id="render-targets-v-p">Render targets (V, P)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>What</th><th>Where</th><th>Size / format</th></tr></thead><tbody><tr><td>Planar reflection</td><td>texture <code>[0x71aa28]</code>, surface <code>[0x71ab68]</code>, depth <code>[0x71ab64]</code>, made by <code>SceneRTCreate 0x40a890</code> only if <code>[0x700e90]!=0</code></td><td><b>320 x 240</b> (0x140 x 0xf0), format <code>[0x702a94]</code>, depth <code>[0x702a98]</code></td></tr><tr><td>Scene RT</td><td><code>[0x736460]</code>, <code>[0x736464]</code></td><td><code>[0x701034]</code> x <code>[0x701038]</code> (window size), format <code>[0x702a80]</code>; only if <code>[0x73645c]==1</code> (motion blur or light streaks)</td></tr><tr><td>Blur A/B, streak RT</td><td>blur.md</td><td>W/2 x H/2, A8R8G8B8</td></tr><tr><td>Another RT pair</td><td><code>[0x736470]/[0x736478]</code></td><td><code>[0x702a9c]</code> x <code>[0x702aa0]</code> (U what it holds)</td></tr><tr><td>Car cube reflection</td><td>render.md</td><td>6 faces, size <code>[0x702a84]</code> (patched 512), only if <code>[0x700e74]!=0</code></td></tr></tbody></table></div>
+<h2 id="graphics-levels-graphicsquality-set-0x410ed0-v-p">Graphics levels (<code>GraphicsQuality_Set 0x410ed0</code>, V, P)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>option</th><th>0</th><th>1</th><th>2</th><th>3</th><th>use</th></tr></thead><tbody><tr><td>0x700e74</td><td>0</td><td>1</td><td>2</td><td>3</td><td>car cube reflection quality; loop over 6 reflection views</td></tr><tr><td>0x700e78</td><td>0</td><td>0</td><td>1</td><td>1</td><td>world sections also drawn into car reflection views</td></tr><tr><td>0x700e80</td><td>0</td><td>0</td><td>1</td><td>1</td><td>headlights (slots 1/3)</td></tr><tr><td>0x700e90</td><td>0</td><td>1</td><td>2</td><td>2</td><td>planar road reflection; 2 = also cars and showcase cars in it</td></tr><tr><td>0x700e98 / 0x700e9c</td><td>0</td><td>0</td><td>0</td><td>1</td><td>MOTIONBLUR / LIGHTSTREAKS</td></tr><tr><td>0x700ea8</td><td>0</td><td>1</td><td>1</td><td>1</td><td>particle systems</td></tr><tr><td>0x700eb0</td><td>1</td><td>1</td><td>3</td><td>3</td><td>U</td></tr></tbody></table></div>
+<p>Other flags: 0x700ea0 and 0x700ea4 set to 1 on every call (flares).</p>
+<h2 id="frame-v-p-addresses-in-order-renderframe-0x40a58">Frame (V, P; addresses in order; <code>RenderFrame 0x40a580</code> calls <code>RenderFrameMain 0x409580</code>)</h2>
+<ol><li><code>0x40a580</code>: update views; <code>BeginScene</code>; <code>0x409cd0(1)</code>; <b><code>0x409580</code></b>; if <code>[0x73645c]==1</code> <code>0x40d6e0</code> composites the scene RT; <code>0x409cd0(0)</code>; <code>EndScene</code>; <code>Present</code>.</li><li>Inside <code>0x409580</code>:</li></ol>
+<ul><li><code>0x408f00</code>, then if <code>[0x700e90]</code>: <code>SceneRTSelect(1)</code> (reflection RT 320x240), if <code>&gt;1</code> queue world + cars + showcase cars, emitters, flush <code>0x40ed50</code>, flares (<code>LampFlares_Draw(view 0x7405e0, 2)</code>).</li><li>if <code>[0x700e74]</code>: for each of 6 reflection views (0x740820..0x7409a0, stride 0x60): <code>SceneRTSelect(1)</code>, ZENABLE/ZWRITE off around <code>CarOverlays_QueueByView</code>, world (if <code>[0x700e78]</code>), emitters, flush, flares.</li><li>view 0x740580 (secondary view, if active): world, race cars, flush, particles (if <code>[0x700ea8]</code>), lamp flares, optional screen quads (<code>[0x7364ac]</code>, <code>[0x7364b0]</code>), <code>RenderState_ResetDefaults</code>.</li><li>player view (index 1): <code>0x4090a0</code>, <code>SceneRTSelect</code>, headlight callback pass if <code>[0x700e80]</code>, then world (<code>0x446730</code>, <code>0x58a240</code>, <code>RenderWorldModels 0x592100</code>), <b>speed blur <code>0x40cd40</code></b>, <code>0x408b20</code>, cars <code>0x571050</code>/<code>0x570950</code>, emitters <code>0x4ae650</code>, particle systems <code>0x404110</code> x2, flares or light streaks; then rear-view mirror <code>0x409180</code> x2.</li></ul>
+<ol><li>Queue: <code>FUN_0040c910</code> (this file: <code>Solid_QueueGroups</code>) puts each mesh group into per-slot buckets (<code>RenderQueue_GetBucketAlt 0x40f1e0</code>); <code>0x40ed50</code> flushes (<code>RenderQueue_Flush 0x40ed70</code>).</li></ol>
+<h2 id="correction-and-additions-game-side-pass-w2-secon">Correction and additions (game-side pass, W2 second stretch)</h2>
+<ul><li><code>[0x700e70]</code> is the <b>resolution index</b>, not a quality bit: <code>Resolution_ApplyIndex 0x408760</code> maps 0-&gt;640, 1-&gt;800, 2-&gt;1024, 3-&gt;1280, 4-&gt;1280 wide</li></ul>
+<p>(V). <code>GraphicsQuality_Set</code> writes 0 for level 0 and 1 for levels 1..3, so level 0 is 640 wide and others 800. <code>GraphicsQuality_AutoDetect 0x410a00</code> picks the level from <code>MachinePerformanceScore</code> stored in <code>[0x701088]</code>: &lt;0.3 level 0, &lt;0.6 level 1, &lt;0.9 level 2, else 3 (V).</p>
+<ul><li><b>Fog data exists but is dead.</b> Every frame <code>0x4090a0</code> (called from <code>0x409580</code> at 0x40989d) turns the per-view &quot;zone&quot; blend of <code>FogZones_BlendAtView 0x588f40</code></li></ul>
+<p>into 1/range, 250/range, alpha<em>1.5/255, x</em>1.35 and RGB/255 at <code>0x71a05c</code>. Nothing reads <code>0x71a05c</code> (byte search of the whole exe finds only the <code>mov esi, 0x71a05c</code> at 0x409897). The zone records (in the global block at 0x737bf0: records from +0x44, 0x50 bytes each, count at +0x3078 = 0x73ac68; fields include position x/z and two radii) are a ready-made per-section atmosphere dataset the Remaster could use for a real fog instead of a guess (I that they are fog; V that the blend is distance-weighted and the effect params FogOffset/FogScale/FogFalloffY/FogColor exist).</p>
+<ul><li><code>RenderQueue_BindMaterial 0x40f3d0</code> (V): translucent material (mesh+0x56) =&gt; alpha blend on, ZWRITE off (non-car slots); car slot 5 uses cull 2 when translucent, 1 otherwise;</li></ul>
+<p>UV scroll from mesh+0x52 (mode 3 = static offsets, else flare-phase animation of the time <code>[0x73ad34] * 0.00025</code>).</p>
+<ul><li><b>Car lighting is spherical harmonics</b>, computed on the CPU (<code>SH_AddDirectionalLight 0x5416e0</code>, constants 0.282095/0.488603/1.092548/0.315392/0.546274, 10 coefficients x 4)</li></ul>
+<p>and uploaded as <code>HarmonicCoeff[10]</code> of car.efx. Car shadows: <code>CarShadow_SunVector 0x56d700</code> uses the sun position <code>[0x735518]</code> (default -16384, 0, 7000).</p>
+<h2 id="render-states-the-game-sets-directly-v-c-66-setr">Render states the game sets directly (V, C: 66 SetRenderState call sites, immediates only)</h2>
+<p>ZENABLE(7) 12, ZWRITE(14) 22, ALPHABLEND(27) 9, ALPHATEST(15) 4, CULL(22) 3, ALPHAREF(24) 3, COLORWRITEENABLE(168) 2, BLENDFACTOR(193) 2 (speed blur), ZFUNC(23), ALPHAFUNC(25), SPECULAR(29), LIGHTING(137), FOGENABLE(28)=0, SRCBLEND(19), DESTBLEND(20), TEXTUREFACTOR(60) 1 each. Everything else comes from the .efx passes.</p>
+<h2 id="d3dx9-eagl-band-0x5ab730-0x640000-state">D3DX9 / EAGL band (0x5ab730..0x640000), state</h2>
+<p>Entry points used by the game: <code>D3DXCreateEffectPool 0x5af9e5</code> (V: checks out pointer, error 0x8876086c, creates the pool object) and <code>D3DXCreateEffect 0x5afb2f</code> (V: device, source, size, defines, include, flags, pool, <b>ppEffect, ppErrors</b>; a leading dword -1 means a compiled effect). <code>Effects_CreateAll</code> decodes each .efx in memory (<code>^0xAA</code>) and passes the text, so the HLSL/asm compiler in this band runs at startup (render.md U). Band map used for the bulk rows (V where a string in the function says it, I for the rest of the band; boundaries are the landmark strings):</p>
+<div class="tbl-wrap"><table><thead><tr><th>Range</th><th>Module</th><th>Landmark (V)</th></tr></thead><tbody><tr><td>0x5ab730..0x5b1f00</td><td>D3DX_Cpu: math thunks, PSGP, CPU detect</td><td>&quot;DisableMMX&quot; 0x5b0506, &quot;GenuineIntel&quot; 0x5b05b6</td></tr><tr><td>0x5b1f01..0x5b2d7a</td><td>D3DX_HlslLex: lexer, error text</td><td>&quot;error X%u&quot;</td></tr><tr><td>0x5b2d7a..0x5ba0ab</td><td>D3DX_EffectCompiler</td><td>&quot;ID3DXEffectCompiler: ...&quot;</td></tr><tr><td>0x5ba0ab..0x5c3e7d</td><td>D3DX_HlslSema: AST, type check, constant folding</td><td>&quot;cannot convert from&quot;, &quot;division by zero&quot;</td></tr><tr><td>0x5c3e7d..0x5c4000</td><td>D3DX_HlslParse: yacc parser</td><td>&quot;yacc stack overflow&quot;</td></tr><tr><td>0x5c4000..0x5c7bd2</td><td>D3DX_Preproc</td><td>&quot;#elif&quot;, &quot;DIRECT3D_VERSION&quot;, macro errors</td></tr><tr><td>0x5c7bd2..0x5e4ca2</td><td>D3DX_HlslGen: HLSL to IR</td><td>&quot;function must return a value&quot;</td></tr><tr><td>0x5e4ca2..0x5fe000</td><td>D3DX_Asm: shader assembler</td><td>&quot;D3DX9 Shader Assembler&quot; 0x5e6ae3</td></tr><tr><td>0x604024..0x60fcaa</td><td>D3DX_Ps1Back: ps_1_x backend</td><td>&quot;texreg2ar&quot;, &quot;ps_1_%d&quot;</td></tr><tr><td>0x60fcaa..0x61808b</td><td>D3DX_VsBack: vs backend</td><td>&quot;relative addressing not supported in vs_1_0&quot;</td></tr><tr><td>0x61808b..0x61e000</td><td>D3DX_Ps2Back, debug info</td><td>&quot;D3DX9 Shader Compiler&quot; 0x619309</td></tr><tr><td>0x61e000..0x632000</td><td>EAGL: dynamic loader + animation runtime</td><td>&quot;EAGL::SymbolEntry&quot; 0x61f2e0</td></tr></tbody></table></div>
+<p><b>EAGL is not a renderer</b> (V): of its 26 functions called from outside, the callers are the animation code 0x47aeb0..0x47b6d0 (<code>GetFirstAnimBank</code>), <code>AnimSkeleton_Load/Unload 0x5a4de0/0x5a4e90</code> and <code>Render_InitSubsystem 0x53e020</code> (installs the malloc/free hooks 0x61f020/30 and <code>EAGLAnim::FnAnimFactory::New 0x627b90</code>). Its strings are the dynamic ELF loader, <code>CAnimSkeleton</code>, <code>CAnimBank</code>, <code>GlobalPoseBuffer</code>. The Remaster can ignore it for rendering. Likewise 0x6385a0..0x640000 is EA&#x27;s file system / timer / CPU-detect library (&quot;FILESYS_*&quot;, &quot;TIMER_init&quot;, &quot;GenuineIntel&quot;), also not render; the systems tag &quot;render&quot; for these bands is wrong (about 1,400 functions with the D3DX band staying as library). D3DX itself is a static copy of the D3DX9 effect compiler: the game needs only <code>D3DXCreateEffectPool 0x5af9e5</code> and <code>D3DXCreateEffect 0x5afb2f</code> (plus D3DXMatrixMultiply used by the effect callbacks); nothing inside the band touches the frame path.</p>
+<h2 id="open">Open</h2>
+<ul><li>Meaning of view flag 0x200 and who sets it (0x446730 caller chain).</li><li>What mesh flag 0x40 means in the track format (which authoring tool sets it; not the same as the headlight flag); count of meshes with 0x40 per track needs the track loader (a data question, no game run needed).</li><li>Contents of RT pair <code>[0x736470]</code>.</li></ul>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>DirectX 9 to WebGPU &amp; WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline — NFSU.cc Devlog | NFSU.cc</title>
+<meta name="description" content="Eliminating CPU texture decompression and per-draw bindGroup churn by keeping DXT1/3/5 textures compressed on the GPU and caching dynamic UBOs in host/d3d9.c and web/gpu.js.">
+<link rel="canonical" href="https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="DirectX 9 to WebGPU &amp; WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline — NFSU.cc Devlog">
+<meta property="og:description" content="Eliminating CPU texture decompression and per-draw bindGroup churn by keeping DXT1/3/5 textures compressed on the GPU and caching dynamic UBOs in host/d3d9.c and web/gpu.js.">
+<meta property="og:url" content="https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-23">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DirectX 9 to WebGPU &amp; WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline — NFSU.cc Devlog">
+<meta name="twitter:description" content="Eliminating CPU texture decompression and per-draw bindGroup churn by keeping DXT1/3/5 textures compressed on the GPU and caching dynamic UBOs in host/d3d9.c and web/gpu.js.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "DirectX 9 to WebGPU & WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline", "description": "Eliminating CPU texture decompression and per-draw bindGroup churn by keeping DXT1/3/5 textures compressed on the GPU and caching dynamic UBOs in host/d3d9.c and web/gpu.js.", "inLanguage": "en", "datePublished": "2026-11-23", "dateModified": "2026-11-23", "url": "https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "WebGPU, WebGL2, DirectX 9, S3TC, Graphics"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "DirectX 9 to WebGPU & WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline", "item": "https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Devlog</a></p>
+<article>
+<h1>DirectX 9 to WebGPU &amp; WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline</h1>
+<p class="lead">Translating a 2003 DirectX 9 renderer to WebGPU (with automatic WebGL 2 fallback) is easy to make correct and hard to make fast. Two rendering passes removed the biggest CPU and VRAM bottlenecks.</p>
+<div class="badges"><span class="badge">WebGPU</span><span class="badge">WebGL2</span><span class="badge">DirectX 9</span><span class="badge">S3TC</span><span class="badge">Graphics</span></div>
+<div class="meta-bar">
+  <span><time datetime="2026-11-23">2026-11-23</time></span>
+  <span>Commits: <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/deb8f28" rel="noopener"><code>deb8f28</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/00e474c" rel="noopener"><code>00e474c</code></a></span>
+  <a href="zero-waste-webgpu-draw-pipeline-and-bc-textures.md">View raw Markdown (.md)</a>
+</div>
+<h2 id="keeping-dxt1-3-5-textures-compressed-as-bc1-2-3-">Keeping DXT1/3/5 textures compressed as BC1/2/3 (<code>00e474c</code>)</h2>
+<p>Need for Speed Underground ships its car liveries, road surfaces, and Olympic City environment textures as DirectX DXT1, DXT3, and DXT5 blocks. Earlier browser builds decoded those blocks to uncompressed RGBA8 on the CPU before uploading them, multiplying VRAM usage by 4x to 8x and stalling frame times during streaming.</p>
+<p>Commit <code>00e474c</code> introduced <b><code>RN_S3TC</code></b> end-to-end:</p>
+<ul><li><b><code>host/d3d9.c</code></b>: Detects hardware block-compression support and passes raw DXT1/3/5 mip bytes straight through the host GPU command stream without CPU decompression.</li><li><b><code>web/gpu.js</code> (WebGPU)</b>: Requests <code>texture-compression-bc</code> when available and uploads directly to <code>bc1-rgba-unorm</code>, <code>bc2-rgba-unorm</code>, and <code>bc3-rgba-unorm</code> textures.</li><li><b><code>web/webgpu_gl.js</code> (WebGL 2 fallback)</b>: Uses <code>WEBGL_compressed_texture_s3tc</code> (<code>compressedTexImage2D</code>) so browsers without WebGPU still get the same 4x-8x VRAM savings and zero-decode uploads.</li><li><b>Upload counters</b>: Boot logs track compressed vs uncompressed texture uploads so regressions are immediately visible.</li></ul>
+<h2 id="zero-waste-draw-pipeline-compact-dynamic-ubo-and">Zero-waste draw pipeline, compact dynamic UBO, and post <code>bindGroup</code> cache (<code>deb8f28</code>)</h2>
+<p>DirectX 9 games issue hundreds of small stateful draw calls per frame (changing a single transform matrix, light constant, or texture stage). In WebGPU, naively allocating a fresh uniform buffer or <code>GPUBindGroup</code> per draw call creates severe JS garbage-collection pressure.</p>
+<p>Commit <code>deb8f28</code> overhauled <code>host/d3d9.c</code>, <code>host/gpu.c</code>, <code>host/sm1.c</code>, and <code>web/gpu.js</code>:</p>
+<ul><li><b>Compact dynamic UBO layout</b>: Packed shader uniforms tightly so each draw call slices a single pre-allocated dynamic uniform buffer via <code>setBindGroup(..., [dynamicOffset])</code>.</li><li><b>Zero-waste draw state</b>: Avoided redundant state writes and shader-constant re-uploads when consecutive draws share transforms or materials.</li><li><b>Post-process <code>bindGroup</code> cache</b>: Cached post-processing bind groups (bloom, motion blur, tone pass) instead of rebuilding them every frame.</li></ul>
+<p class="repo"><b>Files in repo:</b> <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/host/d3d9.c" rel="noopener"><code>host/d3d9.c</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/host/gpu.c" rel="noopener"><code>host/gpu.c</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/host/sm1.c" rel="noopener"><code>host/sm1.c</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/gpu.js" rel="noopener"><code>web/gpu.js</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/webgpu_gl.js" rel="noopener"><code>web/webgpu_gl.js</code></a></p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>
