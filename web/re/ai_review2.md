@@ -52,7 +52,7 @@ is out of scope). V
 | 5 s re-roll contract | **OK** | 0x77a498 is read only at 0x44c651 (the draw gate); 0x77a49c is the rubber band's, read at 0x44bdcf. Current values are BSS/tuning, unreadable here (U). V address, U value |
 | "2-3 byte ASM cave" | **WRONG / overkill** | No cave. The bias is `2b c6` (2 bytes) at **0x44c678**; `90 90` there gives the 0..2b+1 window the doc itself describes. Nothing else moves. V |
 | effect | **OK as stated** | Removing the bias kills the stale-behind reference and doubles the look-ahead (0..17 nodes at b=8). Risk of reading a corners' cap ~17 nodes early (over-braking) is I, not measured. |
-| "no capstone in this worktree venv" | **UNSURE / blocker gone** | capstone 5.0.7 is at `/Users/angeldamian/RE-NFSU/.venv/bin/python`; that is what produced every hex above. |
+| "no capstone in this worktree venv" | **UNSURE / blocker gone** | capstone 5.0.7 is at `.venv/bin/python`; that is what produced every hex above. |
 
 ## What I did not check
 - Data values of the tuning table (`record+0x14`, `+0x50`, 0x77a498) — `game/` is not in this worktree.

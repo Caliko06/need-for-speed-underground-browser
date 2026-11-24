@@ -52,7 +52,7 @@ V = read in code (address) or measured in the logs; I = inference; U = doubt. No
   I (link to the visible sideways drift).
 - No position reset, no teleport, no invulnerability: the recovery only reverses. V
 
-## Numbers (AIR logs, 1 Hz per rival; `/Users/angeldamian/RE-NFSU/runs/w_*`)
+## Numbers (AIR logs, 1 Hz per rival; `runs/w_*`)
 
 | run | span | rivals | stuck <2 m/s | max stop | entries | per min | entries at >=5 m/s | time in 0xa |
 |---|---|---|---|---|---|---|---|---|

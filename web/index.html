@@ -114,9 +114,18 @@ const RN_SEARCH = location.search || '?' + (rnSavedQ ?? (RN_COARSE ? '' : RN_LAU
 <script src="quality.js"></script>
 <script src="tune.js"></script>
 <script>
-// ?bridge[=url]: a race chosen in this menu opens in the NFSU1-RE engine instead (host/bridge.c). Off by default.
-const bridgeTo = RN_Q.get('bridge');
-if (bridgeTo !== null) window.rnBridge = q => { location.href = (bridgeTo && bridgeTo !== '1' ? bridgeTo : `http://${location.hostname}:5190/`) + '?' + q; return 1; };
+// ?bridge[=url]: local dev only (disabled on RN_PUBLIC; strictly same-host/localhost http(s) to block open redirects / javascript: URLs).
+const bridgeTo = !window.RN_PUBLIC ? RN_Q.get('bridge') : null;
+if (bridgeTo !== null) {
+  let target = `http://${location.hostname}:5190/`;
+  if (bridgeTo && bridgeTo !== '1') {
+    try {
+      const u = new URL(bridgeTo, location.origin);
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && (u.hostname === 'localhost' || u.hostname === '127.0.0.1' || u.hostname === location.hostname)) target = u.href;
+    } catch {}
+  }
+  window.rnBridge = q => { location.href = target + '?' + q; return 1; };
+}
 </script>
 <script src="saves.js"></script>
 <script>

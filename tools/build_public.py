@@ -31,9 +31,10 @@ V = version()
 shutil.rmtree(D, ignore_errors=True)
 os.makedirs(os.path.join(D, "out"))
 os.makedirs(os.path.join(D, "pc"))
+EXCLUDE_FILES = {"setup.html", "diag.html", "README.md"}
 for n in sorted(os.listdir(W)):
     p = os.path.join(W, n)
-    if os.path.isfile(p) and n != "setup.html" and not n.startswith("."):
+    if os.path.isfile(p) and n not in EXCLUDE_FILES and not n.startswith("."):
         if n in PAGES:
             s = open(p, encoding="utf-8").read()
             s = s.replace("<head>", "<head>\n" + FLAG % V, 1)

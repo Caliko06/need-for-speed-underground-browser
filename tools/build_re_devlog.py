@@ -472,6 +472,8 @@ def parse_re_notes():
             continue
         stem = base[:-3]
         raw = open(p, encoding="utf-8", errors="replace").read()
+        raw = re.sub(r"/Users/[^/\s`'\")]+/RE-NFSU/", "./", raw)
+        raw = re.sub(r"/Users/[^/\s`'\")]+/", "~/", raw)
         lines = [l.strip() for l in raw.splitlines() if l.strip()]
         h1 = lines[0].lstrip("#").strip() if lines and lines[0].startswith("#") else stem.replace("_", " ").title()
         lead = ""
