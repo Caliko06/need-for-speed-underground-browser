@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers — NFSU.cc Devlog | NFSU.cc</title>
+<meta name="description" content="How removing a single TransformStream wrapper restored V8 WASM code caching (-77% JS heap), skipping a 20 MB 3D curtain cut 30.5 seconds off mobile boot, and S3 CopyObject made 419 R2 files immutable without re-uploading 1.32 GB.">
+<link rel="canonical" href="https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers — NFSU.cc Devlog">
+<meta property="og:description" content="How removing a single TransformStream wrapper restored V8 WASM code caching (-77% JS heap), skipping a 20 MB 3D curtain cut 30.5 seconds off mobile boot, and S3 CopyObject made 419 R2 files immutable without re-uploading 1.32 GB.">
+<meta property="og:url" content="https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers — NFSU.cc Devlog">
+<meta name="twitter:description" content="How removing a single TransformStream wrapper restored V8 WASM code caching (-77% JS heap), skipping a 20 MB 3D curtain cut 30.5 seconds off mobile boot, and S3 CopyObject made 419 R2 files immutable without re-uploading 1.32 GB.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers", "description": "How removing a single TransformStream wrapper restored V8 WASM code caching (-77% JS heap), skipping a 20 MB 3D curtain cut 30.5 seconds off mobile boot, and S3 CopyObject made 419 R2 files immutable without re-uploading 1.32 GB.", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "WebAssembly, V8 Code Cache, Performance, Cloudflare R2, Reverse Engineering, Mobile"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers", "item": "https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Devlog</a></p>
+<article>
+<h1>Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers</h1>
+<p class="lead">Four production-measured browser engineering patterns that apply to any large WebAssembly app or Cloudflare R2 deployment, explained both in plain English (ELI5) and with real A/B Chrome benchmarks.</p>
+<div class="badges"><span class="badge">WebAssembly</span><span class="badge">V8 Code Cache</span><span class="badge">Performance</span><span class="badge">Cloudflare R2</span><span class="badge">Reverse Engineering</span><span class="badge">Mobile</span></div>
+<div class="meta-bar">
+  <span><time datetime="2026-11-25">2026-11-25</time></span>
+  <span>Commits: <a href="https://github.com/Caliko06/need-for-speed-underground-browser/commit/653dc84" rel="noopener"><code>653dc84</code></a></span>
+  <a href="v8-wasm-code-cache-mobile-boot-and-r2-immutable.md">View raw Markdown (.md)</a>
+</div>
+<h2 id="eli5-what-changed-and-why-it-matters">ELI5: What changed and why it matters</h2>
+<p>If you build or ship heavy web apps (WebAssembly games, CAD tools, emulators, or AI runtimes), three invisible traps quietly slow down your users:</p>
+<ol><li><b>Breaking the browser&#x27;s shortcut memory (V8 WASM cache)</b>: Browsers like Chrome compile WebAssembly once and save the compiled machine code on disk so the next visit starts almost instantly. If your JavaScript intercepts the download stream to draw a progress bar (<code>new Response(new TransformStream(...))</code>), Chrome throws away the URL identity and <b>refuses to cache the compiled code</b>. Passing the raw <code>fetch()</code> response straight to <code>WebAssembly.instantiateStreaming()</code> restores the cache and cuts RAM spikes by 77%.</li><li><b>Loading a 20 MB 3D menu on a phone that only wants to start</b>: Showing a 3D preview scene while the real app loads looks great on a desktop GPU, but on a phone it steals bandwidth, CPU, and 18 MB of JS heap before the first real frame renders. Skipping the 3D curtain on touch/low-tier devices shaved <b>30.5 seconds</b> off mobile boot time.</li><li><b>Updating cloud cache headers without re-uploading gigabytes</b>: If you forgot <code>Cache-Control: immutable</code> on 1.32 GB of static assets in Cloudflare R2 or AWS S3, you do <b>not</b> have to re-upload them. A single S3 <code>CopyObject</code> request with <code>MetadataDirective=REPLACE</code> updates the header server-side in seconds with zero upload bandwidth.</li></ol>
+<hr>
+<h2 id="technical-deep-dive-measured-root-causes-fixes-6">Technical Deep Dive: Measured Root Causes &amp; Fixes (<code>653dc84</code>)</h2>
+<h3 id="1-restoring-v8-webassembly-code-caching-web-boot">1. Restoring V8 WebAssembly Code Caching (<code>web/boot.js</code>)</h3>
+<p>Chromium&#x27;s V8 engine only caches compiled WebAssembly (<code>WebAssembly.Module</code>) to HTTP cache / disk when <code>WebAssembly.instantiateStreaming(responsePromise, imports)</code> receives a genuine network <code>Response</code> backed by a cacheable URL. Wrapping <code>response.body</code> in a <code>TransformStream</code> or <code>ReadableStream</code> to count bytes creates a synthetic <code>Response</code> with <code>response.url === &quot;&quot;</code>, which silently disables V8 code caching and buffers extra copies in JS memory.</p>
+<p><b>Fix:</b> Replaced the <code>TransformStream</code> progress wrapper in <code>web/boot.js</code> with a direct <code>fetchWithRetry(url)</code> passed straight into <code>WebAssembly.instantiateStreaming(r, imports)</code>:</p>
+<pre><code class="lang-js">// Reusable pattern: preserve V8 WASM code cache on repeat visits
+const res = await fetchWithRetry(wasmUrl);
+const { instance } = await WebAssembly.instantiateStreaming(res, imports);</code></pre>
+<p><b>Measured A/B (desktop headless Chrome, <code>/?mute=1&amp;go=1</code>):</b></p>
+<div class="tbl-wrap"><table><thead><tr><th>Metric</th><th>Before (<code>TransformStream</code>)</th><th>After (Direct <code>instantiateStreaming</code>)</th><th>Delta</th></tr></thead><tbody><tr><td>JS memory at <code>run</code> (<code>atRunMem</code>)</td><td>58.08 MiB</td><td>13.22 MiB</td><td><b>-77.2%</b></td></tr><tr><td>Warm boot to <code>d3d9 first Present</code></td><td>715.59 ms</td><td>674.46 ms</td><td><b>-5.7%</b></td></tr></tbody></table></div>
+<h3 id="2-gating-the-20-mb-3d-preview-curtain-off-mobile">2. Gating the 20 MB 3D Preview Curtain Off Mobile &amp; Low-Tier (<code>web/index.html</code>)</h3>
+<p>On desktop, <code>launcher_b</code> mounts a PlayCanvas 3D street scene (<code>~19 MiB</code> of GLB/textures + WebGL context) as a visual curtain during <code>fast=1</code> boots. On coarse-pointer or low-tier devices (<code>RN_COARSE || RN_LOW_TIER</code>), that curtain competed directly with the 448 MB WASM module and asset streaming.</p>
+<p><b>Fix:</b> Gated the <code>&lt;iframe&gt;</code> mount behind <code>RN_Q.get(&#x27;fast&#x27;) === &#x27;1&#x27; &amp;&amp; !RN_COARSE &amp;&amp; !RN_LOW_TIER</code>. Desktop keeps the full 3D curtain untouched (<code>rnAbMs: 498 ms</code>, 0 JS errors).</p>
+<p><b>Measured A/B (mobile Chrome headless <code>844x390 dpr 2</code>, 4x CPU throttle, 5 Mbps / 100 ms RTT, <code>/?mute=1&amp;fast=1&amp;go=1</code>):</b></p>
+<div class="tbl-wrap"><table><thead><tr><th>Metric</th><th>Before (3D Curtain Active)</th><th>After (Gated on Mobile)</th><th>Delta</th></tr></thead><tbody><tr><td><code>launcher_b</code> transfer</td><td>19.02 MiB</td><td>0 B</td><td><b>-100%</b></td></tr><tr><td>Curtain block time (<code>RN_AB_MS</code>)</td><td>1500 ms</td><td>0 ms</td><td><b>-100%</b></td></tr><tr><td><code>d3d9 first Present</code></td><td>107.08 s</td><td>76.62 s</td><td><b>-30.46 s (-28.4%)</b></td></tr><tr><td><code>atRunMem</code></td><td>70.32 MiB</td><td>15.59 MiB</td><td><b>-77.8%</b></td></tr><tr><td>CDP <code>JSHeapUsedSize</code></td><td>22.29 MiB</td><td>4.62 MiB</td><td><b>-79.3%</b></td></tr></tbody></table></div>
+<h3 id="3-immutable-caching-on-versioned-assets-zero-upl">3. Immutable Caching on Versioned Assets &amp; Zero-Upload R2 Metadata Migration (<code>tools/upload_r2.sh</code>, <code>tools/r2_set_immutable.py</code>)</h3>
+<p>Previously, <code>*.js</code> and <code>/out/speed*.wasm</code> were uploaded with <code>no-cache</code>, forcing conditional <code>304</code> revalidation round-trips on every visit even though every URL already carries a content hash (<code>?v=RN_V</code>). Meanwhile, 419 static <code>game/*</code> files (1.32 GB) sat in <code>r2:nfsu</code> without <code>immutable</code>.</p>
+<ul><li><b><code>tools/upload_r2.sh</code></b>: Kept <code>no-cache</code> strictly on HTML/JSON/manifest entry points, and switched hashed <code>/*.js</code>, <code>/out/speed*.js</code>, and Brotli <code>-q 11</code> <code>/out/speed*.wasm</code> to <code>Cache-Control: public, max-age=31536000, immutable</code>.</li><li><b><code>tools/r2_set_immutable.py</code></b>: Wrote a zero-dependency Python stdlib AWS SigV4 script that lists <code>r2:nfsu/game/</code> and issues S3 <code>CopyObject</code> onto the same key with <code>x-amz-metadata-directive: REPLACE</code> and <code>Cache-Control: public, max-age=31536000, immutable</code>.</li><li><b>Production result</b>: <code>nfsu/game/: total=419 updated=419 skipped=0</code> in seconds with <b>0 bytes re-uploaded</b>.</li></ul>
+<h3 id="4-non-isolated-desktop-cta-anonymous-funnel-beac">4. Non-Isolated Desktop CTA &amp; Anonymous Funnel Beacon (<code>web/app.js</code>, <code>tools/crash/worker.js</code>)</h3>
+<p><code>SharedArrayBuffer</code> requires <code>Cross-Origin-Opener-Policy: same-origin</code> and <code>Cross-Origin-Embedder-Policy: require-corp</code>. When users open a WebAssembly app inside an in-app browser, iframe, or proxy that strips COOP/COEP, auto-reloading causes an infinite loop.</p>
+<ul><li><b><code>web/app.js</code></b>: When <code>crossOriginIsolated === false</code> on desktop, renders a clean direct-open + copy-link CTA instead of looping.</li><li><b><code>tools/crash/worker.js</code> + <code>tools/crash/read_funnel.sh</code></b>: Extended the Cloudflare Worker on <code>/crash</code> to accept a compact, allowlisted <code>rn-funnel-1</code> JSON event (&lt;=1024 B, zero PII) written to a disjoint <code>funnel/YYYY-MM-DD/</code> R2 prefix so crash logs stay clean while conversion (<code>run</code> vs <code>stop</code>) and <code>load_ms</code> p50/p90 are measurable by OS and tier.</li></ul>
+<p class="repo"><b>Files in repo:</b> <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/boot.js" rel="noopener"><code>web/boot.js</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/index.html" rel="noopener"><code>web/index.html</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/web/app.js" rel="noopener"><code>web/app.js</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/upload_r2.sh" rel="noopener"><code>tools/upload_r2.sh</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/r2_set_immutable.py" rel="noopener"><code>tools/r2_set_immutable.py</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/crash/worker.js" rel="noopener"><code>tools/crash/worker.js</code></a> · <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/crash/read_funnel.sh" rel="noopener"><code>tools/crash/read_funnel.sh</code></a></p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

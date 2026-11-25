@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Default music volume in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Answer: the nine Options &gt; Audio sliders are nine floats in the per-player options block. A constructor,">
+<link rel="canonical" href="https://nfsu.cc/re/re_audio_default.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/re_audio_default.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Default music volume in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Answer: the nine Options &gt; Audio sliders are nine floats in the per-player options block. A constructor,">
+<meta property="og:url" content="https://nfsu.cc/re/re_audio_default.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Default music volume in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Answer: the nine Options &gt; Audio sliders are nine floats in the per-player options block. A constructor,">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Default music volume in Speed.exe", "description": "Answer: the nine Options > Audio sliders are nine floats in the per-player options block. A constructor,", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/re_audio_default.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Default music volume in Speed.exe", "item": "https://nfsu.cc/re/re_audio_default.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Audio &amp; Soundtrack</p>
+<article>
+<h1>Default music volume in Speed.exe</h1>
+<div class="badges">
+  <span class="badge">Audio &amp; Soundtrack</span>
+  <span class="badge accent">57 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
+  <a href="re_audio_default.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re_audio_default.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Answer: the nine Options &gt; Audio sliders are nine floats in the per-player options block. A constructor, <code>0x4aa200</code>, sets all of them to 0.9. The music slider is the second one (<code>+0x3c</code>). One in-place patch at <code>0x4aa21e</code> sets it to 0.3. A saved profile overrides the default, so the patch alone does not change the OWNER&#x27;s profiles.</p>
+<p>Tools: &quot;objdump&quot; = <code>objdump -D -M intel pc/Speed.exe</code> (REA CLI was not needed; the Hopper export names are all <code>sub_&lt;hex&gt;</code> and its function bounds are wrong around 0x4cf000, so the disassembly is the authority here). &quot;Hopper&quot; = census/hopper/decomp.c. &quot;file&quot; = the OWNER&#x27;s save/*.opt read with Python. No game run was made.</p>
+<h2 id="1-where-the-default-is-set">1. Where the default is set</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Finding</th><th>Address</th><th>Tool</th></tr></thead><tbody><tr><td>Constructor of the options/profile block. Stores <code>0x3f666666</code> (0.9f) into nine floats at <code>this+0x38 .. this+0x58</code> (<code>mov [esi+0x38..0x58], eax</code>, code <code>0x4aa223..0x4aa23b</code>)</td><td><code>0x4aa200</code> (<code>mov eax,0x3f666666</code> at <code>0x4aa21e</code>)</td><td>objdump, Hopper (<code>sub_4aa200</code>, <code>ecx[0xe..0x16] = 0x3f666666</code>)</td></tr><tr><td>It runs once per player block: <code>0x4a9bc0</code> calls it with <code>ecx = esi+0x10</code> (block <code>0x7588c4</code>) and then builds a second one with the array constructor (count 2, stride <code>0xf944</code>, ctor <code>0x4aa200</code>, <code>0x4a9bef</code>)</td><td><code>0x4a9be0</code>, <code>0x4a9bea</code></td><td>objdump</td></tr><tr><td>Two other call sites make a block on the heap with the same defaults</td><td><code>0x4cae16</code>, <code>0x4ccbba</code></td><td>objdump</td></tr></tbody></table></div>
+<p>So the &quot;no profile&quot; boot and a new profile start at 0.9 for all nine, because both read the block <code>0x4aa200</code> filled. No other code writes these defaults (a search of <code>.text</code> for <code>0x3f666666</code> finds only this function plus unrelated uses).</p>
+<h2 id="2-what-the-nine-floats-are-and-which-is-music">2. What the nine floats are, and which is music</h2>
+<p>Block base <code>P = 0x7588c4</code> (player 0; player 1 at <code>P + 0xf944 = 0x768208</code>). The floats are <code>P+0x38 .. P+0x58</code>, that is <code>0x7588fc, 0x758900, 0x758904, 0x758908, 0x75890c, 0x758910, 0x758914, 0x758918, 0x75891c</code>. I call them <code>b0..b8</code>. The sound manager (<code>[0x7356a8]</code>) keeps a pointer to them at <code>[mgr+8]</code> (<code>0x51d059</code>: <code>mov [edi+8], 0x7588fc</code>, and <code>0x51ccf1</code>).</p>
+<ul><li>Scale and units: a float from 0.0 to 1.0. The slider has min 0.0, max 1.0 and step 0.1 (<code>0x3dcccccd</code>), built in</li></ul>
+<p>the Audio screen constructor at <code>0x4cedb7..0x4cef70</code> (nine <code>VolSlider_n_</code> / <code>VolSliderBase_n</code> pairs, each fed from <code>b[n-1]</code>). Tool: objdump.</p>
+<ul><li>The sound engine turns a category into a 0..32767 volume at <code>0x51cb70</code>: category 0 returns <code>b0 * 32767</code>;</li></ul>
+<p>categories 1 to 5 return <code>b[cat] * b0 * 32767</code> (<code>0x6cc8c8</code> = 32767.0). Callers (<code>0x5225d6</code>, <code>0x5230f4</code>, <code>0x5282ad</code>, <code>0x52a86b</code>, <code>0x52c5f9</code>) pass the category read from the sound profile (<code>profile+0x10</code>) and multiply by the profile&#x27;s own volume. So <code>b0</code> is the master and <code>b1..b5</code> are per-category volumes. Tool: objdump.</p>
+<ul><li>The category order matches the five labels in game/Languages/English.bin, in this order: Music Volume,</li></ul>
+<p>Ambient Volume, Engine Volume, Tire Volume, Speech and Movie Volume (strings 228 to 232). So <code>b1</code> (<code>0x758900</code>) = Music. <code>b0</code> (<code>0x7588fc</code>) = the Master volume that multiplies every other one (the string &quot;Master Volume&quot; also exists). Tool: objdump plus English.bin.</p>
+<ul><li>Supporting evidence for <code>b1</code> = music: the audio message handler <code>0x5a4cf0</code> computes</li></ul>
+<p><code>table[id] * b0 * b1</code> (<code>0x5a4d11</code>, <code>0x5a4d17</code>; table <code>0x6b5948</code> is 127 for ids 0 to 41) and for id 1 calls <code>0x520ae0</code>, which sets a fade target from <code>b1 * b0 * 32767</code> (<code>0x520b08..0x520b20</code>). Tool: objdump.</p>
+<ul><li>Effective music level = <code>b0 * b1</code>. At the shipped default that is 0.9 * 0.9 = 0.81.</li><li>NOT VERIFIED: the match of <code>b1</code> to the &quot;Music Volume&quot; label rests on the category order and on the code above. I</li></ul>
+<p>did not run the game, and I did not decode the Options FNG (it is compressed in game/FrontEnd) to read the slider labels. A cheap runtime check: set <code>[0x758900]</code> to 0.0 and see whether the music goes silent while engine and tires remain.</p>
+<ul><li>Out of the nine: <code>b6</code> (<code>0x758914</code>) is also multiplied by 32767 into <code>[0x6f871c]</code> (<code>0x51ccfd..0x51cd12</code>), likely</li></ul>
+<p>the speech/movie bus. <code>b7</code> and <code>b8</code> I did not trace (the strings &quot;Speed Volume&quot;, &quot;Collision Volume&quot; and &quot;Sound Effects Volume&quot; suggest them).</p>
+<h2 id="3-where-it-is-stored">3. Where it is stored</h2>
+<ul><li>Global: <code>0x758900</code> (player 0) and <code>0x768244</code> (player 1), floats. Live copy that the sound engine reads.</li><li>Profile save: <code>&lt;profile&gt;.opt</code> in the save folder (here save/a.opt, save/asas.opt). Layout: dword <code>0x13</code></li></ul>
+<p>(version), then 741 bytes (<code>0x2e5</code>) of the block, then an Adler-32 checksum. Writer <code>0x41e200</code> (serializer <code>0x4aaad0</code>, checksum <code>0x41dd10</code>); reader <code>0x41e330</code> (deserializer <code>0x4aac70</code>, call at <code>0x41e463</code> with <code>ebx = 0x7588c4</code>). In the file, the nine floats start at byte <code>0x3d</code>, so music is the float at byte <code>0x41</code>. Tool: objdump, Hopper, file.</p>
+<ul><li>Read from the OWNER&#x27;s current files (both a.opt and asas.opt, same content):</li></ul>
+<div class="tbl-wrap"><table><thead><tr><th>b0 master</th><th>b1 music</th><th>b2</th><th>b3</th><th>b4</th><th>b5..b8</th></tr></thead><tbody><tr><td>0.2</td><td>0.7</td><td>0.5</td><td>0.7</td><td>0.8</td><td>0.9</td></tr></tbody></table></div>
+<p>(a.opt changed at 15:57 today while I worked; it is not mine, so recheck before relying on the numbers.)</p>
+<h2 id="4-does-a-saved-profile-override-the-default">4. Does a saved profile override the default?</h2>
+<p>Yes. <code>0x41e330</code> reads the <code>.opt</code> over the block when the version is <code>0x13</code> and the checksum matches, so a loaded profile takes the values in its file. The default at <code>0x4aa200</code> only applies to a boot with no profile and to a new profile without a <code>.opt</code>. The OWNER&#x27;s two profiles already hold their own values (master 0.2, music 0.7), so the default patch alone changes nothing for them. Effective music for them today is 0.2 * 0.7 = 0.14, already below 25%.</p>
+<p>What would work for the OWNER&#x27;s profiles (pick one, none applied):</p>
+<ol><li>They lower or raise the Music slider once in Options &gt; Audio and leave the screen. The destructor of that</li></ol>
+<p>screen (<code>0x4cf110</code>) and the autosave <code>0x4c96f0</code> write the <code>.opt</code> (see host/input.c line 524: leaving Options without a change may not write it, so change one tick and back).</p>
+<ol><li>A patch after the load at <code>0x41e463</code> that overwrites <code>[0x758900]</code> with the target every time. This forces the</li></ol>
+<p>value and hides the OWNER&#x27;s slider, so I do not recommend it.</p>
+<ol><li>Bumping the version check (<code>0x13</code> at <code>0x41e2ae</code> and the compare in <code>0x41e330</code>) makes every old <code>.opt</code> fail and</li></ol>
+<p>fall back to defaults, but it resets every option (controls, display, camera), so no.</p>
+<h2 id="5-proposed-patch-for-tools-recomp-patches-py-not">5. Proposed patch (for tools/recomp/patches.py, nothing applied)</h2>
+<p>Goal: music slider default 0.3 (effective 0.9 * 0.3 = 0.27, about 25%) with the other eight left at 0.9. 0.3 sits on the 0.1 slider grid; 0.25 (<code>0x3e800000</code>, bytes <code>00 00 80 3e</code>) works too but sits between two ticks.</p>
+<p>One line, in place, 32 bytes at <code>0x4aa21e</code> (no cave):</p>
+<p>dict(addr=0x4aa21e, old=&quot;b86666663f89463889463c89464089464489464889464c894650894654894658&quot;, new=&quot;b86666663f8d7e38b909000000f3abc7463c9a99993e90909090909090909090&quot;, when=lambda: True)</p>
+<p>Decoded: <code>mov eax,0x3f666666 ; lea edi,[esi+0x38] ; mov ecx,9 ; rep stosd ; mov dword [esi+0x3c],0x3e99999a ; nop x10</code>. The nine stores become one <code>rep stosd</code>, then the music float is overwritten. Checks: after the block <code>ecx</code> is 0 again (the old code used <code>ecx = 0</code> from <code>0x4aa20d</code>, and <code>rep stosd</code> ends with <code>ecx = 0</code>); <code>edi</code> is not read until <code>mov edi,4</code> at <code>0x4aa25e</code>; <code>eax</code> is reloaded at <code>0x4aa23e</code>. Same length, so no later address moves. The <code>old=</code> value was read from pc/Speed.exe at that address; the <code>new=</code> bytes were encoded by hand and NOT run through difftest or the build. The lifter must be run on it (<code>RN_ONLY=4aa200</code> difftest) before it lands.</p>
+<p>Caveat on the effect: it changes only no-profile and new-profile boots. For the OWNER&#x27;s existing profiles, use option 1 above.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

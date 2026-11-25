@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>The in-race minimap: how Speed.exe draws it, and why it is blurry and pale in our port — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Answer first. The minimap is not geometry and not a render target. It is a baked 256x256 texture (TRACKn_MAP) drawn">
+<link rel="canonical" href="https://nfsu.cc/re/re_minimap.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/re_minimap.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="The in-race minimap: how Speed.exe draws it, and why it is blurry and pale in our port — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Answer first. The minimap is not geometry and not a render target. It is a baked 256x256 texture (TRACKn_MAP) drawn">
+<meta property="og:url" content="https://nfsu.cc/re/re_minimap.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The in-race minimap: how Speed.exe draws it, and why it is blurry and pale in our port — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Answer first. The minimap is not geometry and not a render target. It is a baked 256x256 texture (TRACKn_MAP) drawn">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "The in-race minimap: how Speed.exe draws it, and why it is blurry and pale in our port", "description": "Answer first. The minimap is not geometry and not a render target. It is a baked 256x256 texture (TRACKn_MAP) drawn", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/re_minimap.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "The in-race minimap: how Speed.exe draws it, and why it is blurry and pale in our port", "item": "https://nfsu.cc/re/re_minimap.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rendering &amp; Shaders</p>
+<article>
+<h1>The in-race minimap: how Speed.exe draws it, and why it is blurry and pale in our port</h1>
+<div class="badges">
+  <span class="badge">Rendering &amp; Shaders</span>
+  <span class="badge accent">38 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
+  <a href="re_minimap.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re_minimap.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Answer first. The minimap is not geometry and not a render target. It is a baked 256x256 texture (<code>TRACKn_MAP</code>) drawn each frame as one perspective-transformed, clipped quad, plus small rotated textured quads for the cars. Everything goes through the game&#x27;s 2D &quot;ePoly&quot; path (<code>DrawPrimitiveUP</code>, triangle fan). The pale look is in the exe (vertex alpha x 0.2). The blur is our scale: the default mode shows only 1/3 of the 256 texture over about 300 px of a 2560 back buffer.</p>
+<p>Tools: Hopper export (census/hopper/decomp.c), capstone on the exe image (.venv python), file inspection of game/, reading host/ and web/. NOT a runtime result unless marked. No game run was made for this note.</p>
+<h2 id="1-draw-functions-hopper-export-capstone">1. Draw functions (Hopper export, capstone)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Address</th><th>Role</th></tr></thead><tbody><tr><td>0x409cd0</td><td>Race HUD pass (called from 0x40a580). Z test and Z write off (RS 7, 14 = 0), FEng render (0x4f3030), then per player 0x58e810 when <code>[player+0x534]</code> has a map object.</td></tr><tr><td>0x58e540</td><td>Map object ctor. Looks up <code>TRACK%d_MAP</code> (hash, 0x5461c0, TPK list 0x740418). Textures from INGAMEB.BUN: CAR_MARKER -&gt; +0x7c, CAR_MARKERB -&gt; +0x80, TRACKMAPFRAME -&gt; +0x84, MAPBACK -&gt; +0x88, START_LINE -&gt; +0x94, BKGBMP -&gt; +0x98. Map picture -&gt; +0x78.</td></tr><tr><td>0x58e810</td><td>Per-frame draw. Copies mode (+0xc0 -&gt; +0xc4), then: 0x58efb0 (heading, only if the rotate flag), 0x58fa50 (MAPBACK), 0x58f090 (the map quad), 0x58f640 with START_LINE (mode != 0xb), then one 0x58f640 per car (CAR_MARKER for the player, others pick colour/texture from byte_7313d4/da/dd/e0/e9/ef; the chased car uses byte_7313e9), then 0x58fa50 for TRACKMAPFRAME.</td></tr><tr><td>0x58f090</td><td>Map quad. Four corners via 0x590b50 (rotation and zoom with D3DX 0x5ac69c/0x5abdaf) and 0x590dd0 (perspective, focal 200, per-corner brightness byte, default 0x80). Each corner&#x27;s vertex alpha byte is multiplied by the mode-row float at +0x34 (asm 0x58f4a2-0x58f512, ftol 0x674898). RGB is scaled by 200/(d+200) per corner (0x58f517-0x58f614): the far edge fades. Calls 0x58fb10 with texture +0x78, flag 0xe.</td></tr><tr><td>0x58fb10</td><td>2D polygon clipper (Sutherland-Hodgman, up to 32 vertices) against the map rect; emits triangles through 0x40bef0.</td></tr><tr><td>0x58f640</td><td>Icon draw: the icon texture, rotated by heading, clipped by 0x58fb10.</td></tr><tr><td>0x58fa50</td><td>MAPBACK and TRACKMAPFRAME draw, only if row byte +0x39 != 0. That byte is 0 in every mode row, so these two are never drawn (inference from the table; NOT VERIFIED at runtime).</td></tr><tr><td>0x590ad0</td><td>World -&gt; map: u=(x-X0)/S, v=(Y0-y)/S (car x,y at car+0x60/+0x64).</td></tr><tr><td>0x40be70 / 0x40bef0</td><td>ePoly init (vertex colour default 0x80808080) / render: packs 4 vertices (stride 0x20), half-texel UV shift (0.5/w, 0.5/h), 0x40f3d0 sets texture and blend states (via 0x410650/0x410550), then <code>DrawPrimitiveUP</code> type 6 (fan), 2 primitives.</td></tr><tr><td>0x42e4f0</td><td>Sets the live mode (map object +0xc0). 1 player: from saved byte_78a3f6, validated against table dword_6f03d4 = {1, 3, 11, 5, 6}, default 1. 2 players: byte_78a3f7. Fallback 6.</td></tr><tr><td>0x4bf610</td><td>Options menu: cycles byte_78a3f6 / saved dword_7588ec through 1 &lt;-&gt; 3 &lt;-&gt; 6.</td></tr><tr><td>0x5912b0</td><td>Fills the mode table at 0x737850, stride 0x3c, 12 modes.</td></tr></tbody></table></div>
+<p>Correction to <code>re_trackmap</code>: &quot;mode 6 shows the whole picture&quot; is wrong. Row 6 is all zeros and means &quot;map off&quot;. The live mode comes from the saved option (1, 3, 11 or 5); the shots match 1 or 3.</p>
+<h2 id="2-data-source">2. Data source</h2>
+<ul><li>Picture: <code>TRACKn_MAP</code> in game/Tracks/TEX&lt;id&gt;TRACK.BIN, 256x256 A8R8G8B8 (raw BGRA), single level. For 1001 the pixels are at</li></ul>
+<p>file offset 0xaad00, 262144 bytes. The route is already painted light blue (~170,200,255); the city is dark teal (mean RGB 28,55,66); alpha mean 237 (transparent border). No road nodes are read at draw time.</p>
+<ul><li>Bounds per track: GLOBALB chunk 0x34201 rows, stride 0xFC: +0x6c id, +0x8c X0, +0x90 Y0, +0x94 S, +0x98 rotation,</li></ul>
+<p>+0x9a/+0x9c start/finish angles.</p>
+<ul><li>Icons and frame: INGAMEB.BUN (see ctor above).</li><li>Placement: the FEng element <code>track_map_placeholder</code> gives centre (+0x68/+0x6c) and half size (+0x70/+0x74); the mode row adds to it.</li></ul>
+<h2 id="3-exact-draw-path">3. Exact draw path</h2>
+<ol><li>Mode row (base 0x737850 + mode*0x3c). Fields that matter: +0x4 = 200 (focal); +0x10/+0x14 half-size additions (mode 1: 37/75; mode 3: 30/30);</li></ol>
+<p>+0x18/+0x1c fraction of the picture shown (mode 1: 0.564 x 0.284; mode 3: 0.33 x 0.33; modes 0, 5, 7-9, 11: whole); +0x28/+0x2c icon size (mode 3: 0.04/0.185; mode 1: 0.025/0.135); +0x30 rotate with heading, +0x31 follow player, +0x32 rotate icons (modes 1, 3, 10: all 1); <b>+0x34 alpha multiplier: 0.2 for modes 1-4, 7, 8, 10; 0.29 for 5 and 9; 1.0 for 0 and 11</b>; +0x38 draw flag (1 except mode 6); +0x39 frame flag (0 everywhere).</p>
+<ol><li>Map quad: 0x58f090 -&gt; corners with brightness fade -&gt; vertex alpha x row+0x34 -&gt; 0x58fb10 clip -&gt; 0x40bef0 per triangle -&gt; fan.</li><li>Cars: 0x58f640 per car; heading = car+0x3b4 minus row+0x98; in rotate modes the arrow angle is 180 deg + player heading - car heading.</li></ol>
+<p>Conditions on car+0x4d0 and car+0x8a9. Loop over <code>[0x7361f8]</code>.</p>
+<ol><li>State: no render target and no off-screen texture. Direct to the back buffer, after FXAA, bloom and psblur, so none of those touch it.</li></ol>
+<p>Sampler defaults from device init: MIN/MAG linear, MIP point, address clamp. The texture has one level, so filtering is plain bilinear.</p>
+<ol><li>Size: the HUD is 640x480 virtual. Our PATCH 0x40bf09 (tools/recomp/patches.py:31-39) maps it to a centred 4:3 island:</li></ol>
+<p>at 2560x1116 about 2.325 px per virtual unit (island 1488 px). The map box measures about 295x307 px in the 2560 frame (about 115x120 in the 1000 px shots).</p>
+<p>NOT VERIFIED: which vertex and pixel shader the ePoly effect uses (0x71abb8 / <code>[0x73640c]</code>), the exact blend factors (render states 19/20 chosen in 0x410550), whether the pixel shader doubles alpha, and the placeholder half size in virtual units. It is not in game/fx/*.efx (decrypted, no 2D shader there). One run with RN_VS=1 or RN_TRACE settles it.</p>
+<h2 id="4-why-it-is-blurry-and-pale-in-our-port">4. Why it is blurry and pale in our port</h2>
+<p>Pale (faithful to the exe): vertex alpha 0x80 x 0.2 is about 25/255, so the dark teal ground is nearly invisible and only the bright route shows. The original at 640x480 looks the same kind of faint. This is design, so it stays in RN_MAP=0.</p>
+<p>Blurry (our scale, two causes):</p>
+<ol><li>Magnification. Mode 1/3 shows 1/3 (or 0.56 x 0.28) of a 256 texture. That is about 85 texels stretched over ~300 px: ~3.5x,</li></ol>
+<p>against ~1.5x in the original at 640x480. Bilinear on a 256 texture at 3.5x is soft.</p>
+<ol><li>The texture has one level, so <code>host/d3d9.c:2008</code> writes <code>t[T_MIP] = 0</code> (<code>tx-&gt;levels &gt; 1 ? dev.ss[k][7] : 0</code>) and</li></ol>
+<p><code>web/gpu.js:590</code> sets <code>lodMaxClamp = 0</code>. The ANISO bridge at <code>web/gpu.js:593</code> needs a non-zero T_MIP, so it never applies. No sharper filter exists for single-level HUD textures.</p>
+<p>The remaster pack already replaces the map for track 1001: key 029832a82daf9507 (FNV-1a 64 of the 262144 pixel bytes, computed in <code>host/d3d9.c:1299-1307</code>, GPU_TEXKEY) is in web/remaster/index_world_v2.tsv and index_world_bc.tsv -&gt; world2/029832a82daf9507.webp, 1024x1024 RGBA (4x UltraSharpV2). <code>web/gpu.js:106-188</code> (HD_MAX 1024, useHd/loadHd) binds it. So for 1001 the picture is already 1024; the blur that remains there is from the 0.2 alpha plus the HUD being drawn at 2560 with bilinear and no sharpening of the quad itself (and the pack image has no visible white border). Other tracks: NOT VERIFIED whether they have a pack hit. The HUD edge bridge (<code>host/d3d9.c:2506-2560</code>) only shifts the whole quad in X, it does not scale or filter it.</p>
+<h2 id="5-variants-switch-rn-map-0-original">5. Variants (switch RN_MAP, 0 = original)</h2>
+<p>Common hook: <code>host/d3d9.c</code> DrawPrimitiveUP / draw_cmd already knows the bound texture. Tag a draw as &quot;minimap&quot; when its texture key is a <code>TRACKn_MAP</code> (the pack key family) or an INGAMEB marker; pass one flag in the draw command (reuse an unused t[] slot next to T_MIP at line 2008). <code>web/gpu.js</code> reads RN_MAP once (RN_Q style, like <code>sharp</code>/<code>hdmax</code>).</p>
+<ul><li>RN_MAP=0: original. Nothing changes.</li><li>RN_MAP=1, sharp at full resolution: keep shape and alpha 0.2. For tagged draws force <code>T_MIP</code> to 2 and use the HD texture with a full</li></ul>
+<p>mip chain (loadHd already builds it), Catmull-Rom or bicubic sampling in the map fragment (small WGSL variant in <code>web/gpu.js</code> near the HUD note ~1107), or CAS only on the map rectangle. Lowest risk; fixes the soft look.</p>
+<ul><li>RN_MAP=2, 1 + soft glow on route and border: extra pass for tagged draws: draw the quad a second time slightly blurred (3x3</li></ul>
+<p>taps in the shader) with additive blend, lower alpha (~0.1), tinted light blue. Border: reuse the quad&#x27;s transparent edge so it glows without a new texture. Hook: a second draw in <code>host/d3d9.c</code> DrawPrimitiveUP at the tag, or a shader branch in <code>web/gpu.js</code>.</p>
+<ul><li>RN_MAP=3, 2 + clearer car arrows: the CAR_MARKER/CAR_MARKERB draws (0x58f640) are small, 0.025-0.04 wide. Tag them, draw with the</li></ul>
+<p>same sharp sampler, add a 1 px dark outline (4 offset taps in the shader) and raise their alpha toward 1.0 (they also receive the 0.2 multiplier only if routed through the map&#x27;s alpha path; NOT VERIFIED). Their pack keys are unknown (NOT VERIFIED); if no pack texture exists, the outline shader carries the improvement.</p>
+<ul><li>Optional (variants 1-3 only): raise the 0.2 multiplier. It is a float in the mode rows at 0x737884 + mode*0x3c (mode 1 = 0x7378c0,</li></ul>
+<p>mode 3 = 0x737938). Put it behind RN_MAP in the patch table (tools/recomp/patches.py), one line with why. The exe&#x27;s own value stays for RN_MAP=0.</p>
+<h2 id="6-next-check-one-run-bounded">6. Next check (one run, bounded)</h2>
+<p>RN_VS=1 / RN_TRACE on a race frame to read the ePoly shader and blend factors; RN_TEXHASH to confirm the map and marker keys and the in-race mode (1 vs 3). Then A/B the four values in one strip.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

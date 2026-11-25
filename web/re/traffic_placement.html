@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Free Run traffic placement — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Question: Free Run asked for 18 traffic cars, the race had 9 (1003) and 13 (1010). Where do they go?">
+<link rel="canonical" href="https://nfsu.cc/re/traffic_placement.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/traffic_placement.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Free Run traffic placement — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Question: Free Run asked for 18 traffic cars, the race had 9 (1003) and 13 (1010). Where do they go?">
+<meta property="og:url" content="https://nfsu.cc/re/traffic_placement.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free Run traffic placement — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Question: Free Run asked for 18 traffic cars, the race had 9 (1003) and 13 (1010). Where do they go?">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Free Run traffic placement", "description": "Question: Free Run asked for 18 traffic cars, the race had 9 (1003) and 13 (1010). Where do they go?", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/traffic_placement.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Free Run traffic placement", "item": "https://nfsu.cc/re/traffic_placement.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Traffic Simulation</p>
+<article>
+<h1>Free Run traffic placement</h1>
+<div class="badges">
+  <span class="badge">Traffic Simulation</span>
+  <span class="badge accent">13 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
+  <a href="traffic_placement.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/traffic_placement.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Question: Free Run asked for 18 traffic cars, the race had 9 (1003) and 13 (1010). Where do they go?</p>
+<h2 id="measured-native-rn-freelog-host-free-c-free-plac">Measured (native, RN_FREELOG, host/free.c free_place = 0x598bf0 step by step, PATCH 0x422b36)</h2>
+<ul><li>1003: the track table asks for 6 (i8 [0x441fe0() + side + sel * 2 + 0xc0]), x1.5 = 9, and 9 of 9 are placed. No loss;</li></ul>
+<p>the &quot;18&quot; only holds for tracks with count 12 (1001 and the WORLD&#x27;s 1010).</p>
+<ul><li>1001 / 1010: 18 asked, 13 to 14 placed (the first two by the grid slot 0x598c80, the rest by the last resort 0x598fb0).</li></ul>
+<p>In Free Run 0x421a50 is false (route 0x5991a0 never runs). With 26 asked: 1001 14, 1010 13, 1003 26.</p>
+<ul><li>The cars are not lost after placement (race list count = placed count), and AddTrafficCars registers all it is asked.</li></ul>
+<h2 id="why-the-last-resort-fails-replay-of-its-checks-3">Why the last resort fails (replay of its checks, 3000 tries per lost car, 1010)</h2>
+<p>The pool is <code>this+0xc</code> = 520 road nodes (the base track&#x27;s network; the merged TRACKB keeps only that one). Of 3000 random nodes: 2000 fail 0x4420a0 (node flag +0x84 bit 25), ~900 fail 0x59aa60, about 4 pass. 0x59aa60 (spacing test) fails on two rules, both from the track table [[0x736174] + side * 4 + ...]:</p>
+<ul><li>+0xcc = 500 m: no car within 500 m of the player while he stands still (var_1; 0x432c90 speed &lt;= 0);</li><li>+0xd4 = 31 m to every car already in the race list (0x59b1e0).</li></ul>
+<p>Pool saturation, not a lifter or placer bug: more tries cannot help beyond ~14 cars at 500 m / 31 m. Capacity by clear zone (26 asked, 1010, one run each): 500 m 13, 300 m 16, 200 m 18, 100 m 20, 0 m 23; zone 0 with 20 m spacing 26.</p>
+<h2 id="fix-host-free-c-free-place-only-while-free-mode-">Fix (host/free.c free_place, only while free mode is live; RN_FREE=0 = as shipped)</h2>
+<ul><li>Clear zone 100 m (FREE_ZONE, RN_FREEZONE) for the placement; the table value is put back after each call.</li><li>Last resort repeated up to 4 times (400 tries): the pool is near saturation, 100 tries lose about 1 in 10 cars.</li><li>Count: FREE_TRAFFIC 13 (RN_FREETRAFFIC) written to the track table byte for the AddTrafficCars call and put back: x1.5 = 19.</li></ul>
+<p>Result (native, 5 runs: 1003, 1001, 1010 x3 seeds): 19 asked, 19 placed in every run. 21 asked: 1 lost in 4 runs; 22: 0 of 2. 19 is the safe default; the rides cap (64 entrants since PATCH 0x4322e0, <code>cmp [race+0x12c], 0x40</code>, was 30) is not the limit, the network is. More density needs a bigger traffic network (OPENWORLD E) or a shorter spacing (+0xd4, 20 m gave 26 with zone 0).</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

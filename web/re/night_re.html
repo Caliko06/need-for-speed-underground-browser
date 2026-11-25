@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Night lighting in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Sources: Ghidra headless (tools/ghidra/gpar.sh on build/ghidra/proj), Hopper batches build/hopper/{hlproj,carlight,worldflare}.txt,">
+<link rel="canonical" href="https://nfsu.cc/re/night_re.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/night_re.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Night lighting in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Sources: Ghidra headless (tools/ghidra/gpar.sh on build/ghidra/proj), Hopper batches build/hopper/{hlproj,carlight,worldflare}.txt,">
+<meta property="og:url" content="https://nfsu.cc/re/night_re.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Night lighting in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Sources: Ghidra headless (tools/ghidra/gpar.sh on build/ghidra/proj), Hopper batches build/hopper/{hlproj,carlight,worldflare}.txt,">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Night lighting in Speed.exe", "description": "Sources: Ghidra headless (tools/ghidra/gpar.sh on build/ghidra/proj), Hopper batches build/hopper/{hlproj,carlight,worldflare}.txt,", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/night_re.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Night lighting in Speed.exe", "item": "https://nfsu.cc/re/night_re.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rendering &amp; Shaders</p>
+<article>
+<h1>Night lighting in Speed.exe</h1>
+<div class="badges">
+  <span class="badge">Rendering &amp; Shaders</span>
+  <span class="badge accent">78 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
+  <a href="night_re.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/night_re.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Sources: Ghidra headless (tools/ghidra/gpar.sh on build/ghidra/proj), Hopper batches build/hopper/{hlproj,carlight,worldflare}.txt, game/fx/*.efx (XOR 0xAA text HLSL). Checked at runtime with RN_WATCH/RN_POKE (native and Chrome).</p>
+<h2 id="graphics-options-table-0x700ef0-name-flag-12-byt">Graphics options (table 0x700ef0: name, flag, 12 bytes each)</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Option</th><th>Flag</th><th>Read by</th><th>Note</th></tr></thead><tbody><tr><td>HEADLIGHTS</td><td>0x700e80</td><td>0x408f00 (adds view 7), 0x40c910 (material remap), 0x409580</td><td>projected headlight</td></tr><tr><td>CARLIGHTING</td><td>0x700e84</td><td>nobody</td><td>dead option</td></tr><tr><td>ROADREFLECTION</td><td>0x700e90</td><td>0x40c910, 0x408f00</td><td>picks the *reflect techniques</td></tr><tr><td>MOTIONBLUR</td><td>0x700e98</td><td>0x409580, 0x40b3f0, 0x40cb80</td><td></td></tr><tr><td>LIGHTSTREAKS</td><td>0x700e9c</td><td>0x409580, 0x40b3f0, 0x40cb80</td><td>flare buffer 0x71abb0 (PATCH 0x409bdb)</td></tr><tr><td>LIGHTGLOW</td><td>0x700ea0</td><td>0x409580, 0x570c70 (racers), 0x570d00 (traffic)</td><td>car light flares</td></tr><tr><td>DEPTHOFFIELD</td><td>0x700eac</td><td>nobody</td><td>dead option</td></tr></tbody></table></div>
+<p>Presets: 0x410a00 scores the machine (0x41eff0, score 0x701088; &lt; 0.3 / 0.6 / 0.9 = preset 0 / 1 / 2) and 0x410ce0 clamps each flag to the cap table 0x701040. Preset 1 sets HEADLIGHTS, MOTIONBLUR, LIGHTSTREAKS = 0. At real clock our CPU scores 0.92 (preset 3, all on). RN_TURBO=4 lowers the score: turbo runs have no headlight.</p>
+<h2 id="projected-headlight-one-the-player-s">Projected headlight (one, the player&#x27;s)</h2>
+<ul><li>0x408410 turns view 7 (0x740760, flag 0x740768) on in a race with the player view. 0x408f00 adds it when HEADLIGHTS.</li><li>0x40c910: with flag 0x200 and HEADLIGHTS, world materials remap world -&gt; worldheadlight (0x706818) or</li></ul>
+<p>worldreflect -&gt; worldheadlightreflect (0x706798).</p>
+<ul><li>Effects 0x7014e0 + 0x80*i (world, worldheadlight, worldreflect, worldheadlightreflect, worldbone, car, filter);</li></ul>
+<p>per-effect setup callbacks 0x702420 + 4*i (0x40e740 worldheadlight, 0x40e900 worldheadlightreflect).</p>
+<ul><li>Parameter names 0x701860 + 0x40*k; the effect object keeps handle k at dword 7+k.</li><li>Per draw 0x4100a0: HeadlightWVP (handle 0xe) from the view-7 matrix, HeadlightClipMat (0x2e), HeadlightColor</li></ul>
+<p>(0x1c) = (0.8, 0.8, 0.9, 0) from 0x7010ac..0x7010b4 (constant, never written).</p>
+<ul><li>HeadlightTex = texture &quot;HEADLIGHTS&quot; (cone shape). HeadlightClipTex 0x71abb4 = 64x1 built by 0x40e560: u = w*0.005+0.5,</li></ul>
+<p>texels 0..32 = 0, 33..47 = 255, 48..63 = 239..0: light from ~3 m, full to ~50 m, gone at ~100 m.</p>
+<ul><li>Shader: out = (headlight <em> clip </em> HeadlightColor + vertex colour) <em> diffuse </em> 2.</li><li>Chrome draws it: A/B at 51.5 s on 1001 with RN_POKE=700e80=1/0 (same frame) shows the lit road.</li></ul>
+<h2 id="car-light-flares-0x56d8d0-every-racer-and-up-to-">Car light flares (0x56d8d0, every racer and up to 99 traffic cars, gate LIGHTGLOW)</h2>
+<ul><li>Markers per model (list at car+0x500), by name hash (h = h*33 + c from -1): LEFT/RIGHT_HEADLIGHT 0x9db90133 /</li></ul>
+<p>0xd09091c6, LEFT/RIGHT/CENTRE_BRAKELIGHT 0x31a66786 / 0xbf700a79 / 0xa2a2fc7c.</p>
+<ul><li>Intensity: headlight 1.0 (0x6b5d9c); tail 0.7 (0x6b5da0), 0.85 (0x6b5da4) for car type 3; brake adds</li></ul>
+<p>16 * [car+0x1e4] when &gt; 0.05 (0x6b5dac, 0x6b5db0); everything clamps to 1.0, so a brake goes 0.7 -&gt; 1.0 only. Debug forces: 0x7345e4 (head +1), 0x7345e8 (tail +1). Broken lights (damage state 0xd/0xe) skip a group.</p>
+<ul><li>Each flare -&gt; 0x5447c0: fade by distance, mode 0/2 from 32000 to 40000, mode 1 3900 -&gt; 4000; type index +0xd picks</li></ul>
+<p>textures from 0x6f4150 (2 per type); then 0x5443f0 draws the quad.</p>
+<h2 id="track-lamps-0x544f30-from-0x409580-0x409b70">Track lamps (0x544f30 from 0x409580 / 0x409b70)</h2>
+<p>Per visible track section (0x446fd0) a list of flare records, each to 0x544e90 / 0x5447c0 as above.</p>
+<h2 id="speed-blur-0x40cd40-from-0x409580">Speed blur (0x40cd40, from 0x409580)</h2>
+<p>Speed = |v| of [0x740500]+0x1e0. t = clamp((speed - [0x702a38]) / ([0x702a3c] - [0x702a38])) + 1.1*[0x73641c], capped by [0x702a40]; [0x73641c] ramps toward [0x73654c] (nitrous) by 0x702a48 / 0x702a4c per frame. The previous frame (0x71ab9c, 0x71aba0) is drawn back zoomed toward the centre (offset x [0x702a44] streak) with that alpha: a zoom feedback blur. web/tune.js presets write 0x702a38..0x702a44.</p>
+<h2 id="bridge-host-lights-c-block-7-parts-1-2-rn-lights">Bridge host/lights.c (Block 7 parts 1-2, RN_LIGHTS=0 = shipped; F4 Original sets it)</h2>
+<p>REA (Ghidra 12.1.4, Speed.exe sha256 c0fad450...) checked each target before the patch: 0x6b5da0 has one reader (0x56d9d7, ev_7cff0ca1), 0x7010ac one (0x4102ad in 0x4100a0, ev_0ee4a966), the cave 0x43a7e4 no reference and is CC padding after the jump table at 0x43a7d8 (ev_6a127f7b, ev_a6bf0c32).</p>
+<ul><li>Tail base 0.7 -&gt; 0.35: a brake (16 * [car+0x1e4]) still clamps to 1.0, so braking now doubles the flare.</li><li>Dropped (OWNER 2026-10-27, &quot;too bright, the game feels slow&quot;): HeadlightColor (1.0, 0.94, 0.82) and PATCH 0x40e6b5</li></ul>
+<p>(full light to ~73 m). The player&#x27;s headlight is the 2003 one again; 60 fps were steady in that session (p50 16.7 ms), so the slowness was the look: a long bright beam shows the road far ahead instead of pulling it out of the dark. Chrome: RN_WATCH=6b5da0 reads 0.7 with RN_LIGHTS=0 and 0.35 by default.</p>
+<h2 id="part-3-projected-headlights-for-rivals-and-traff">Part 3: projected headlights for rivals and traffic (bridge host/lights.c + host/sm1.c SM1_HL_*, web only)</h2>
+<p>REA (Ghidra 12.1.4) + runtime (RN_LIGHTSLOG, native and Chrome):</p>
+<ul><li>0x4100a0 (from 0x40ed50, EAX = 0x740760, ECX = the object World): HeadlightWVP = World x VP x S (ev_dfdc8ea9),</li></ul>
+<p>VP = [[0x740760]]+0x80, S = T(0.5, 0.5, 0) (0x6cc7dc = 0.5, ev_f9491a5a). The block [0x740760] (0x78b340 at run time): +0 View, +0x40 Proj (near 1, far 100, y flipped), +0x80 View x Proj. 0x40bc10 = rigid inverse T(-p) R^T (ev_575f101e).</p>
+<ul><li>View table 0x740460 + i * 0x60: +0 camera block, +8 enable, +0x40 camera object (0x40a7f0). Headlight view = entry 8</li></ul>
+<p>(0x740760, enable 0x740768, set by 0x408410 from HEADLIGHTS 0x7364a4; ev_cf65f4e9).</p>
+<ul><li>Measured: the projector sits 0.75 m above the player car&#x27;s position, z axis = car x axis tilted 5.7 deg down,</li></ul>
+<p>constant over a whole race. So VP_k = W_k^-1 W_p VP; the GPU takes tp_k = tp x M_k, M_k = (VP S)^-1 W_k^-1 W_p VP S.</p>
+<ul><li>Cars in a race: list [0x7361f8] (0x570d00, ev_1ea79100), head node, next at +0, [+0x4d4] model ([model] = the node),</li></ul>
+<p>matrix +0x90 rows 0..2 + position +0x50 (+0x4e0 / +0x520 when bit (1 &lt;&lt; view) of +0x530; always 0 seen). The racer list 0x73d6d8 (0x570c70) is empty in a race; it holds the front-end cars. ~17 cars: 4 racers + traffic.</p>
+<ul><li>Shaders (vs_1_1 / ps_1_1): worldheadlight vs 67da8f41 (oT1 = tp xyzw, oT2.x = w * c9.x + c9.w) / ps 91d5deec</li></ul>
+<p>(t1 x t2 x c0 + v0, x t0 x2); worldheadlightreflect vs 102e066d / ps 9bb3f7c7 (+ t3 reflection). Clip ramp 64x1 (0x40e560 CreateTexture 64, 1). t4..t7 are free: 4 more projectors from VS c16..c31.</p>
+<ul><li>First try summed the cones and burnt the grid white (4 cars aim at one road); lights now combine as a screen,</li></ul>
+<p>1 - (1 - Lp) prod(1 - g h_k), g = SM1_HL_GAIN 0.4, each ramp read at 1.5 x depth (SM1_HL_REACH). A/B in Chrome at the start of race 1001: rival cones on the road, no burn.</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

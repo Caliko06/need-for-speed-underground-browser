@@ -5,8 +5,16 @@
   <link href="https://nfsu.cc/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="https://nfsu.cc/devlog/index.html" rel="alternate" type="text/html"/>
   <id>https://nfsu.cc/feed.xml</id>
-  <updated>2026-11-24T18:00:00Z</updated>
+  <updated>2026-11-25T18:00:00Z</updated>
   <author><name>NFSU.cc</name></author>
+  <entry>
+    <title>Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers</title>
+    <link href="https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html" rel="alternate" type="text/html"/>
+    <link href="https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.md" rel="alternate" type="text/markdown"/>
+    <id>https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html</id>
+    <updated>2026-11-25T18:00:00Z</updated>
+    <summary>How removing a single TransformStream wrapper restored V8 WASM code caching (-77% JS heap), skipping a 20 MB 3D curtain cut 30.5 seconds off mobile boot, and S3 CopyObject made 419 R2 files immutable without re-uploading 1.32 GB.</summary>
+  </entry>
   <entry>
     <title>Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB</title>
     <link href="https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html" rel="alternate" type="text/html"/>

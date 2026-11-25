@@ -1,36 +1,38 @@
-# NFSU.cc — Need for Speed Underground (2003) Static Recompilation in WebAssembly
+# NFSU.cc — Reverse Engineering, Static Recompilation (x86 to WebAssembly) & Live Demo
 
-> Play the original 2003 PC version of Need for Speed Underground free in a browser tab at https://nfsu.cc/ — no download, no install, no emulator.
+> Open-source field guide to binary reverse engineering, ahead-of-time x86-to-C static recompilation, DirectX 9-to-WebGPU translation, and browser WebAssembly performance — proven live by running Need for Speed Underground (2003, PC `Speed.exe`) in a browser tab at https://nfsu.cc/ with no emulator.
 
-NFSU.cc is a static recompilation of the original 2003 Windows executable (`Speed.exe`, 3.18 MB, md5 `b6b9232c55376b3c38c56aac1f8a121d`, 13,764 x86 functions lifted to C and compiled to WebAssembly) with a custom browser host layer replacing Win32, DirectX 9 (WebGPU with automatic WebGL 2 fallback and native BC1/2/3 S3TC textures), DirectInput (keyboard, gamepad, touch), and DirectSound (Web Audio). Includes **Original 2003** and **Remaster** modes plus the full original soundtrack.
+Primary production evidence: `Speed.exe` (3.18 MB, md5 `b6b9232c55376b3c38c56aac1f8a121d`, `13,766` x86 functions lifted to C and compiled to WebAssembly), `15,035` LOC C host layer (Win32, DirectX 9 -> WebGPU/WebGL 2 with native BC1/2/3 textures, DirectInput, DirectSound -> Web Audio), `49` verified subsystem monographs (`2,858` unique hex addresses), `59` symbol census tables (`18,293` rows), and `15` modular binary patch sets (`753` addresses).
 
 - Full single-file technical compendium for LLMs: [https://nfsu.cc/llms-full.txt](https://nfsu.cc/llms-full.txt)
 - Atom RSS feed (engineering updates): [https://nfsu.cc/feed.xml](https://nfsu.cc/feed.xml)
 - Source code & architecture: [https://github.com/Caliko06/need-for-speed-underground-browser](https://github.com/Caliko06/need-for-speed-underground-browser)
 
-## Play & Entry Points
+## Global Reverse Engineering & Static Recompilation Hub (ELI5 + Technical, EN)
 
-- [Play Need for Speed Underground Online](https://nfsu.cc/): Main entry point (launcher on desktop, direct boot with touch controls on phones/tablets).
-- [Launcher & Settings](https://nfsu.cc/launcher.html): Quality presets, Original 2003 vs Remaster, key rebinding, local IndexedDB save backup/restore.
+- [Reverse Engineering & Static Recompilation Field Guide](https://nfsu.cc/reverse-engineering/index.html) ([Markdown](https://nfsu.cc/reverse-engineering/index.md)): ELI5 + Deep Dive playbooks for x86->C->WASM lifting, compiler passes, DirectX 9->WebGPU, V8 WASM caching, and evidence-first AI binary analysis.
+- [Binary Symbol Census & V/I/U Naming Methodology](https://nfsu.cc/reverse-engineering/symbols.html) ([Markdown](https://nfsu.cc/reverse-engineering/symbols.md)): 59 tables, 18,293 symbol rows (7,886 V-verified).
+- [Non-Destructive Modular Binary Patching](https://nfsu.cc/reverse-engineering/patches.html) ([Markdown](https://nfsu.cc/reverse-engineering/patches.md)): 15 topic modules covering 753 unique hex addresses.
 
-## Engineering Devlog (HTML + .md mirrors)
+## Engineering Devlog (Production Commits, A/B Benchmarks, HTML + .md mirrors)
 
 - [Engineering Devlog Index (EN)](https://nfsu.cc/devlog/index.html) · [Bitácora (ES)](https://nfsu.cc/devlog/es/index.html)
+- [Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers](https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html) ([Markdown](https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.md)) — 2026-11-25
 - [Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB](https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html) ([Markdown](https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.md)) — 2026-11-24
 - [Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87](https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html) ([Markdown](https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.md)) — 2026-11-23
 - [DirectX 9 to WebGPU & WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline](https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html) ([Markdown](https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.md)) — 2026-11-23
 - [One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds](https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html) ([Markdown](https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.md)) — 2026-11-22
 - [Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)](https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html) ([Markdown](https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.md)) — 2026-11-24
 
-## Reverse Engineering Atlas (44 Subsystems, 2754 Verified Speed.exe Addresses)
+## Reverse Engineering Atlas (49 Subsystems, 2,858 Verified Speed.exe Addresses)
 
 - [Reverse Engineering Atlas Index (EN)](https://nfsu.cc/re/index.html) · [Resumen (ES)](https://nfsu.cc/re/es/index.html)
 - Key starting notes: [physics](https://nfsu.cc/re/physics.md), [camera](https://nfsu.cc/re/camera.md), [rivals](https://nfsu.cc/re/rivals.md), [traffic](https://nfsu.cc/re/traffic.md), [track](https://nfsu.cc/re/track.md), [render](https://nfsu.cc/re/render.md), [sound](https://nfsu.cc/re/sound.md), [gameflow](https://nfsu.cc/re/gameflow.md), [assets](https://nfsu.cc/re/assets.md)
 
-## Player & Technical Guides (EN / ES)
+## Play & Player Guides
 
+- [Play Need for Speed Underground Online](https://nfsu.cc/): Main entry point (desktop launcher + mobile touch direct boot).
 - [All English Guides](https://nfsu.cc/blog/en/index.html) · [Todas las guías en Español](https://nfsu.cc/blog/es/index.html)
-- [How to Play Online](https://nfsu.cc/blog/en/play-need-for-speed-underground-online.html)
 - [Static Recompilation: x86 to WebAssembly](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html)
 - [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html)
 - [Reverse Engineering Tools: Ghidra, Hopper, REA](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html)

@@ -21,7 +21,7 @@
 <meta property="og:url" content="https://nfsu.cc/re/hosting.html">
 <meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
 <meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
-<meta property="article:modified_time" content="2026-11-24">
+<meta property="article:modified_time" content="2026-11-25">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Hosting: Cloudflare R2 behind nfsu.cc — NFS Underground (Speed.exe) Reverse Engineering">
 <meta name="twitter:description" content="Nothing below runs without the OWNER&#x27;s go for that upload.">
@@ -46,13 +46,20 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 .re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
 .re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
 .re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Hosting: Cloudflare R2 behind nfsu.cc", "description": "Nothing below runs without the OWNER's go for that upload.", "inLanguage": "en", "datePublished": "2026-11-24", "dateModified": "2026-11-24", "url": "https://nfsu.cc/re/hosting.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Hosting: Cloudflare R2 behind nfsu.cc", "item": "https://nfsu.cc/re/hosting.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Hosting: Cloudflare R2 behind nfsu.cc", "description": "Nothing below runs without the OWNER's go for that upload.", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/hosting.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Hosting: Cloudflare R2 behind nfsu.cc", "item": "https://nfsu.cc/re/hosting.html"}]}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-drive.webp)">
 <header class="top">
   <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
   <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
     <a href="/blog/en/index.html">Guides</a>
     <a href="/re/index.html">RE Atlas</a>
     <a href="/devlog/index.html">Devlog</a>
@@ -70,7 +77,7 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
   <span class="badge">Speed.exe (2003, x86)</span>
 </div>
 <div class="meta-bar">
-  <span>Updated <time datetime="2026-11-24">2026-11-24</time></span>
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
   <a href="hosting.md">View raw Markdown (.md)</a>
   <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/re/hosting.md" rel="noopener">Source on GitHub</a>
 </div>
@@ -83,6 +90,6 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 <div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
 </article>
 </main>
-<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
 </body>
 </html>

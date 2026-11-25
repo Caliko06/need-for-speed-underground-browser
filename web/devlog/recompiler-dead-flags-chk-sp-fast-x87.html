@@ -46,6 +46,12 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 .re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
 .re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
 .re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87", "description": "How we cut generated C/WebAssembly overhead across 13,764 lifted x86 functions from Speed.exe using liveness-based flag pruning, stack-pointer check coalescing, and differential testing.", "inLanguage": "en", "datePublished": "2026-11-23", "dateModified": "2026-11-23", "url": "https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "Static Recompilation, x86, WebAssembly, Compilers, Difftest"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87", "item": "https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html"}]}]}</script>
 </head>
@@ -53,6 +59,7 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 <header class="top">
   <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
   <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
     <a href="/blog/en/index.html">Guides</a>
     <a href="/re/index.html">RE Atlas</a>
     <a href="/devlog/index.html">Devlog</a>
@@ -86,6 +93,6 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 <div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
 </article>
 </main>
-<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
 </body>
 </html>

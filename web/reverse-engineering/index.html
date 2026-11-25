@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Reverse Engineering &amp; Static Recompilation Field Guide (x86 to WebAssembly) | NFSU.cc</title>
+<meta name="description" content="Open-source field guide to binary reverse engineering, ahead-of-time x86-to-C static recompilation, DirectX 9-to-WebGPU translation, V8 WASM optimization, and evidence-first AI binary analysis. Both plain-English (ELI5) and deep technical playbooks backed by 13,766 lifted functions and 2,858 verified binary addresses.">
+<link rel="canonical" href="https://nfsu.cc/reverse-engineering/index.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/reverse-engineering/index.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Reverse Engineering &amp; Static Recompilation Field Guide (x86 to WebAssembly)">
+<meta property="og:description" content="Open-source field guide to binary reverse engineering, ahead-of-time x86-to-C static recompilation, DirectX 9-to-WebGPU translation, V8 WASM optimization, and evidence-first AI binary analysis. Both plain-English (ELI5) and deep technical playbooks backed by 13,766 lifted functions and 2,858 verified binary addresses.">
+<meta property="og:url" content="https://nfsu.cc/reverse-engineering/index.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reverse Engineering &amp; Static Recompilation Field Guide (x86 to WebAssembly)">
+<meta name="twitter:description" content="Open-source field guide to binary reverse engineering, ahead-of-time x86-to-C static recompilation, DirectX 9-to-WebGPU translation, V8 WASM optimization, and evidence-first AI binary analysis. Both plain-English (ELI5) and deep technical playbooks backed by 13,766 lifted functions and 2,858 verified binary addresses.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Reverse Engineering & Static Recompilation Field Guide (x86 to WebAssembly)", "description": "Open-source field guide to binary reverse engineering, ahead-of-time x86-to-C static recompilation, DirectX 9-to-WebGPU translation, V8 WASM optimization, and evidence-first AI binary analysis. Both plain-English (ELI5) and deep technical playbooks backed by 13,766 lifted functions and 2,858 verified binary addresses.", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/reverse-engineering/index.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "reverse engineering, static recompilation, x86 to WebAssembly, DirectX 9 to WebGPU, V8 WASM code cache, binary analysis, Ghidra, Hopper, AI reverse engineering", "proficiencyLevel": "Beginner to Expert"}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is static recompilation vs emulation (ELI5)?", "acceptedAnswer": {"@type": "Answer", "text": "An emulator is like a live translator reading a foreign book aloud sentence by sentence while you listen, which burns CPU every frame. Static recompilation translates the entire 32-bit x86 executable into C source code once ahead of time, then compiles that C into native WebAssembly with Clang/LLVM so the browser runs it near native speed."}}, {"@type": "Question", "name": "How do you optimize lifted x86-to-C code for WebAssembly?", "acceptedAnswer": {"@type": "Answer", "text": "Three compiler passes eliminate most naive lifting overhead: (1) inter-procedural EFLAGS liveness analysis to prune dead flag calculations (cutting par/af/cf writes by 69-82%), (2) static image address bypass (CHK_IMG) plus straight-line stack-pointer bounds coalescing (CHK_SP, cutting checks by 37.8%), and (3) native IEEE-754 floating point (RN_FAST_X87) verified against strict x87 via single-function differential testing."}}, {"@type": "Question", "name": "Why does wrapping fetch() in a TransformStream break V8 WebAssembly code caching?", "acceptedAnswer": {"@type": "Answer", "text": "Chromium's V8 engine only caches compiled WebAssembly modules on disk when WebAssembly.instantiateStreaming() receives a genuine network Response with a cacheable URL. Wrapping response.body in a TransformStream or new Response() strips the URL identity, disables the code cache, and increases JS heap usage (+77% measured in production)."}}, {"@type": "Question", "name": "How do you prevent AI agents from hallucinating during reverse engineering?", "acceptedAnswer": {"@type": "Answer", "text": "Enforce an evidence-first contract: every claim about a binary must cite the exact virtual address and tool output (Ghidra, Hopper, or REA MCP) and carry a confidence tag: V (verified in instructions/bytes), I (inferred), or U (open/unproven). Memory, docs, and prior summaries are treated only as leads to re-check."}}, {"@type": "Question", "name": "How do you update Cache-Control headers on gigabytes of Cloudflare R2 / S3 files without re-uploading?", "acceptedAnswer": {"@type": "Answer", "text": "Use the S3 CopyObject API targeting the same bucket and key with x-amz-metadata-directive: REPLACE and the new Cache-Control header (e.g. public, max-age=31536000, immutable). R2 updates metadata server-side with zero upload bandwidth."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Reverse Engineering", "item": "https://nfsu.cc/reverse-engineering/index.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / Reverse Engineering Field Guide</p>
+<article>
+<h1>Reverse Engineering &amp; Static Recompilation Field Guide (x86 to WebAssembly)</h1>
+<p class="lead">Open-source field guide to binary reverse engineering, ahead-of-time x86-to-C static recompilation, DirectX 9-to-WebGPU translation, V8 WASM optimization, and evidence-first AI binary analysis. Both plain-English (ELI5) and deep technical playbooks backed by 13,766 lifted functions and 2,858 verified binary addresses.</p>
+<div class="stat-grid">
+  <div class="stat-card"><b>13,766</b><span>Lifted x86 functions</span></div>
+  <div class="stat-card"><b>49</b><span>Subsystem RE notes</span></div>
+  <div class="stat-card"><b>18,293</b><span>Symbol census rows</span></div>
+  <div class="stat-card"><b>753</b><span>Documented hex patches</span></div>
+  <div class="stat-card"><b>18,369</b><span>Host + recompiler LOC</span></div>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
+  <a href="index.md">View raw Markdown (.md)</a>
+  <a href="symbols.html">Symbol Census (59 tables)</a>
+  <a href="patches.html">Patch Modules (15)</a>
+  <a href="/re/index.html">RE Atlas (49 systems)</a>
+  <a href="/llms-full.txt">llms-full.txt</a>
+</div>
+<blockquote><p>Plain-English (ELI5) intuition + production-verified deep dives on binary reverse engineering, x86-to-WebAssembly static recompilation, DirectX 9-to-WebGPU translation, and AI-assisted binary analysis. Primary open-source evidence base: <code>https://github.com/Caliko06/need-for-speed-underground-browser</code> · Live WebAssembly demo: https://nfsu.cc/</p></blockquote>
+<h2 id="eli5-reverse-engineering-static-recompilation-in">ELI5: Reverse Engineering &amp; Static Recompilation in 60 Seconds</h2>
+<p>Think of a compiled 2003 Windows <code>.exe</code> file like a baked cake where the original recipe (the C/C++ source code) was lost:</p>
+<ul><li><b>Reverse engineering</b> is figuring out the recipe by inspecting the cake under a microscope (disassemblers and decompilers like Ghidra, Hopper, and automated MCP tools) and writing down what every function and memory address actually does.</li><li><b>Emulation</b> is building a virtual 2003 PC inside software and simulating every CPU cycle at runtime. It works, but it is heavy for a browser tab or a phone.</li><li><b>Static recompilation</b> is translating the old machine instructions (32-bit x86) into clean modern C code <b>once ahead of time</b>, then compiling that C into <b>WebAssembly (WASM)</b> using LLVM. Instead of pretending to be an old CPU, the browser executes modern compiled code directly while a small host layer translates Windows/DirectX calls to WebGPU, WebGL 2, and Web Audio.</li></ul>
+<h2 id="verified-production-proof-real-numbers-from-one-">Verified Production Proof (Real Numbers From One Shipped Binary)</h2>
+<p>Every technique in this field guide is proven in production on a real 3.18 MB 32-bit x86 Windows PE binary (<code>Speed.exe</code>, 2003, base <code>0x400000</code>, MD5 <code>b6b9232c55376b3c38c56aac1f8a121d</code>) running live at <a href="https://nfsu.cc/">https://nfsu.cc/</a>:</p>
+<div class="tbl-wrap"><table><thead><tr><th>Dimension</th><th>Measured Value</th><th>Where to Inspect</th></tr></thead><tbody><tr><td>Lifted x86 functions (<code>x86 -&gt; C -&gt; WASM</code>)</td><td><b>13,766</b></td><td><code>tools/recomp/lift.py</code> (<code>3,334</code> LOC across <code>23</code> Python files)</td></tr><tr><td>Custom Win32 / D3D9 / DInput / DSound host</td><td><b>15,035 LOC</b></td><td><code>host/</code> (<code>34</code> C/H files) + <code>web/</code></td></tr><tr><td>Verified binary subsystem monographs</td><td><b>49 notes</b> (<code>2,858</code> unique hex addrs)</td><td><a href="/re/index.html">Reverse Engineering Atlas</a></td></tr><tr><td>Evidence-tagged symbol census (<code>V/I/U</code>)</td><td><b>18,293 rows</b> (<code>7,886</code> <code>V</code>-verified across <code>59</code> tables)</td><td><a href="/reverse-engineering/symbols.html">Symbol Census Catalog</a></td></tr><tr><td>Non-destructive binary patch modules</td><td><b>15 modules</b> (<code>753</code> unique hex addrs)</td><td><a href="/reverse-engineering/patches.html">Modular Patching Guide</a></td></tr><tr><td>Compiled WASM footprint (Brotli <code>-q 11</code>)</td><td><b>7.04 MB</b> (<code>42.31 MB</code> raw, <code>-39.9%</code> after compiler passes)</td><td><a href="/devlog/recompiler-dead-flags-chk-sp-fast-x87.html">Recompiler Passes Devlog</a></td></tr><tr><td>Mobile WASM heap budget</td><td><b>448 MB</b> (<code>256 MB</code> guest RAM, down from <code>640 MB</code>)</td><td><a href="/devlog/production-crash-hardening-and-448mb-phone-wasm.html">OOM &amp; Mobile Heap Devlog</a></td></tr><tr><td>Cold boot to live 3D WebGPU frames</td><td><b>2.27 s</b> desktop (<code>-30.5 s</code> on mobile after curtain gate)</td><td><a href="/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html">V8 Cache &amp; Mobile Boot Devlog</a></td></tr></tbody></table></div>
+<h2 id="four-reusable-playbooks-for-engineers-ai-agents">Four Reusable Playbooks (For Engineers &amp; AI Agents)</h2>
+<h3 id="1-static-x86-to-c-recompilation-compiler-optimiz">1. Static x86-to-C Recompilation &amp; Compiler Optimization</h3>
+<ul><li><b>ELI5</b>: A naive translator writes down every tiny side effect of every x86 instruction (like carry flags and stack safety checks), even when nobody ever checks them. Smart compiler passes delete the useless work and bundle repetitive safety checks into one check per block.</li><li><b>Technical deep dive</b>:</li><li><b>Inter-procedural EFLAGS liveness (<code>FlagABI</code>)</b>: Computes live flag masks across basic blocks and direct calls, cutting <code>par(</code> by <code>-82.1%</code>, <code>af=</code> by <code>-80.7%</code>, and <code>c-&gt;cf=cf</code> by <code>-69.4%</code>.</li><li><b>Stack &amp; image bounds coalescing (<code>CHK_IMG</code>, <code>CHK_SP</code>)</b>: Static PE image reads skip dynamic bounds checks; straight-line <code>esp</code> deltas coalesce into one min/max check per block (<code>619,768 -&gt; 385,228</code> checks, <code>-37.8%</code>).</li><li><b>Differential testing (<code>difftest.py</code>)</b>: Every compiler optimization is checked per-function against native traces (<code>RN_STRICT_X87</code> vs <code>RN_FAST_X87</code>, <code>5,404/5,407</code> functions passing).</li><li><b>Read full write-up</b>: <a href="/devlog/recompiler-dead-flags-chk-sp-fast-x87.html">Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87</a> (<a href="/devlog/recompiler-dead-flags-chk-sp-fast-x87.md">Markdown</a>)</li></ul>
+<h3 id="2-translating-directx-9-to-webgpu-webgl-2">2. Translating DirectX 9 to WebGPU &amp; WebGL 2</h3>
+<ul><li><b>ELI5</b>: Old PC games send hundreds of small drawing orders every frame and store textures in compressed GPU blocks (DXT). If the browser decompresses those textures on the CPU or rebuilds GPU state on every draw call, it stutters. Keeping textures compressed and slicing one shared uniform buffer keeps frames under 1 millisecond on GPU.</li><li><b>Technical deep dive</b>:</li><li><b>Native BC1/2/3 (<code>S3TC</code>) passthrough</b>: Uploads raw DXT1/3/5 mip bytes directly to <code>bc1/2/3-rgba-unorm</code> on WebGPU (<code>texture-compression-bc</code>) and <code>WEBGL_compressed_texture_s3tc</code> on WebGL 2, saving <code>4x-8x</code> VRAM.</li><li><b>Zero-waste dynamic UBO &amp; <code>bindGroup</code> cache</b>: Compact <code>256 B</code> dynamic uniform buffer slicing cut per-frame uniform uploads from <code>~9.6 MB</code> to <code>1.32 MB</code> (<code>-86.2%</code>).</li><li><b>Production GPU fallbacks</b>: Software fallback when <code>unorm8x4-bgra</code> vertex formats are unsupported, plus guarded <code>tsBuf.unmap()</code> during device teardown.</li><li><b>Read full write-up</b>: <a href="/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html">DirectX 9 to WebGPU &amp; WebGL 2: Native BC1/2/3 &amp; Zero-Waste Draws</a> (<a href="/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.md">Markdown</a>)</li></ul>
+<h3 id="3-shipping-large-webassembly-apps-in-real-browse">3. Shipping Large WebAssembly Apps in Real Browsers &amp; Cloudflare R2</h3>
+<ul><li><b>ELI5</b>: Browsers have hidden fast paths (like saving compiled WebAssembly on disk so repeat visits are instant) and hidden traps (like phones running out of RAM if you load a 3D menu on top of a 448 MB app). Measuring real crashes and real A/B timings catches what local desktop tests hide.</li><li><b>Technical deep dive</b>:</li><li><b>V8 WASM code cache</b>: Pass raw <code>fetch()</code> straight to <code>WebAssembly.instantiateStreaming(r, imports)</code> with zero <code>TransformStream</code> wrapper (<code>-77.2%</code> JS memory at run).</li><li><b>50-minute browser OOM</b>: Freeing CPU-side shadow vertex/index buffers (<code>SmoothEnt</code>) immediately after GPU upload eliminated linear heap growth across long sessions.</li><li><b>Zero-upload R2 <code>immutable</code> migration</b>: S3 <code>CopyObject</code> with <code>MetadataDirective=REPLACE</code> updated <code>419/419</code> objects in-place (<code>Cache-Control: public, max-age=31536000, immutable</code>) without re-uploading <code>1.32 GB</code>.</li><li><b>Closed-loop frame-time quality control</b>: A 256-frame <code>Present()</code> ring buffer scales resolution and post-FX dynamically while keeping audio intact.</li><li><b>Read full write-ups</b>: <a href="/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html">V8 WASM Code Cache, Mobile Boot &amp; R2 Immutable</a> · <a href="/devlog/production-crash-hardening-and-448mb-phone-wasm.html">50-Minute OOM &amp; 448 MB Mobile WASM</a> · <a href="/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html">Adaptive Frame-Time Quality Control</a></li></ul>
+<h3 id="4-evidence-first-reverse-engineering-with-ai-age">4. Evidence-First Reverse Engineering With AI Agents</h3>
+<ul><li><b>ELI5</b>: AI coding agents are fast at reading assembly, but if you let them guess, they invent plausible-sounding nonsense. Giving them direct binary-reading tools and forcing every single sentence to cite a real hex address turns them into reliable reverse engineers.</li><li><b>Technical deep dive</b>:</li><li><b>Mandatory <code>V / I / U</code> evidence tags</b>: Every function name, struct offset, and state-machine transition is tagged <b>V</b> (verified in binary instructions/bytes via REA MCP, Ghidra, or Hopper), <b>I</b> (inferred), or <b>U</b> (open/unproven).</li><li><b>Modular non-destructive patching</b>: All <code>753</code> hex patches live in <code>15</code> topic modules (<code>tools/recomp/patches_*.py</code>), each citing its exact binary address and keeping the original behavior toggleable.</li><li><b>Machine-readable publication</b>: Every monograph, devlog, and guide ships as both semantic HTML and a clean <code>.md</code> sibling indexed in <a href="/llms.txt"><code>/llms.txt</code></a> and <a href="/llms-full.txt"><code>/llms-full.txt</code></a>.</li><li><b>Explore the primary evidence</b>: <a href="/reverse-engineering/symbols.html">Symbol Census (18,293 rows)</a> · <a href="/reverse-engineering/patches.html">Modular Binary Patching (753 addrs)</a> · <a href="/re/index.html">49-Subsystem Binary Atlas</a></li></ul>
+<h2 id="frequently-asked-questions-reverse-engineering-s">Frequently Asked Questions (Reverse Engineering &amp; Static Recompilation)</h2>
+<h3 id="what-is-static-recompilation-vs-emulation-eli5">What is static recompilation vs emulation (ELI5)?</h3>
+<p>An emulator is like a live translator reading a foreign book aloud sentence by sentence while you listen, which burns CPU every frame. Static recompilation translates the entire 32-bit x86 executable into C source code once ahead of time, then compiles that C into native WebAssembly with Clang/LLVM so the browser runs it near native speed.</p>
+<h3 id="how-do-you-optimize-lifted-x86-to-c-code-for-web">How do you optimize lifted x86-to-C code for WebAssembly?</h3>
+<p>Three compiler passes eliminate most naive lifting overhead: (1) inter-procedural EFLAGS liveness analysis to prune dead flag calculations (cutting par/af/cf writes by 69-82%), (2) static image address bypass (CHK_IMG) plus straight-line stack-pointer bounds coalescing (CHK_SP, cutting checks by 37.8%), and (3) native IEEE-754 floating point (RN_FAST_X87) verified against strict x87 via single-function differential testing.</p>
+<h3 id="why-does-wrapping-fetch-in-a-transformstream-bre">Why does wrapping fetch() in a TransformStream break V8 WebAssembly code caching?</h3>
+<p>Chromium&#x27;s V8 engine only caches compiled WebAssembly modules on disk when WebAssembly.instantiateStreaming() receives a genuine network Response with a cacheable URL. Wrapping response.body in a TransformStream or new Response() strips the URL identity, disables the code cache, and increases JS heap usage (+77% measured in production).</p>
+<h3 id="how-do-you-prevent-ai-agents-from-hallucinating-">How do you prevent AI agents from hallucinating during reverse engineering?</h3>
+<p>Enforce an evidence-first contract: every claim about a binary must cite the exact virtual address and tool output (Ghidra, Hopper, or REA MCP) and carry a confidence tag: V (verified in instructions/bytes), I (inferred), or U (open/unproven). Memory, docs, and prior summaries are treated only as leads to re-check.</p>
+<h3 id="how-do-you-update-cache-control-headers-on-gigab">How do you update Cache-Control headers on gigabytes of Cloudflare R2 / S3 files without re-uploading?</h3>
+<p>Use the S3 CopyObject API targeting the same bucket and key with x-amz-metadata-directive: REPLACE and the new Cache-Control header (e.g. public, max-age=31536000, immutable). R2 updates metadata server-side with zero upload bandwidth.</p>
+<div class="cta"><a href="/">Run the Live Statically Recompiled WebAssembly Demo</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

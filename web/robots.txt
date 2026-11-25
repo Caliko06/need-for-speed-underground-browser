@@ -20,6 +20,7 @@ User-agent: OAI-SearchBot
 User-agent: Google-Extended
 User-agent: Applebot-Extended
 Allow: /
+Allow: /reverse-engineering/
 Allow: /re/
 Allow: /devlog/
 Allow: /blog/

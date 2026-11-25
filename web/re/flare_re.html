@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Car light flare size (PC Speed.exe vs PS2 SLUS_208.11) — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<meta name="description" content="Marks: V = read in disassembly/decompile this session, I = inferred, U = open. PC: Ghidra headless (build/ghidra/proj). PS2: ref/tools/rea/out/corpus/c and ref/docs/re/flares.md.">
+<link rel="canonical" href="https://nfsu.cc/re/flare_re.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/flare_re.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Car light flare size (PC Speed.exe vs PS2 SLUS_208.11) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta property="og:description" content="Marks: V = read in disassembly/decompile this session, I = inferred, U = open. PC: Ghidra headless (build/ghidra/proj). PS2: ref/tools/rea/out/corpus/c and ref/docs/re/flares.md.">
+<meta property="og:url" content="https://nfsu.cc/re/flare_re.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Car light flare size (PC Speed.exe vs PS2 SLUS_208.11) — NFS Underground (Speed.exe) Reverse Engineering">
+<meta name="twitter:description" content="Marks: V = read in disassembly/decompile this session, I = inferred, U = open. PC: Ghidra headless (build/ghidra/proj). PS2: ref/tools/rea/out/corpus/c and ref/docs/re/flares.md.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Car light flare size (PC Speed.exe vs PS2 SLUS_208.11)", "description": "Marks: V = read in disassembly/decompile this session, I = inferred, U = open. PC: Ghidra headless (build/ghidra/proj). PS2: ref/tools/rea/out/corpus/c and ref/docs/re/flares.md.", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/flare_re.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Car light flare size (PC Speed.exe vs PS2 SLUS_208.11)", "item": "https://nfsu.cc/re/flare_re.html"}]}]}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">RE Atlas</a> / Rendering &amp; Shaders</p>
+<article>
+<h1>Car light flare size (PC Speed.exe vs PS2 SLUS_208.11)</h1>
+<div class="badges">
+  <span class="badge">Rendering &amp; Shaders</span>
+  <span class="badge accent">31 verified Speed.exe addresses</span>
+  <span class="badge">Speed.exe (2003, x86)</span>
+</div>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
+  <a href="flare_re.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/docs/flare_re.md" rel="noopener">Source on GitHub</a>
+</div>
+<p>Marks: V = read in disassembly/decompile this session, I = inferred, U = open. PC: Ghidra headless (build/ghidra/proj). PS2: ref/tools/rea/out/corpus/c and ref/docs/re/flares.md.</p>
+<h2 id="1-pc-formula">1. PC formula</h2>
+<p>Chain: 0x56d8d0 (car markers) or 0x544e90/0x544f30 (lamps) -&gt; 0x5447c0 -&gt; 0x5443f0 (quad). Per layer (V):</p>
+<ul><li>x = min(1, pow(facing, rec[0x28]) * intensity). facing = |dot| (flag bit 0) or max(dot, 0). Intensity 1.0 head, 0.7/0.35 tail.</li><li>alpha = rec[0] + (rec[4] - rec[0]) * x. Skip if alpha &lt;= 0, so a lamp facing away draws nothing.</li><li>k = clamp(z / [view+0xc], rec[0x30], rec[0x34]). z = view depth (I).</li><li>half-size in world = alpha <em> k </em> 1.5. The 1.5 (0x6b633c, one reader 0x5444a9) is skipped only when mode == 2.</li><li>Quad = centre +- right<em>half +- up</em>half (camera axes); centre pulled toward the camera by rec[0x2c]. Colour lerps rec[8..0x14] -&gt; rec[0x18..0x24] by x; alpha * fade; limit 255 (0x6f41a4).</li><li>Fade on squared distance (I) 32000..40000 (0x6b6350/54); lamps mode 1 3900..4000 (0x6b6360/64). Texture = 0x72fa14[rec[0x38]].</li><li>[view+0xc] (writer 0x40dd00 via 0x40dcb0) = ([0x701034] &gt;&gt; 1) / tan(fov/2). [0x701034] is the back buffer WIDTH (writer 0x4086b0). It is the horizontal focal in pixels: 756 at 1280 wide, I: 1512 at 2560.</li><li>Modes (V, call sites in 0x409580): view 0x7405e0 -&gt; 570d00(1)/570c70(1)/544f30(2) = mode 2 (I: the reflection view; PS2 mode 2 is views 4..5). Every other view (0x740580, the flare-buffer path 0x409b70 with 0x7404c0) passes 0 = mode 0 = the 1.5 applies.</li></ul>
+<p>Descriptors (table 0x6f4150, two per type, 0x3c bytes; V from the dump):</p>
+<div class="tbl-wrap"><table><thead><tr><th>addr</th><th>alpha lerp</th><th>colour end RGBA</th><th>exp</th><th>pull</th><th>k min..max</th><th>tex</th></tr></thead><tbody><tr><td>0x6f3ef8</td><td>0..64 (+0,+4)</td><td>100,120,170,80</td><td>1.45</td><td>0.8</td><td>0.01..0.015 (0x6f3f28/2c)</td><td>0</td></tr><tr><td>0x6f3f34</td><td>28..28</td><td>100,120,140,20</td><td>3.0</td><td>0.8</td><td>0.01..0.015</td><td>1</td></tr><tr><td>0x6f3f70</td><td>20..30</td><td>128,0,0,80 (red)</td><td>1.0</td><td>0.2</td><td>0.01..0.02</td><td>2</td></tr></tbody></table></div>
+<p>Types 0, 7, 8 draw rec0 + rec1; the rest as the PS2 table. I: the blue star is rec0. U: which type the car head markers carry (+0xd comes from the model file).</p>
+<h2 id="2-resolution-dependence-i-from-the-v-formula">2. Resolution dependence (I, from the V formula)</h2>
+<p>F = [view+0xc]. Screen half-size in px = alpha <em> k </em> 1.5 * F / z.</p>
+<ul><li>z/F between 0.01 and 0.015: k = z/F, size = alpha*1.5 = up to 96 px, fixed in PIXELS. It does not grow with resolution.</li><li>z &lt; 0.01<em>F: k = 0.01, size fixed in WORLD: 0.96 m half (1.9 m quad) at x = 1, px = 0.96</em>F/z. This zone widens with width: z &lt; 3.8 m at 640, 7.6 m at 1280, 15 m at 2560. Front-end and post-race cars (z about 4-8 m) are here.</li><li>z &gt; 0.015*F: world 1.44 m half.</li><li>As a share of WIDTH the star equals 640 when clamped and is smaller when not. As a share of HEIGHT it is about 1.7x the 4:3 value at 2560x1116 (0x40dd00 builds the vertical angle from fov*H/W; flare size uses the horizontal focal only), like the whole car.</li><li>So resolution does not make the star bigger than native relative to the car. It is big natively: a 1.9 m quad on a 4.4 m car when the lamp faces the camera.</li></ul>
+<h2 id="3-ps2-v-corpus-0x29ad30-0x29b198-0x101098-tables">3. PS2 (V: corpus 0x29ad30, 0x29b198, 0x101098; tables in ref/docs/re/flares.md)</h2>
+<ul><li>Same code and tables (0x4d99b0 = PC 0x6f3ef8, same numbers), same fade, same k clamp 0.01..0.015, same pow (bit trick, floor 0.01).</li><li>view+0xc (0x10a7f8 -&gt; 0x101098) = (target width at +0x1c &gt;&gt; 1) / tan(fov/2): same formula, width 512 (0x4ff424). Car lights 0x2cb598 -&gt; 0x29b198 modes 0/1/2; mode 2 only scales z by 10 (0x50329c).</li><li>DIFFERENCE (V): PS2 0x29ad30 has NO 1.5. size = lerp <em> k, so max half = 64</em>0.015 = 0.96 m; PC main view max = 1.44 m. PS2 star = 2/3 of PC at every distance.</li><li>PS2 draws flares into the half-res GLOW buffer (postfx-elf.md), 2x down and up: softer and blurrier than the PC sharp quad. Same star texture? U (PS2 slots 0,1 are hashes only).</li><li>PC mode 2 (reflection) skips the 1.5, so it already equals PS2.</li></ul>
+<h2 id="4-our-layer-read-only">4. Our layer (read only)</h2>
+<ul><li>Quads are the game&#x27;s own geometry; host/ adds no size. F follows the game&#x27;s back buffer width. U: that [0x701034] equals the real canvas width on every screen (check RN_WATCH=701034 in the front-end).</li><li>web/gpu.js bloom (l.322-391): quarter-res bright pass (luma &gt; 0.72), 9-tap blur (about +-16 full-res px), added at 0.2. ?bloom=lights: 0.55 / 0.35. A fixed pixel halo, not scaled with the star. I: adds little to a blue star (luma under 0.72), more in lights mode. U: not measured on screen.</li><li>host/lights.c changes intensity only (tail 0.7 -&gt; 0.35), not size.</li></ul>
+<h2 id="5-lever">5. Lever</h2>
+<p>Write float 1.0 (0x3f800000) at 0x6b633c (only reader 0x5444a9; patch it in the host like 0x6b5da0). Main-view stars shrink by 1/3 linear = PS2 size. If still large: lower rec0 alpha end 0x6f3efc (64.0) and rec1 0x6f3f38 (28.0) together; that is a taste choice, the PS2 values are the same 64/28. Leave k min/max (0x6f3f28/2c) alone: they set the zone limits above. NOT VERIFIED on screen (no build, no run, per brief).</p>
+<div class="cta"><a href="/">Play Need for Speed Underground in Browser</a></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04121a">
+<title>Non-Destructive Binary Patching Without Source Code (15 Modules, 753 Hex Addresses) | NFSU.cc</title>
+<meta name="description" content="How to organize 753 surgical binary patches across 15 topic modules in a statically recompiled x86 executable while keeping original behavior 100% toggleable.">
+<link rel="canonical" href="https://nfsu.cc/reverse-engineering/patches.html">
+<link rel="alternate" type="text/markdown" href="https://nfsu.cc/reverse-engineering/patches.md">
+<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Non-Destructive Binary Patching Without Source Code (15 Modules, 753 Hex Addresses)">
+<meta property="og:description" content="How to organize 753 surgical binary patches across 15 topic modules in a statically recompiled x86 executable while keeping original behavior 100% toggleable.">
+<meta property="og:url" content="https://nfsu.cc/reverse-engineering/patches.html">
+<meta property="og:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<meta property="og:image:alt" content="Need for Speed Underground (2003) running in a browser at nfsu.cc">
+<meta property="article:modified_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Non-Destructive Binary Patching Without Source Code (15 Modules, 753 Hex Addresses)">
+<meta name="twitter:description" content="How to organize 753 surgical binary patches across 15 topic modules in a statically recompiled x86 executable while keeping original behavior 100% toggleable.">
+<meta name="twitter:image" content="https://nfsu.cc/blog/img/olympic-city-world.webp">
+<link rel="stylesheet" href="/blog/blog.css">
+<style>
+.tbl-wrap{overflow-x:auto;margin:1rem 0;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+th{background:rgba(255,255,255,.05);font-weight:600;color:#fff}
+pre{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.86rem;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;background:rgba(245,158,11,.08);border-radius:0 6px 6px 0}
+.badges{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 1rem}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.badge.accent{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fde68a}
+.meta-bar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;font-size:.86rem;opacity:.85;margin:.5rem 0 1.2rem}
+.meta-bar a{color:#93c5fd}
+.re-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:.75rem;margin:.75rem 0 1.5rem}
+.re-card{display:block;padding:.85rem .95rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+.re-card:hover{border-color:rgba(245,158,11,.55);background:rgba(255,255,255,.07)}
+.re-card b{display:block;color:#fff;margin-bottom:.25rem;font-size:.98rem}
+.re-card span{display:block;font-size:.84rem;opacity:.8;line-height:1.35}
+.re-card small{display:inline-block;margin-top:.45rem;font-size:.74rem;color:#fcd34d;opacity:.9}
+.eli5-box{margin:1.1rem 0 1.4rem;padding:1rem 1.15rem;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)}
+.eli5-box h2,.eli5-box h3{margin-top:0;color:#7dd3fc}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.65rem;margin:1rem 0 1.4rem}
+.stat-card{padding:.75rem .85rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
+.stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Non-Destructive Binary Patching Without Source Code (15 Modules, 753 Hex Addresses)", "description": "How to organize 753 surgical binary patches across 15 topic modules in a statically recompiled x86 executable while keeping original behavior 100% toggleable.", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/reverse-engineering/patches.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}}</script>
+</head>
+<body style="--pic: url(/blog/img/olympic-city-drive.webp)">
+<header class="top">
+  <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
+  <nav aria-label="Primary">
+    <a href="/reverse-engineering/index.html">Reverse Engineering</a>
+    <a href="/blog/en/index.html">Guides</a>
+    <a href="/re/index.html">RE Atlas</a>
+    <a href="/devlog/index.html">Devlog</a>
+    <a href="/feed.xml">RSS</a>
+    <a class="play" href="/">Play</a>
+  </nav>
+</header>
+<main>
+<p class="crumbs"><a href="/">NFSU.cc</a> / <a href="index.html">Reverse Engineering</a> / Modular Binary Patching</p>
+<article>
+<h1>Non-Destructive Binary Patching Without Source Code (15 Modules, 753 Hex Addresses)</h1>
+<p class="lead">How to organize 753 surgical binary patches across 15 topic modules in a statically recompiled x86 executable while keeping original behavior 100% toggleable.</p>
+<div class="meta-bar">
+  <span>Updated <time datetime="2026-11-25">2026-11-25</time></span>
+  <a href="patches.md">View raw Markdown (.md)</a>
+  <a href="https://github.com/Caliko06/need-for-speed-underground-browser/tree/main/tools/recomp" rel="noopener">tools/recomp/ on GitHub</a>
+</div>
+<blockquote><p>Architectural pattern for patching a statically recompiled x86 binary cleanly, auditable line-by-line. Source: <code>tools/recomp/patches*.py</code> in <code>https://github.com/Caliko06/need-for-speed-underground-browser</code> · Hub: https://nfsu.cc/reverse-engineering/index.html</p></blockquote>
+<h2 id="eli5-how-do-you-fix-or-upgrade-a-program-without">ELI5: How Do You Fix or Upgrade a Program Without Its Source Code?</h2>
+<p>When you want to add widescreen support, fix a collision bug, or improve lighting in a 2003 executable, editing raw bytes with a hex editor quickly turns into an unmaintainable mess. Instead, we keep the original binary <b>read-only</b> and maintain small Python patch modules that say: <em>&quot;at exact address <code>0x004f5891</code>, replace these bytes for this exact reason.&quot;</em> Every patch is documented in one line and can be switched off at runtime so <b>Original 2003 mode</b> stays untouched.</p>
+<h2 id="technical-pattern-single-source-patch-registry">Technical Pattern: Single-Source Patch Registry</h2>
+<p>All <b>753 unique binary addresses</b> modified in <code>Speed.exe</code> (base <code>0x400000</code>) are registered through <code>tools/recomp/patches.py</code> in a deterministic import order and shared by three consumers simultaneously:</p>
+<ol><li><b>The static lifter (<code>tools/recomp/lift.py</code>)</b>: Lifts the patched instruction stream into C.</li><li><b>The differential tester (<code>tools/recomp/difftest.py</code>)</b>: Knows exactly which addresses intentionally diverge from stock behavior.</li><li><b>The runtime loader (<code>host/</code>)</b>: Keeps original vs remaster/enhanced behavior cleanly separated.</li></ol>
+<h2 id="all-15-modular-patch-sets">All 15 Modular Patch Sets</h2>
+<div class="tbl-wrap"><table><thead><tr><th>Module</th><th>Unique Hex Addrs</th><th>Purpose</th><th>Sample Addresses</th></tr></thead><tbody><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches.py" rel="noopener"><code>tools/recomp/patches.py</code></a></td><td>29</td><td>PATCH table (AGENTS.md contract 3): every change to Speed.exe code or data, in one place.</td><td><code>0x4086b0, 0x408760, 0x40877d, 0x40877e</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_audio.py" rel="noopener"><code>tools/recomp/patches_audio.py</code></a></td><td>11</td><td>Patches: engine audio. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x51c720, 0x524f30, 0x5251e0, 0x52536a</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_boot.py" rel="noopener"><code>tools/recomp/patches_boot.py</code></a></td><td>11</td><td>Patches: frame limiter during loads. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x447600, 0x448b11, 0x448d10, 0x4493a0</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_collision.py" rel="noopener"><code>tools/recomp/patches_collision.py</code></a></td><td>49</td><td>Patches: collision pools. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x43fe84, 0x4400c1, 0x4407b0, 0x4412b0</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_feel.py" rel="noopener"><code>tools/recomp/patches_feel.py</code></a></td><td>34</td><td>Patches: feel candidates and feel defaults. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x3e8000, 0x3e9999, 0x3f8000, 0x40cfb9</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_input.py" rel="noopener"><code>tools/recomp/patches_input.py</code></a></td><td>10</td><td>Patches: steering input. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x40664a, 0x4070a0, 0x460970, 0x4609e3</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_launcher.py" rel="noopener"><code>tools/recomp/patches_launcher.py</code></a></td><td>5</td><td>Patches: no intro movies, no splash, always (OWNER 2026-11-11). Split from patches.py; imported last in patches.py.</td><td><code>0x4de1e0, 0x4de395, 0x4de4a0, 0x735790</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_lights.py" rel="noopener"><code>tools/recomp/patches_lights.py</code></a></td><td>23</td><td>Patches: car lights, horn flash, neon. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x425350, 0x425582, 0x42580a, 0x425853</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_mode_menu.py" rel="noopener"><code>tools/recomp/patches_mode_menu.py</code></a></td><td>16</td><td>Seventh MU_Main_PC button; OWNER 2026-11-14 permits this sole menu addition in Original too.</td><td><code>0x4b309b, 0x4b33db, 0x4b33e0, 0x4b3769</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_race.py" rel="noopener"><code>tools/recomp/patches_race.py</code></a></td><td>159</td><td>Patches: rivals, Free Run, traffic. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x41dd10, 0x41e200, 0x41e330, 0x421170</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_render.py" rel="noopener"><code>tools/recomp/patches_render.py</code></a></td><td>100</td><td>Patches: widescreen, blur, car look, flares, road reflection. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x008296, 0x10a7f8, 0x1fbc9e, 0x1fffff</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_reset.py" rel="noopener"><code>tools/recomp/patches_reset.py</code></a></td><td>7</td><td>Patches: the player&#x27;s reset placement (GOAL 2026-11-05 Block 2). Split out of the collision file; imported last by patches.py.</td><td><code>0x4273d0, 0x427c50, 0x4314a0, 0x431724</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_road.py" rel="noopener"><code>tools/recomp/patches_road.py</code></a></td><td>235</td><td>Patches: the widened road graph. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x41f8a2, 0x432ea7, 0x432eac, 0x435de7</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_test.py" rel="noopener"><code>tools/recomp/patches_test.py</code></a></td><td>27</td><td>Patches: test-only seed and autopilot. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x123456, 0x40877e, 0x408814, 0x41f81d</code></td></tr><tr><td><a href="https://github.com/Caliko06/need-for-speed-underground-browser/blob/main/tools/recomp/patches_unlock.py" rel="noopener"><code>tools/recomp/patches_unlock.py</code></a></td><td>67</td><td>Patches: everything open (RN_UNLOCK). Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order.</td><td><code>0x41cf40, 0x4ab470, 0x4b9f40, 0x4bc170</code></td></tr></tbody></table></div>
+</article>
+</main>
+<footer><span>NFSU.cc: Need for Speed Underground (2003) statically recompiled to WebAssembly.</span><a href="/">Play</a><a href="/reverse-engineering/index.html">Reverse Engineering</a><a href="/re/index.html">RE Atlas</a><a href="/devlog/index.html">Devlog</a><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/feed.xml">RSS</a><a href="https://github.com/Caliko06/need-for-speed-underground-browser" rel="noopener">GitHub</a></footer>
+</body>
+</html>

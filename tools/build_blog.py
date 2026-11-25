@@ -351,6 +351,7 @@ def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=N
   <a class="logo" href="/"><img src="/launcher/v2/ui/logo.webp" alt="Need for Speed Underground" width="688" height="125"></a>
   <nav>
     <a href="index.html">{u['guides']}</a>
+    <a href="/reverse-engineering/index.html">{'Ingeniería Inversa' if lang == 'es' else 'Reverse Engineering'}</a>
     <a href="/re/{'es/' if lang == 'es' else ''}index.html">{'Atlas RE' if lang == 'es' else 'RE Atlas'}</a>
     <a href="/devlog/{'es/' if lang == 'es' else ''}index.html">{'Bitácora' if lang == 'es' else 'Devlog'}</a>
     <a href="../{other}/{names[other]}.html" hreflang="{other}" lang="{other}">{u['other']}</a>
@@ -484,6 +485,7 @@ User-agent: OAI-SearchBot
 User-agent: Google-Extended
 User-agent: Applebot-Extended
 Allow: /
+Allow: /reverse-engineering/
 Allow: /re/
 Allow: /devlog/
 Allow: /blog/
