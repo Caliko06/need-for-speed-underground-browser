@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#060b12">
+<title>RE-NFSU · Symphony of 906 Commits</title>
+<style>
+  :root {
+    --bg: #060b12;
+    --bg-elev: rgba(11, 18, 29, 0.78);
+    --bg-solid: #0a111c;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #e6edf7;
+    --text-dim: #8a9bb3;
+    --text-faint: #516178;
+    --recomp: #f59e0b;
+    --host: #fb7185;
+    --web: #38bdf8;
+    --re: #a78bfa;
+    --accent: #f59e0b;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+
+  .app {
+    display: grid;
+    grid-template-rows: 54px 1fr 136px;
+    width: 100%;
+    height: 100dvh;
+    background: var(--bg);
+  }
+
+  /* ── Top Header ─────────────────────────────────────────── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 18px;
+    background: rgba(7, 12, 20, 0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.75);
+    flex-shrink: 0;
+  }
+
+  .brand-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .harmony-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .harmony-pill strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .harmony-pill .chord {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .segmented {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+  }
+
+  .segmented button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease, transform 120ms ease;
+    white-space: nowrap;
+  }
+  .segmented button:hover { color: var(--text); }
+  .segmented button:active { transform: scale(0.97); }
+  .segmented button.active {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fde68a;
+    box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.35);
+  }
+
+  .btn-play {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.22), rgba(245, 158, 11, 0.10));
+    color: #fef3c7;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 120ms ease, border-color 150ms ease, background 150ms ease;
+  }
+  .btn-play:hover {
+    border-color: rgba(245, 158, 11, 0.8);
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.30), rgba(245, 158, 11, 0.15));
+  }
+  .btn-play:active { transform: scale(0.97); }
+
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: color 150ms ease, border-color 150ms ease, transform 120ms ease;
+  }
+  .btn-icon:hover { color: var(--text); border-color: var(--border-strong); }
+  .btn-icon:active { transform: scale(0.96); }
+
+  .timecode {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-dim);
+    min-width: 84px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Main Protagonist Stage ─────────────────────────────── */
+  .stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
+  }
+  .stage:active { cursor: grabbing; }
+
+  #scoreCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Intro Overlay (subtle, disappears on first play) */
+  .intro-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: radial-gradient(circle at 50% 45%, rgba(6, 11, 18, 0.32), rgba(6, 11, 18, 0.78));
+    pointer-events: auto;
+    transition: opacity 260ms ease, visibility 260ms ease;
+    z-index: 6;
+    padding: 24px;
+    text-align: center;
+  }
+  .intro-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .intro-kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .intro-title {
+    font-size: clamp(24px, 3.4vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #f8fafc;
+    max-width: 680px;
+    line-height: 1.12;
+  }
+  .intro-desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    max-width: 540px;
+    line-height: 1.55;
+  }
+  .intro-cta {
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(245, 158, 11, 0.65);
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.28), rgba(245, 158, 11, 0.14));
+    color: #fffbeb;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 32px rgba(245, 158, 11, 0.18);
+    transition: transform 140ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+  .intro-cta:hover {
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.38), rgba(245, 158, 11, 0.2));
+    box-shadow: 0 12px 38px rgba(245, 158, 11, 0.28);
+  }
+  .intro-cta:active { transform: scale(0.97); }
+
+  /* Floating Now-Playing Commit Card */
+  .commit-hud {
+    position: absolute;
+    left: 18px;
+    bottom: 16px;
+    max-width: min(560px, calc(100% - 36px));
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(14px);
+    pointer-events: none;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38);
+  }
+  .commit-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .sub-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .commit-hash { color: #f8fafc; font-weight: 600; }
+  .commit-churn-add { color: #4ade80; }
+  .commit-churn-del { color: #fb7185; }
+  .commit-ms {
+    color: #fde68a;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+  }
+  .commit-msg {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Hover Tooltip */
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 8;
+    padding: 8px 11px;
+    border-radius: 9px;
+    background: rgba(9, 15, 24, 0.94);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+    max-width: 340px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 110ms ease, transform 110ms ease;
+  }
+  .tooltip.show { opacity: 1; transform: translateY(0); }
+  .tooltip-top {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .tooltip-msg {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.35;
+  }
+
+  /* ── Bottom Hybrid Navigation Dock ──────────────────────── */
+  .dock {
+    display: grid;
+    grid-template-rows: 32px 1fr 30px;
+    background: var(--bg-solid);
+    border-top: 1px solid var(--border);
+    padding: 6px 16px 6px;
+    gap: 4px;
+    z-index: 10;
+  }
+
+  .acts-bar {
+    display: grid;
+    grid-template-columns: 12fr 28fr 16fr 12fr 12fr;
+    gap: 6px;
+  }
+
+  .act-btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--text-dim);
+    border-radius: 7px;
+    padding: 0 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 110ms ease;
+  }
+  .act-btn:hover { background: rgba(255, 255, 255, 0.06); color: var(--text); }
+  .act-btn:active { transform: scale(0.985); }
+  .act-btn.active {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.42);
+    color: #fef3c7;
+  }
+  .act-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .act-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    opacity: 0.72;
+    flex-shrink: 0;
+  }
+
+  .minimap-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    background: rgba(4, 8, 14, 0.85);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  #minimapCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dock-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .voices {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .voice-chip {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    cursor: pointer;
+    transition: opacity 150ms ease, border-color 150ms ease, transform 110ms ease;
+    white-space: nowrap;
+  }
+  .voice-chip:active { transform: scale(0.97); }
+  .voice-chip.muted {
+    opacity: 0.36;
+    text-decoration: line-through;
+  }
+
+  .shortcuts {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 860px) {
+    .brand-sub, .harmony-pill, .shortcuts, .timecode { display: none; }
+    .acts-bar { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+    .act-count { display: none; }
+    .act-btn { padding: 0 5px; justify-content: center; font-size: 10.5px; }
+    .topbar { padding: 0 10px; gap: 6px; }
+    .brand-title { font-size: 12.5px; }
+    .segmented button { padding: 4px 8px; font-size: 10.5px; }
+    .btn-play { padding: 0 10px; height: 28px; font-size: 11px; }
+    .btn-icon { width: 28px; height: 28px; }
+    .dock { padding: 6px 10px; }
+  }
+
+  @media (max-width: 540px) {
+    .brand-title { font-size: 11.5px; }
+    .btn-icon { display: none; }
+    .controls { gap: 6px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; }
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" id="brandDot"></span>
+      <span class="brand-title">RE-NFSU Symphony</span>
+      <span class="brand-sub">906 commits · 37 days · Speed.exe → WebAssembly</span>
+    </div>
+
+    <div class="harmony-pill" aria-live="polite">
+      <strong id="hudAct">ACT I · BOOT</strong>
+      <span>·</span>
+      <span class="chord" id="hudChord">Dm9</span>
+      <span>·</span>
+      <span id="hudProgress">1 / 906</span>
+    </div>
+
+    <div class="controls">
+      <div class="segmented" role="group" aria-label="Musical preset">
+        <button id="modeSynth" class="active" type="button">Synthwave</button>
+        <button id="modePiano" type="button">Piano</button>
+      </div>
+      <button id="btnPlay" class="btn-play" type="button" aria-label="Play or pause">
+        <svg id="iconPlay" width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M2.5 1.5l8 4.5-8 4.5z"/></svg>
+        <span id="playLabel">Play</span>
+      </button>
+      <button id="btnRestart" class="btn-icon" type="button" title="Restart (R)" aria-label="Restart">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a5 5 0 1 0 1.4-3.5L3 6"/><path d="M3 2.5V6h3.5"/></svg>
+      </button>
+      <span class="timecode" id="timecode">0:00 / 2:58</span>
+    </div>
+  </header>
+
+  <!-- Main Protagonist Canvas -->
+  <main class="stage" id="stage">
+    <canvas id="scoreCanvas"></canvas>
+
+    <div class="intro-overlay" id="introOverlay">
+      <div class="intro-kicker">2026-10-19 → 2026-11-25 · 906 Real Commits · 18 Milestones</div>
+      <h1 class="intro-title">Every reverse-engineered function, patch &amp; milestone as one melody.</h1>
+      <p class="intro-desc">
+        Five harmonic acts trace the journey from the first x86→WASM lifter slice to the 49-system RE Atlas on nfsu.cc.
+        Scrub anywhere on the score, inspect any commit, or switch between nocturnal synthwave and cinematic felt piano.
+      </p>
+      <button id="introPlayBtn" class="intro-cta" type="button">
+        <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor"><path d="M2.5 1.5l8 4.5-8 4.5z"/></svg>
+        Listen to the 906 Commits
+      </button>
+    </div>
+
+    <div class="commit-hud" id="commitHud">
+      <div class="commit-meta">
+        <span class="sub-dot" id="hudDot" style="background:var(--recomp)"></span>
+        <span class="commit-hash" id="hudHash">96befd1</span>
+        <span id="hudDate">2026-10-19</span>
+        <span id="hudSub">tools/recomp</span>
+        <span class="commit-churn-add" id="hudAdd">+0</span>
+        <span class="commit-churn-del" id="hudDel">-0</span>
+        <span class="commit-ms" id="hudMs" style="display:none"></span>
+      </div>
+      <div class="commit-msg" id="hudMsg">RE-NFSU start: contract, Speed.exe census, first lifter slice checked against Unicorn</div>
+    </div>
+
+    <div class="tooltip" id="tooltip">
+      <div class="tooltip-top" id="ttTop"></div>
+      <div class="tooltip-msg" id="ttMsg"></div>
+    </div>
+  </main>
+
+  <!-- Bottom Hybrid Navigation Dock -->
+  <footer class="dock">
+    <div class="acts-bar" id="actsBar">
+      <button class="act-btn active" data-act="0" type="button"><span class="act-name">I · Boot &amp; First Frame</span><span class="act-count">130</span></button>
+      <button class="act-btn" data-act="1" type="button"><span class="act-name">II · Deep RE &amp; Streets</span><span class="act-count">447</span></button>
+      <button class="act-btn" data-act="2" type="button"><span class="act-name">III · UG2 Detour</span><span class="act-count">178</span></button>
+      <button class="act-btn" data-act="3" type="button"><span class="act-name">IV · nfsu.cc Live</span><span class="act-count">96</span></button>
+      <button class="act-btn" data-act="4" type="button"><span class="act-name">V · 448 MB &amp; Atlas</span><span class="act-count">55</span></button>
+    </div>
+
+    <div class="minimap-wrap" id="minimapWrap" title="Click or drag to scrub through all 37 days">
+      <canvas id="minimapCanvas"></canvas>
+    </div>
+
+    <div class="dock-footer">
+      <div class="voices" id="voicesBar">
+        <button class="voice-chip" data-voice="0" type="button"><span class="sub-dot" style="background:var(--recomp)"></span>Recomp Lead</button>
+        <button class="voice-chip" data-voice="1" type="button"><span class="sub-dot" style="background:var(--host)"></span>Host Bass</button>
+        <button class="voice-chip" data-voice="2" type="button"><span class="sub-dot" style="background:var(--web)"></span>Web Arp</button>
+        <button class="voice-chip" data-voice="3" type="button"><span class="sub-dot" style="background:var(--re)"></span>RE / Atlas Pad</button>
+        <button class="voice-chip" data-voice="4" type="button"><span class="sub-dot" style="background:#cbd5e1"></span>Pulse</button>
+      </div>
+      <div class="shortcuts">Space Play · ←/→ Scrub · 1-5 Acts · M Preset</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// 1. REAL REPOSITORY DATASET (906 commits · 2026-10-19..11-25)
+// Format: [hash, MM-DD, act(0..4), sub(0=recomp,1=host,2=web,3=re), add, del, files, msg, milestoneLabel]
+// ═══════════════════════════════════════════════════════════════
+const RAW_COMMITS = [["96befd1","10-19",0,3,13540,0,8,"RE-NFSU start: contract, Speed.exe census, first lifter slice checked against Unicorn (1403 functions match)","RE-NFSU Start \u00b7 1,403 funcs match Unicorn"],["c0e440f","10-19",0,3,4898,724,20,"Speed.exe runs in Chrome from entry to Direct3DCreate9",""],["27d6786","10-19",0,3,28,0,1,"Brief for window 2: D3D9 -> WebGPU first frame",""],["4b3e305","10-19",0,1,2099,20,15,"D3D9 device and first frames, native and in Chrome (WebGPU)","D3D9 \u2192 WebGPU First Frame in Chrome"],["19fdddf","10-19",0,3,1859,353,15,"M1 gate: whole call trees match Unicorn; lifter and x87 fixes it found",""],["37401d4","10-19",0,3,0,0,0,"Merge window 2: D3D9 device and first frames; game files read on demand",""],["c07e67d","10-19",0,3,127,22,6,"Plan and lanes: PLAN.md, briefs for W1/W2/W3/C1, OWNER decisions in AGENTS.md",""],["1b16042","10-19",0,3,6,6,2,"W1 session 1: ignore worktree symlinks, count every failed compile",""],["6dd31a2","10-19",0,3,5834,0,2,"C1: imports_sites.py and imports_sites.tsv: 873 sites, 225 imports, 4780 unknown targets",""],["78a6db8","10-19",0,1,112,7,3,"Registry of a real install: game key values from the disc installer, Direct3D key, CPU MHz",""],["702e0d9","10-19",0,3,928,0,2,"C1: registry.py and registry.txt: 180 strings, 465 API sites, 99 mutations",""],["14d77cc","10-19",0,3,13066,0,2,"C1: game_files.py and game_files.json: 443 files, 425 strings, 480 references",""],["7e70caa","10-19",0,3,3362,0,2,"C1: d3d9_sm1.py and d3d9_sm1.json: 65 instruction entries, 11 source modifiers",""],["a0c5835","10-19",0,3,2275,0,2,"C1: d3d9_states.py and d3d9_states.json: 134 states, 137 enum entries, 1 unknown default",""],["4bbf322","10-19",0,3,0,0,0,"Merge C1 census tasks 1-5; C1 brief: tasks 6-8",""],["a425416","10-19",0,1,16,1,1,"BeginPaint/EndPaint stand-in (W2 owns painting): the game now runs its front end loop at 30 fps",""],["3a0f804","10-19",0,3,4,4,1,"W1 brief: lane prompts merge main first (briefs live on main)",""],["9caaf40","10-19",0,3,2770,0,2,"C1: d3d9_formats.py and d3d9_formats.json: 66 entries, 10 FOURCC, 5 DXT formats",""],["75ffc32","10-19",0,3,5672,0,2,"C1: dinput_keys.py and dinput_keys.json: 160 DIK names, 11 mouse offsets, 2 layouts",""],["c9a6ca3","10-19",0,3,1802,0,2,"C1: dsound_consts.py and dsound_consts.json: 67 constants, 4 layouts, 42 fields",""],["af18f48","10-19",0,1,403,18,10,"Input: browser keyboard and mouse to DirectInput 8 and window messages; fix the layer clock",""],["48b6a5e","10-19",0,0,51,9,1,"serve.py: save/ endpoints (GET, PUT, DELETE /save/..., /save-files.json), never game/",""],["9da4b8d","10-19",0,1,1676,81,8,"D3D9 draws: SM1 shaders to WGSL and an interpreter, textures, CPU and WebGPU renderers; WM_PAINT",""],["1ab5e6d","10-20",0,1,507,6,4,"dsound -> Web Audio: DirectSound device, buffers in guest memory, a mixer thread, an AudioWorklet","DirectSound \u2192 Web Audio"],["2af8549","10-20",0,3,0,0,0,"Merge C1 census tasks 6-8: d3d9_formats, dinput_keys, dsound_consts",""],["cb07811","10-20",0,3,0,0,0,"Merge W2 (w-d3d9): SM1 shaders to WGSL + interpreter, textures, CPU and WebGPU renderers, WM_PAINT",""],["9ee82de","10-20",0,3,0,0,0,"Merge W3 (w-win32): registry, input, dsound -> Web Audio, save endpoints, clock fix",""],["369d181","10-20",0,1,27,4,5,"Strict rules (OWNER 2026-10-20); RN_SECS bounds every native run",""],["6bb82d7","10-20",0,0,70,6,8,"PATCH table; boot movies skipped while MOVIES is missing; web heap 2 GB; stop shows target bytes",""],["7c33d57","10-20",0,3,5,0,1,"PLAN: OWNER decision, ABK code modules are lifted ahead of time (next W1 block)",""],["6f2ef25","10-20",0,0,227,27,11,"ABK code modules lifted ahead of time; Enter at the title no longer stops",""],["0fb1ea4","10-20",0,1,51,14,3,"Title -> USER PROFILE: SHGetFolderPathA and the save folder",""],["99a35fe","10-20",0,3,340,0,1,"Audit title ownership and retain REA evidence without guessing a fix",""],["98acf26","10-20",0,3,0,340,1,"Revert 99a35fe (docs audit): its title conclusion was refuted, keep the data census",""],["31b66e7","10-20",0,2,34,0,2,"Web session log: the page sends its log, key presses and JS/wasm errors to build/web.log",""],["75e8409","10-20",0,1,367,10,4,"File writes in the save folder: CreateDirectoryA, WriteFile, FindFirstFileA, file mappings and the rest",""],["f071e2f","10-20",0,1,1,1,1,"Fix web build: a lost escape in files.c EM_JS broke speed.js (Speed is not defined)",""],["772fe72","10-20",0,1,137,2,3,"Every Win32 API the game calls is in the layer (34 added; GetDateFormatA stopped the profile save)",""],["80b0320","10-20",0,3,26,134,5,"Docs for one player and one session: shorter plan, no lanes, no briefs",""],["c7e0a74","10-20",0,3,27,13,6,"Enter on USER PROFILE no longer stops: immediates at decoded code become functions",""],["009dba1","10-20",0,1,140,38,4,"Quick Race runs in Chrome: d3d9 Reset, 65,536 objects, SetFVF with shaders",""],["74de3ed","10-20",0,0,24,8,2,"Freeze the working method: How a block runs, the regression route, test logs apart",""],["beb8dd0","10-20",0,1,246,30,5,"Driving keys: dinput8 action maps as Wine does them, the game's key setup works",""],["5059a56","10-20",0,3,22,7,2,"Big screen: the canvas fills the window, log on F2; M8 split into gated steps",""],["189cdca","10-20",0,3,4,2,1,"M8.2 lead from REA: the game's resolution table at 0x408760",""],["9821566","10-20",0,1,41,12,8,"Widescreen step 1: the game draws at the window size (PATCH 0x40877e, RN_SCREEN, mode list)",""],["61be6c1","10-20",0,1,16,3,2,"RN_VP opt-in viewport log; M8.3 findings: 3D aspect uses H/W, the 2D layer is the stretched part",""],["0b55238","10-20",0,0,45,10,6,"Widescreen 2D: HUD and menus keep 4:3 (PATCH 0x40bf09 x8), front end at screen size (PATCH 0x408a24)",""],["f08d271","10-20",0,3,3,2,1,"M8.4 closed UNKNOWN: FEng has no anchor, every element is a 640x480 matrix from the centre (REA Ghidra+Hopper)",""],["a931551","10-20",0,3,0,0,0,"Item 2 gamma: NO-OP. Speed.exe never calls SetGammaRamp (REA/Ghidra: 50 [reg+0x54] sites, none on the device; ",""],["74640ac","10-20",0,2,38,10,3,"Audio: 4-point Hermite resampling, 64-frame fade at catch-up, resync counter in the page log",""],["3e8a01f","10-20",0,2,6,1,1,"Present 1:1: page asks even sizes and sizes the canvas to back buffer / dpr; screen: log line",""],["8d50923","10-20",0,3,0,0,0,"Item 5 MSAA: NO-OP. Speed.exe never calls CheckDeviceMultiSampleType (REA/Ghidra: 9 xrefs to IDirect3D9 [0x736",""],["2ab5258","10-20",0,0,10,5,2,"M8.5: route at 1920x1080 (CDP viewport, Reset 1920x1080 marker, present and page-error checks) PASS",""],["60b5007","10-20",0,3,17,7,3,"PATCH 0x735ec1: the game's own debug 'all unlocked' byte -> every track, part, paint, vinyl, rim and upgrade",""],["b88a794","10-20",0,0,127,3,6,"Remaster pack: upscaled car textures from ~/NFSU1-RE drawn in place of the originals (web)",""],["960942c","10-21",0,0,343,21,14,"Telemetry bridge: one row per frame + events -> build/telemetry.ndjson, tools/telemetry.py reads it",""],["a736457","10-21",0,0,8,1,2,"PATCH 0x4494c4: back to the front end after a race at the screen size, not 800x600",""],["81858b4","10-21",0,2,21,9,2,"Telemetry: no clock reads per API call (race slowdown suspect); on-screen note for F8 and for a server without",""],["c51da0b","10-21",0,2,72,2,1,"Telemetry: F9 live panel over the game (fps, frame time bars by cause, draws, textures, disk, GIL, audio, mark",""],["d4a2d4e","10-21",0,2,13,1,1,"Input: scale mouse motion from CSS pixels to canvas pixels, carry the fraction",""],["e7c866a","10-21",0,2,39,15,3,"Telemetry: F10 downloads the whole session as one .json (rows, events, page log); telemetry.py reads it",""],["ee6ea0f","10-21",0,1,123,12,6,"d3d9: cube render targets (the car reflection) in both backends",""],["1e52b13","10-21",0,1,7,4,2,"CPU: present a 3.2 GHz Pentium 4 (brand index 9), not a brand-less 1 GHz P6",""],["68c699f","10-21",0,1,34,28,1,"Threads: no clock read per API call when no thread waits; timer threads park and re-arm",""],["8e0e853","10-21",0,0,47,2,2,"webcheck: RN_PROFILE=start:secs writes a CPU profile of the page and every worker to build/profile.txt",""],["dea1e97","10-21",0,1,6,3,1,"d3d9: textures up to 4096 a side (screen-size render targets at desktop sizes past 2048)",""],["aad82f7","10-21",0,0,3,0,1,"webcheck: RN_VIEW=WxH@dpr runs the page at the OWNER's window size and pixel ratio",""],["463fdc3","10-21",0,3,1,0,1,"census: lift report lists PATCH 0x4494c4",""],["ba04b70","10-21",0,0,13,1,2,"PATCH 0x702a38 blur ramp (PS2 0.1-25 m/s), 0x702a84 car reflection cube 512",""],["0a4fac5","10-21",0,0,9,0,1,"PATCH 0x40d615/0x40d2a2: blur passes turn blending off (NOS black screen bug)",""],["8440eb0","10-21",0,3,2,0,1,"HANDOFF: 30 lines",""],["6c32686","10-21",0,0,5,0,2,"PATCH 0x702a40: blur cap 0.26 (composite weight 0.39, the PS2 copy alpha)",""],["985cb49","10-21",0,1,100,2,5,"Race bridge to NFSU1-RE: host/bridge.c reads the chosen race (track 0x78a2f0, career 0x735dc8, FEPlayerCarDB 0",""],["01ec76e","10-22",0,0,9,0,1,"Camera look of NFSU1-RE: projection keeps the PS2 vertical view, x widens with the window (PATCH 0x42f098)",""],["39f0bce","10-22",0,0,24,5,1,"Camera look of NFSU1-RE in the PC projection 0x40dd00: vertical view fixed, x follows the window (REA)",""],["5faa3d8","10-22",0,0,24,24,2,"Camera: horizontal view stops at 16:9 (96 deg), wider windows crop top and bottom; LOD patch 0x42f098 reverted",""],["42210e7","10-22",0,1,16,0,2,"Remaster bridges: 16x anisotropic trilinear samplers; FE sprites scissored to the 4:3 island",""],["5795580","10-22",0,2,24,11,1,"Remaster bridge: 4x MSAA on screen-sized targets (?msaa=0 off)",""],["cb4a3af","10-22",0,1,21,2,1,"HUD in a race moves to the window edges (left/right quads by centre); race latch from the game-flow label 0x77",""],["ad8f270","10-22",0,0,16,6,3,"Car quality: remaster pack covers the shared car pack and 32-bit textures (1073); PATCH 0x56e0d2 cars keep the",""],["e2d3d74","10-22",0,0,18,0,1,"Lights and car shine: PATCH 0x409bca/0x409bf6 light-streak decay /4 and weight 0.55 (still flare 2-3.4x -> 0.6",""],["dc0f728","10-22",0,2,5,3,1,"Lag: 4x MSAA bridge is opt-in (?msaa=4); it tripled GPU waits (headless race hitches 369 -> 153). ?aniso=1 swi",""],["d284d97","10-22",0,3,17,2,2,"Lag: remaster PNGs load at most 1024 per side (?hdmax=); 2048 car PNGs doubled GPU waits at 2560x1116 (p90 46 ",""],["2dfedf5","10-22",0,0,146,0,3,"Remaster block 1 (partial): decode all 1995 pack originals, 4090 upscale script, 60-texture sample run of 4 mo",""],["d66f971","10-22",0,0,33,0,1,"Remaster block 2: 1995 car textures on the 4090 (UltraSharp + BCGone deblock, soft fallback under 28 dB); scor",""],["ffa1856","10-22",0,3,131,0,2,"Car draw census at the D3D9 boundary: RN_DRAWS / RN_SKIPVS; the car body is vs 0x3b (proven), its SM1 shader a",""],["d980c84","10-22",0,1,60,6,3,"Car body shaded per pixel: the original SM1 pair (vs 0x4728b668 / ps 0xc27f3669) evaluated in the fragment sta",""],["fe987cf","10-23",0,1,344,8,4,"Car body PN smoothing at the D3D9 draw (BRIDGE): crease-aware PN triangles, content cache, vertex layout read ",""],["017b382","10-23",0,2,108,1,4,"FXAA 3.11 over the 3D scene (BRIDGE): GPU_FXAA sent at the first HUD quad of a race frame; ?fxaa=0 off, ?fxaa=","FXAA 3.11 & Car Body Smoothing"],["6601d4c","10-23",0,1,4,2,1,"Census: texture dimensions per car draw group; RN_RTLOG logs every CreateTexture with its caller (all textures",""],["fc3c166","10-23",0,0,75,0,2,"World texture census: 5945 textures / 3132 unique in STREAML1R*.BUN (DXT1/DXT3, max side 1024); decode_world.p",""],["d328ae3","10-23",0,0,48,4,3,"World texture pack (opt-in ?worldhd=1): fix world TPK data offset (0x80 alignment), pod upscale of 1559 textur",""],["61784f9","10-23",0,2,191,3,4,"HD car skins (BRIDGE): replay the DUMMY_SKIN composite 0x5a8a50 on the GPU at 2048",""],["fee03cb","10-23",0,1,127,30,4,"60 fps: run frames on submit, static vertex/index buffers on the GPU",""],["b646ec0","10-23",0,1,61,8,1,"60 fps: smoothed car meshes resident on the GPU, cheap cache key, RN_DRAWSTAT",""],["36f30dd","10-23",0,2,40,8,1,"Quality at 60 fps: MSAA 4x by default (?msaa=1 off), GPU frame time in the frame log",""],["a81cf25","10-23",0,0,4,3,2,"World pack: road textures back in (the reflection A/B was a false positive); texhash log carries the texture i",""],["0b94ff5","10-23",0,0,5,5,2,"Route PASS again: race marker = the race HUD at the window size",""],["08b6794","10-23",0,0,47,0,4,"tools/wine: the original Speed.exe under Wine on the pod as the 1:1 reference; first parity A/B (Olympic Squar",""],["98acd55","10-23",0,1,17,3,2,"Widescreen HUD bridge: not on the track loading screen; webcheck RN_AFTER_HUD",""],["32ba094","10-23",0,0,113,0,4,"Remaster from what the game uploads (RN_TEXDUMP, texdump.py); WebP exact; black 4:3 margins on 2D-only frames",""],["be3633c","10-23",0,0,9,5,2,"Remaster packs: RGB under alpha 0 kept (resize RGB and alpha apart); 2284 textures redone on the pod",""],["2839cc3","10-23",0,0,86,3,7,"Wine reference on the pod GPU (60 fps, VirtualGL EGL), A/B recording tools; held keys reach a keyboard acquire",""],["de81eef","10-23",0,2,76,1,4,"Blur bank: ?blur=0..5 and F6/F7 set the game's own motion blur constants (0x702a38-0x702a44), default medium (",""],["b6a9305","10-23",0,0,23,10,2,"Headless runs use build/save-headless (fresh copy of save/ per webcheck run): tests never change the OWNER's s",""],["66e5de9","10-23",0,0,279,15,13,"A/B vs the original: same seed both sides (PATCH 0x4470f0, mkexe --set parity), RNG watch, test autopilot (PAT",""],["908e055","10-24",0,0,75,32,5,"A/B: autopilot laps on both sides, per-window alignment and drift curve, aligned-only worst frames, RN_JOBS in",""],["fd8c594","10-24",0,0,134,4,5,"Mac only (no Pod): RN_JOBS in difftest, abmetrics on MPS, webcheck RN_NETLOG, macwin (Wine window tools, not s",""],["dd62853","10-24",0,1,14,2,1,"dsound: the last Release of IDirectSound releases its buffers (Speed.exe 0x653d50 frees the music stream only ",""],["5e0f351","10-24",0,1,39,4,4,"Mouse: an acquired exclusive foreground DirectInput mouse (Speed.exe 0x413050, level 5) hides the page cursor ",""],["b83be97","10-24",0,0,107,6,3,"60 fps block, measurement: tools/bench.py (autopilot race at the OWNER window, load times from game-flow label",""],["dfe8bdb","10-24",0,2,122,21,4,"60 fps block: full clears fold into the next pass (loadOp clear), MSAA/depth discard by frame look-ahead, grow",""],["bdf8a32","10-24",0,1,58,24,6,"Fast loads: PATCH 0x585b94 (OWNER) the frame limiter does not wait in load states (menu->race 7.57 -> 4.00 s, ",""],["52fe0f8","10-24",0,3,9,0,1,"AGENTS: Pod runs the Wine reference, REA Ghidra batches and parallel native runs (one run dir each); PLAN: M8.",""],["97665ba","10-24",0,3,390,15,12,"M8.6 matrix on Pod A: tools/completion.py (6 Quick Race rows reach race, 4 reach results), native test aids (R",""],["f23b8fd","10-24",0,0,279,31,9,"Pod WebGPU on the NVIDIA (RN_X11 webcheck, adapter log line); remaster step 1 normals+roughness (nr_gen.py, So",""],["8cd2dba","10-24",0,0,63,21,10,"FE no longer black: PATCH 0x4f5891 skips only a missing movie (na_boot.mad, PSA.mad; caves 0x43a001.., entry=T",""],["1ded08a","10-24",0,0,49,3,4,"FE/HUD/Global pack v2 in gpu.js (index_fe_v2.tsv: 1135 WebP from Pod B, pack 1310 -> 2262 textures); RN_WATCH ",""],["46811a6","10-24",0,0,308,42,11,"MMX in the lifter + CPUID MMX: the EA movie YUV path 0x647cb0 is MMX only (grey movie, title stuck); RN_GEODUM",""],["26033f7","10-24",0,3,775,150,7,"AO baked on Pod B for all 17 race rows (bake.py Cycles OptiX per-vertex, world + cars; geo2mesh world matrix f",""],["93fbdbd","10-24",0,3,11153,13,13,"Results screen: input works, RETURN reaches the post-race menu, DOWN does not move it (driving map on W/S/A/D,",""],["ee15910","10-24",0,0,40,0,3,"Lightmap GI: bake.py lightmap (smart_project UV, passes b/s/u to SIZE^2 float images, OPTIX) + tools/ao/lightm",""],["74a7237","10-24",0,3,2529,0,3,"Whole-game rows: tools/census/rows.py reads game/ (EventDesc 0x34A02, 116 career events; tracks 0x34201) -> ce",""],["b6d1397","10-24",0,0,47,4,5,"RN_KEYS pacing: a tap waits for the game's reads (next down after every event is read + 2 frames; up waits for",""],["ae78c7d","10-24",0,0,3,2,2,"Lightmap LM_THRESH (Cycles adaptive threshold: samples alone stop at 0.01); HANDOFF: DI verified right, lost-t",""],["5b0b922","10-24",0,0,72,4,5,"Menu input RE: pause menu works with pacing (w3_pause), post-race stall lead = replay object 0x7345d0; complet",""],["38511fb","10-24",0,3,511079,374,13,"Post-race menu RE: circuit row leaves to the front end (1/162, qr.circuit.1004)",""],["5c9ae4e","10-24",0,3,180,737,6,"Post-race screen signal: [0x735ed0]+0xc node .fng name (0x49e100 queue, 0x49dfd0 step) -> rn_screen, RN_KEYS @",""],["61934a0","10-24",0,3,473,598,10,"Honest metric: rows from the game's own tables, mode/event read from memory, RN_POKE removed",""],["6bdabda","10-25",1,0,29,5,5,"Hopper batch that runs: send.js targets one Hopper PID with HoppOpEx+EXPY; 4 topic dumps (modes, career, drag,",""],["3eb40e9","10-25",1,0,53,1,2,"Hopper in parallel, one click per instance: hpar.sh (exact /Applications bundle, new PID, one Apple event, doc",""],["da1e3c2","10-25",1,0,59,37,1,"hpar.sh: one click per window, topics queued in it (HOP_WIN windows, default 3; the next topic goes to the sam",""],["9ec50ca","10-25",1,0,51,0,1,"Hopper q_template.py: asked addresses only (pseudocode, callers with their function, callees) and each data re",""],["72b4129","10-25",1,3,4238,435,9,"Quick Race rows from the game's own screens: 0/167 honest -> 23/167",""],["eda81cc","10-25",1,3,1,0,1,"gitignore: runs (symlink to build/pod/runs, a build product)",""],["5f230a0","10-25",1,3,1091,164,14,"Chrome runs of completion rows (?keys= runs the anchored RN_KEYS in web): circuit 1004, lapko 1002, freerun 10",""],["9439988","10-25",1,3,13,0,1,"PLAN: roadmap contract (OWNER 2026-10-25): 5 blocks to 167/167 - Quick Race, career, whole game, 60 fps, RTX b",""],["6bb16d3","10-25",1,3,748,8,15,"RN_JUMP (Quick Race via the game's Accept 0x4b5c00, Hopper jump/fsm) + drag autopilot PATCH 0x42d4a9 (mode 3 D",""],["335b27e","10-25",1,0,2012,55,21,"Quick Race by RN_JUMP: 25 -> 44/167 (43/46 QR rows; drift 1306-1308 open), web ?jump=, Hopper batch specs b1-b",""],["0e8be5a","10-25",1,0,1259,11,25,"Quick Race 46/46 (drift 1306-1308 by seed 0x5678), career RN_JUMP e<N> via the map path 0x5a0ce0/0x4dfa10/0x4b",""],["4a6cf6d","10-25",1,3,461,15,6,"Block 1 closed (Quick Race 46/46); career jumps cjump_ via the hub: career.1/.2/.4 OK, 47 -> 50/167; career qu",""],["e4a14ca","10-25",1,3,129,4,5,"RN_JUMP ends on any front end after the list; flow career count (career 0x75eef8+0x34c status bytes); completi",""],["ca21276","10-25",1,3,310,4,3,"Career run time per stage (event 6 is a 3-stage tournament); career.5 OK: 51 -> 52/167",""],["3f386c8","10-25",1,3,6,4,2,"Docs up to date: PLAN block status, HANDOFF (5) 50 -> 67/167; career leave keys once per tournament stage",""],["df4c0ec","10-25",1,3,2145,97,2,"Rows: 67/167 (career chains 6-48)",""],["da6ea72","10-25",1,3,3,48,1,"Docs reconciled with the goal: relay at 92% in the block close, PLAN keeps only the roadmap (old M5-M9 and 'sp",""],["9600fd7","10-25",1,3,2740,25,22,"Faster, real test runs: -O2, raster only evidence frames (event 46 run 175 -> 123 s; turbo 2/4/8 flat), queue ",""],["d16c785","10-25",1,3,1676,178,18,"Injected tests: RN_FINISH (debug Force Race Finish 0x572a90), RN_OPEN (0x4f6360 screen switch), RN_NEXT (PostR",""],["3029887","10-25",1,3,8362,2107,13,"Career rows by injection: post-race screens forward (StyleAnimator 0x49fbc0 / RewardPopup 0x49f0c0: 0x406415e3",""],["821af13","10-25",1,3,4625,299,9,"Tournament stages by the game's own Next Race: 152 -> 167/167",""],["0141a8d","10-25",1,3,2,2,1,"Close blocks 2-3: 167/167 rows, webcheck --route PASS, HANDOFF",""],["c708be6","10-25",1,3,14431,6,7,"Hopper first: full Hopper export (census/hopper, 14333 procedures, 3 hung) and rules without Ghidra loopholes",""],["cdda0b9","10-25",1,0,8,7,2,"One machine-wide launch gate (~/.claude/hooks/macgate.sh) instead of fixed per-repo caps",""],["2dba0a2","10-25",1,2,88,3,2,"Block 5 start: bloom bridge (?bloom=0/split), gpuprof pass sequence and encode time, bench BENCH_JUMP",""],["5c6f4dd","10-25",1,1,103,17,6,"Block 4: rn_call bucket table, per-ticket GIL wake with main-thread spin, handoffs/gilGap telemetry",""],["5a4ed7e","10-25",1,3,351,28,4,"Block 4b: the OWNER's race lag was the GPU; MSAA 4x opt-in (?msaa=4), restrict Ctx in lifted code",""],["6b7f4c7","10-25",1,0,61,9,5,"Block 3 gate in Chrome: save, reload, continue (tools/savegate.py PASS)",""],["59177c8","10-25",1,0,215,6,6,"Block 4: telemetry at 0.01 ms (the 60 fps limiter read as p50 17), direct web clock, x87 runs opt-in (RN_X87RU",""],["6f6bb11","10-25",1,1,24,11,4,"HUD 16:9 decided (OWNER: race HUD at the window edges, menus 4:3 panel; RN_HUD/RN_FE opt-in A/B); fx2/fx1 inli",""],["224fd42","10-25",1,1,34,3,2,"Car clearcoat (BRIDGE, OWNER: cars looked wrapped in cellophane): Schlick on car.efx EnvMin/Max, cone blur, LD",""],["f50b4c1","10-25",1,1,36,7,4,"Block 4: GIL log per frame (heldMain/heldOther/holdWho, bench SLOW list): spikes are main-thread work plus slo",""],["a75dc1a","10-26",1,0,327,11,9,"Traffic alive (OWNER block B): full pool + stock racers, 12 -> 18 cars, per-car pace x0.85..1.15","Traffic Alive & Garage / EA Trax"],["438f38a","10-26",1,1,13,2,3,"60 fps at 2560x1116 (OWNER block C): gate60 PASS x2, the main thread passes the GIL at a clock read only after",""],["31c3d16","10-26",1,0,192,5,8,"Block D in Chrome: garage, music, EA Trax, credits and career end work; final movie (pack on) and magazine cov",""],["c497bf4","10-26",1,2,11,1,1,"Block E: world HD pack stays opt-in (A/B 2-1, gate60 not valid under other sessions' GPU load); pack downloads",""],["7ac7ebd","10-26",1,1,5,3,1,"Magazines work (27 covers, Import Racer = 21, opens in Chrome); final movie plays with the pack on under the 3",""],["cf11ab1","10-26",1,0,5,1,1,"Front-end 3D keeps the 4:3 layout's scale: the 16:9 camera cap applies in races only, so the magazine cover ca",""],["1b2ebcd","10-26",1,2,23,7,1,"Pack mips drawn on the GPU instead of re-decoding each level: race start with the world pack 52 -> 25 ms max, ",""],["a964893","10-26",1,2,60,5,2,"World HD pack in BC7, on by default: gate60 4/4 PASS with it (was 1/4 as webp), VRAM 3.2 -> 0.8 GiB",""],["21b4b97","10-26",1,0,1,1,1,"webcheck runs Chrome for Testing (chrome-bot), not the OWNER's Chrome",""],["10c8a50","10-26",1,2,106,22,4,"World BC7 pack really loads again; CAS upscale to the screen's pixels; the 1003 \"hang\" was lost log + timed ke",""],["e61d1a5","10-26",1,1,108,12,12,"Steering RE: ?steer=pad keyboard via the game's gamepad model, RN_STEERLOG trace; car look candidates ?carlook",""],["d2df3e9","10-26",1,1,17,7,2,"Car look: cap the clearcoat highlight at car.efx's reflection; PN never bulges a layer through another",""],["17c67d8","10-26",1,1,32,9,1,"Race HUD bridge: only the HUD packages go to the edges; post-race and pause screens keep the 4:3 island",""],["d98a05a","10-27",1,2,38,24,4,"Light trails back: PATCH 0x409bdb reads the flare-buffer add colour from [0x707fcc]; game decay kept; blur def",""],["12b9e93","10-27",1,1,149,10,2,"Race screens fit the window: each in-race FEng package moves whole to its side; HUD stays at the edges",""],["8d5aa4a","10-27",1,3,51,0,1,"PLAN Block 6 (OWNER 2026-10-27 night): career 1:1 vs Speed.exe first, traffic in Chrome, driving/AI audit, loo",""],["07289a9","10-27",1,3,11621,60,16,"Block 6: career 1:1 vs Speed.exe (113 events, 0 diffs), traffic whole in Chrome, driving patch table, car deta",""],["7beae23","10-27",1,1,423,6,6,"Rivals with soul: host/rivals.c builds every race opponent from a 300-persona pool (8 street archetypes, parts","Rivals With Soul & Light Trails"],["0a5a9c8","10-27",1,2,86,27,6,"One address, one switch: web/mode.js, F4 (twice) toggles Remaster <-> Original 2003 on 5180",""],["32006a9","10-27",1,0,293,3,7,"Night lighting RE (Block 7.1): docs/night_re.md; RN_WATCH/RN_POKE in Chrome; Ghidra headless gpar for NFSU",""],["2bf9787","10-27",1,1,75,8,8,"Night lights parts 1-2 (host/lights.c, RN_LIGHTS): live brake lights, warm headlight, longer beam; REA-verifie",""],["ac4f9f6","10-27",1,1,163,15,6,"Night lights part 3: rivals' and traffic's projected headlights on the world (web)",""],["8d4dbce","10-27",1,1,134,87,11,"Night lights back to 2003, canon career rivals, every racer at LOD A",""],["37cfa5e","10-27",1,2,230,12,7,"PS2 depth speed blur, PS2-size light flares, live car paint",""],["ac288e1","10-27",1,1,120,20,3,"NIS people (flag girl, crowd) curved and smoothed: PN on the skinned worldbone draws",""],["7249738","10-27",1,1,208,7,9,"Free mode: career rivals and tuned traffic in Free Run (host/free.c, RN_FREE)",""],["b9ed9e5","10-27",1,3,67,0,1,"Open world plan: all of Olympic City (L1RA) with no fences",""],["e3e0665","10-27",1,3,40229,0,7,"Open world phase A/B: world collision is the union of 16 track cuts of one city mesh",""],["d47bf2b","10-27",1,3,6,0,1,"AGENTS: no self-limits, one priority source, a progress measure past 167/167",""],["c41fbe8","10-27",1,3,12,4,1,"PLAN Now: regressions before the open world (blur, traffic, lag, wet road), open world paused",""],["44e437d","10-27",1,3,2,2,1,"PLAN Now: the open world runs in a parallel session, not paused",""],["6fbc647","10-27",1,3,30876,37,10,"Open world RE: fences from the data, streamer follows the car, collision writer, smackables, visual city",""],["413b150","10-27",1,2,57,2,2,"Lag: a D3D-like present queue, one frame per animation frame",""],["01e31d8","10-27",1,1,84,0,8,"Road reflection switch ?roadrefl=game|sq|cube|off (OWNER: wet everywhere)",""],["3521ba2","10-27",1,2,13,6,1,"psblur: the PS2 depth weight behind ?psweight=ps2 (?psnear=N)",""],["f3fc267","10-27",1,3,782,3,6,"Open world D1: RN_WORLD=1 loads one merged TRACKB per L1RA track, the whole city as ground",""],["e55fc15","10-27",1,3,32960,0,3,"Open world: reconcile-first rule, peer caves, handoff; provisional barricade census",""],["8212a89","10-27",1,3,4,0,1,"Open world handoff: where the resumed audit and D2 write",""],["92ae807","10-27",1,0,55,2,2,"Open world audit: 41 confirmed, 2 refuted claims fixed (quadtree <=, streamer id list overflow), next steps",""],["394c6b7","10-27",1,3,4,0,1,"Open world: z rule for fences measured (wall base is below the street), reverted, next step written",""],["1054ecc","10-27",1,3,1311,32878,5,"Open world D2 RE: barricade set by exact same-track geometry (1153), class fit measured, no integration",""],["bb7c3c8","10-27",1,1,20,5,2,"Blur: the PC exe's speed ramp is the default (25 -> 125 m/s, cap 0.65); ?psramp=ps2 the PS2's",""],["5480304","10-27",1,3,2,0,1,"Open world: OWNER picks no barricades; D2 closed",""],["e08ea1f","10-27",1,1,13,4,2,"Traffic: PATCH 0x598c4b, the placer's last resort 0x598fb0 also runs where 0x421a50 skips it (RN_TRAFFIC)",""],["142c50b","10-27",1,0,2,1,1,"bench.py: BENCH_URL picks the server (a worktree on another port)",""],["09bb3f9","10-28",1,3,28021,128,10,"Open world: merged TRACKB drops RESET/RESET_TO_POINT zones and uses the z fence set (1132)","Open World Prototype (?world=1)"],["beac8fd","10-28",1,1,29,2,3,"Open world F: ?world=1 in Chrome serves the merged TRACKB from /world/ (serve.py -> build/openworld)",""],["579f832","10-28",1,3,1,0,1,"OPENWORLD E: road network chunks 0x34121-24 layout (sub_442dd0/sub_442b70); merged TRACKB keeps only the base ",""],["7fe2b26","10-28",1,3,111,0,1,"OPENWORLD E: partial RE of AI/traffic routing (0x34124 = traffic, racer = 0x34122 entries, 128-section table @",""],["b5ef28c","10-28",1,3,12,0,1,"OPENWORLD E: measured network counts; naive union (392 sections, 1193 entries) exceeds exe limits 128/255",""],["2a10f29","10-28",1,1,352,37,9,"OPENWORLD: \"WORLD\" entry in Free Run (track 1010 = the open city), city minimap; traffic distance log",""],["091bf8e","10-28",1,1,79,3,5,"Free mode traffic: every asked car placed (19/19), placer clear zone 500 -> 100 m",""],["015a062","10-28",1,0,496,37,4,"OPENWORLD E: WORLD (1010) rivals race a 42 km closed tour across the city (own TRACKB1010.lzc)",""],["172ea41","10-28",1,2,1,1,1,"gpu.js: queued present textures get COPY_DST (original mode was black)",""],["ceb45af","10-28",1,3,15,1,1,"PLAN Now: open world with life (rivals personality, traffic, walls); 1001 traffic baseline",""],["3aef9e1","10-28",1,0,14,0,2,"bench.py: holdMain p50 (CPU headroom); PLAN: port-nfsu2web discarded, perf lesson",""],["6e2e954","10-28",1,1,62,5,3,"Free Run traffic recycling: track spacing instead of 99999 m (PATCH 0x598774)",""],["408c53b","10-28",1,1,39,2,3,"Free mode traffic: re-path no-path cars (PATCH 0x5833eb), traffic on every node (PATCH 0x59a5cf/0x59a669)",""],["1d45781","10-28",1,0,474,5,7,"Free mode rivals stay near: Catch Up on (0x78a400) and tighter catch-up curves",""],["a5e0889","10-28",1,0,576,0,9,"RE: how rivals and traffic interact (docs/openworld/re_ai_interact.md)",""],["a73b73c","10-28",1,0,152,0,3,"RE: the jump camera (JUMPVIEW) and why Free Run seemed to lack it (docs/openworld/re_jumpcam.md)",""],["86773bf","10-28",1,1,20,7,2,"Jump camera checked in Chrome with ghost drivers: fires in Free Run 1001 and WORLD",""],["0443ecb","10-28",1,0,268,0,5,"Audio default = the OWNER's asas.opt volumes, set in Speed.exe's own ctor",""],["8274371","10-28",1,3,14,8,4,"Traffic: no racer models in the traffic pool (the invisible cars)",""],["fd6d0a4","10-28",1,1,68,7,4,"Traffic: free mode recycles cars that drove far away (the long gaps)",""],["a995350","10-28",1,1,79,4,2,"Rivals: free mode respawns a rival that leaves the minimap, 220..380 m ahead or behind",""],["d0c5a75","10-28",1,3,4,3,2,"Rivals: respawn speed = the player's, 8 m/s at least ([0x700d58] is the reset's minimum)",""],["de002a0","10-28",1,0,58,0,2,"RE: WORLD handling, collision overlap and query cap refuted as causes; A/B run recipe",""],["7903466","10-28",1,1,54,5,6,"Free mode HUD: no WRONG WAY and no green gap (PATCH 0x430dbd -> free_hud)",""],["7abd43d","10-28",1,1,29,2,1,"Free mode rivals: one skill level each (2, 5, 9 = clumsy, steady, aggressive; RN_FREESKILL)",""],["6cb5860","10-28",1,0,592,0,1,"citygraph.py --write: whole-city road net for WORLD 1010 (99 sections, 232 entries, drive flags, route distanc",""],["86b4bc4","10-28",1,1,46,6,1,"Free mode rivals: each respawned rival gets the player's way (racer vtable 0x6c89f0+0x40 -> per-driver dir, pa",""],["6889a88","10-28",1,0,268,5,5,"JDM racers in WORLD traffic: DUMMY_SKIN5..12 overlay of Cars/TEXTURES.BIN (tpkwrite.py), traffic racer rows ge",""],["66d40bb","10-28",1,0,118,0,2,"SELECT LOCATION on WORLD: TRACK_1010_SPLINE / TRACK_1010 in a DYNTEX.BIN overlay (dxtenc.py DXT1/DXT3, selectp",""],["8d1b1a2","10-28",1,0,86,2,2,"RN_CARPOS: every 2 s each car of the vehicle list L=[0x7361f8] (kind, x y, driver flags +0x4d1 parked / +0x410",""],["a6b31bd","10-28",1,0,3,2,1,"serve.py RN_WORLD_DIR (as native); Chrome A/B tour vs city net: racers crawl on the city net (mean 7.7 vs 34 m",""],["c04c104","10-28",1,0,276,3,1,"citygraph v2: junction links at any angle + annealed section orientation under the 255-entry budget; biggest S",""],["170f4ce","10-28",1,1,150,24,3,"Free Run: 6 real rivals (RN_FREERIV, default 6, max 9): grid 10 slots (PATCH 0x422a78/85/fa, 0x422a86 grid_fix",""],["273c205","10-28",1,3,4,2,1,"HANDOFF + PLAN: city net v2 default in WORLD, 6 rivals",""],["60cb6e9","10-28",1,0,125,12,4,"WORLD: v2 net never lands behind its source (crash 0x462a06); JUMPVIEW off in free mode",""],["d504db5","10-28",1,1,130,6,2,"WORLD: MW traffic with the game's placer, stuck rivals, extras' rubber band, lane flags in the city net",""],["df0e193","10-29",1,0,26,2,2,"d3d9: CreateDevice masks x87 exceptions like the real runtime (fcw 0x7f, not 0x32); OW lift-gap map",""],["86e4809","10-29",1,1,28,0,2,"WORLD: fix the freeze ~10 s into the drive (Free Run move walked a city block forever)",""],["f41ffba","10-29",1,3,248,2,3,"RE scope: scoreboard and audit of the publish session, PLAN Now = RE to 100%, HANDOFF",""],["4bd9c0c","10-29",1,3,3226,1,4,"names seed: 2,926 mentions of 1,286 PC addresses from our own notes; named functions are 52, not 84",""],["dbefd2f","10-29",1,3,47,0,1,"RE night brief: frozen scope, four-number metric, morning deliverables M1-M6, stop conditions",""],["dc2a6f4","10-29",1,0,539,0,5,"RE tuning+sound: car tables, part DB, AST/ABK readers (round-trip checked), upgrade and music mechanisms",""],["aa50e3f","10-29",1,3,1,0,1,"night log: tuning+sound verified",""],["e7c988f","10-29",1,3,39,3,2,"RE tuning: corrections table (0x583ea0 lookup, 0x705f48 steering), unlock rule (0x4d7eb0/0x4d8180, career-beat",""],["4ebda2b","10-29",1,3,12,0,1,"night_log: night-opus-a handoff at 250k context",""],["811e9e7","10-29",1,3,1,0,1,"night log: heartbeat 02:47, quota policy",""],["a36c811","10-29",1,3,38,4,2,"RE sound: engine-sound chain (0x51dec0, family table 0x6f8100, level[2]/[3]/[4], 0x52c620 RPM path, SND mixer ",""],["ceb350d","10-29",1,3,6530,13,22,"RN_COV: honest function-entry coverage (43.9% of 13,739 ran in 12 scenarios; rn_call alone saw 1,876)",""],["7d1f467","10-29",1,3,1,0,1,"night log: M1 coverage",""],["578699c","10-29",1,3,465,0,3,"Keep the tuning and sound name-agent TSVs in the repo; garage leads for a2",""],["3185d84","10-29",1,3,519,0,3,"names_sound/names_tuning: V only with a second tool (Hopper address cross-check + semantic check)",""],["792a2cd","10-29",1,3,277,7,5,"RE garage flow + engine patch graph: garage.md, sound.md \u00a75, tuning.md price correction, proposals",""],["eb9f235","10-29",1,3,13,1,2,"night log: night-opus-a2 handoff",""],["552e726","10-29",1,3,2557,0,8,"RE assets+canon (night-opus-b): chunk dispatcher 0x447ac0 + 47 loaders at 0x7007e0 (unload 0x7008a0), Resource",""],["92f6307","10-29",1,3,18081,0,4,"census/systems.tsv: first system tag for all 13,739 lifted functions (draft, measured accuracy)",""],["4886eeb","10-29",1,0,97,1,2,"scoreboard.py: tagged / ran / named per system (M5); table in re_scoreboard.md \u00a75",""],["bd756e4","10-29",1,3,726,0,2,"census/names.tsv: merged name ledger (M3), one row per address, V wins",""],["f534566","10-29",1,3,542,0,4,"RE cameras and blur (M4): default race camera is CubicCameraMover (0x11) since [0x700aa4]=1 has no writer; blu",""],["a8d9d3b","10-29",1,3,3,0,1,"HANDOFF and night log after M1-M6",""],["4c10f0d","10-29",1,3,1,0,1,"night log: heartbeat 07:17",""],["13e20d9","10-29",1,3,515,0,4,"RE assets (night-opus-b): TPK reader tools/re/tpk.py (loader 0x5455c0, records 0x7c, GPU entries 0x20, JDLZ st",""],["fc4d962","10-29",1,3,570,40,8,"RE assets+canon done (night-opus-b): docs/re/assets.md with 137 chunk ids; TPK check 0 bad over 27,458 texture",""],["6c1ac14","10-29",1,3,387,7,4,"RE props (night-opus-b): smackables doc + 28 names; Virgin 0x5962e0 -> Smokeable 0x596570 on contact, hit 0x59",""],["33378a1","10-29",1,0,139,7,2,"tools/re/csiscurves.py: engine/exhaust Csis patch graph and curve dump (32 patches, 864 curves)",""],["bde3c71","10-29",1,3,23,0,2,"garage.md \u00a77: reload restores the config byte for byte (0x41da40->0x4ab200); slot 12 only at buy/race; negativ",""],["e2c7757","10-29",1,3,54,6,1,"sound.md \u00a76: speech = 95 events (counts 0x6f6bc8, sum 277), random line per event via 0x5396a0, event 0x59 fix",""],["a7db9f2","10-29",1,3,13,1,2,"night log: night-opus-a2 second stretch handoff; sound.md \u00a75 heading",""],["5239c8d","10-29",1,3,300,0,4,"RE rivals (night-opus-b): rival spawn 0x4b5df0 -> 0x4b4040 -> preset 0x4b26f0, rating match 0x57f700/0x57f970,",""],["40c8af0","10-29",1,3,490,2,4,"RE traffic (night-opus-b): no spawner, teleporter 0x598600 (0.3 s route / 1.0 s Free Run, 250 m ahead, 500 m c",""],["d4b49d0","10-29",1,3,18,17,2,"scoreboard table refreshed: named 886 (728 V) after props/traffic/rivals/garage/sound",""],["1995bc8","10-29",1,3,1,0,1,"night log: heartbeat 09:47, reconciliation under way",""],["269e883","10-29",1,3,1481,1086,31,"Reconcile the night's RE after an external audit",""],["577dce5","10-29",1,3,1,0,1,"night log: heartbeat 10:20, difftest rerun and V-name recheck started",""],["1984e3b","10-29",1,3,6339,27,6,"RE results you can check: tools/verify_re.py, docs/re/RESULTS.md, per-function difftest",""],["1015e5d","10-29",1,3,146,1,5,"RE: 0x67a337 mismatch explained, a lifter gap in negative-index jump tables (CRT memmove 0x672630, 0x678d30); ",""],["39ad331","10-29",1,3,1,0,1,"night log: heartbeat 10:48, quota 90 percent",""],["b7a183f","10-29",1,3,248,8,7,"RE track (sonnet-exec): collision pool, section streamer, zones and race path; 62 names (48 V), 10 of 10 secon",""],["557da8b","10-29",1,3,215,1,3,"RE runtime (sonnet-exec): MSVC CRT at 0x670c6c..0x6849d0, engine base library 0x564000..0x568800; 126 names (9",""],["ca3d784","10-29",1,3,498,19,8,"RE hud and input (sonnet-exec): HudManager 17 FEng widgets and visibility mask, DirectInput8 action maps, EZ W",""],["2c6d103","10-29",1,3,84,6,6,"Recheck of 69 inconclusive V names by hand: 66 hold, 2 renamed, 1 downgraded to I; cov_run.py gets a second wa",""],["cd5616c","10-29",1,3,190,18,26,"RN_COV second wave: 22 scenarios, 6,067 of 13,739 ran (44.2%); more tracks add little",""],["4bfcd32","10-29",1,3,7,6,1,"night log: heartbeat 11:19, timestamps corrected to commit times",""],["017c111","10-29",1,0,14,0,2,"scoreboard reads systems_override.tsv; night log 12:01",""],["d3283a9","10-29",1,3,1268,22,9,"RE: unknown bucket (601 hand-read, 67 names) and render (84 names); scoreboard and results refreshed",""],["126d835","10-29",1,3,414,1,4,"RE: gameflow states and 61 screen constructors (163 names)",""],["bdc8690","10-29",1,3,639688,0,53,"Canon database: names applied in Ghidra, named pseudocode export, bottom-up queue, prior-art hints","Ghidra Canon DB \u00b7 Named Pseudocode"],["210e02b","10-29",1,3,225,0,4,"Systems for 143 unknown functions from their GameCube source file (unknown 910 -> 767)",""],["50c6270","10-29",1,3,66,23,2,"canon.py batch/show: a worker reads only its batch; wave protocol for a Sonnet orchestrator",""],["20bc374","10-29",1,3,2274,1968,39,"Canon wave 1: 180 names (render, runtime, canon)",""],["4fdce8d","10-29",1,3,1981,1897,4,"canon queue: fragments ledger out of the queue (888), no GC hints under 48 bytes (round-1 lesson)",""],["dd8955c","10-29",1,3,1663,1283,35,"Canon wave 2: 178 names (render, runtime, canon)",""],["51cd887","10-29",1,0,21,0,2,"canon.py show: GC window of +-3 symbols with argument types (round 2: wrong B hints were often the neighbour)",""],["53304fa","10-29",1,3,2102,1743,39,"Canon wave 3: 178 names (sound, car, rivals); Hopper second reading of 113 low rows; 3 corrections",""],["780a955","10-29",1,3,7809,7694,5,"canon: wave names as GC anchors, nested-scope demangle, 'GC free in file' candidates in show (round-3 lesson)",""],["326cee7","10-29",1,3,9185,8550,37,"Canon wave 4: 174 names (hud, camera, track)",""],["b43031a","10-29",1,0,44,4,2,"canon.py batchfile: batches by GameCube source file (round-4 lesson: system batches were mostly other-system c",""],["d786043","10-29",1,3,7448,7007,29,"Canon wave 5 by GC file: 168 names + 5 corrections (IsJumpCamAvailable, IsOnFire, TopologyTree::InitTree, Upda",""],["0bb256b","10-29",1,3,2919,2921,5,"gcalign: overloads anchor via mangled name in evidence; AIAction range re-anchored to AIPlan.cpp (665 anchors)",""],["8b31c85","10-29",1,3,6992,6692,28,"Canon wave 6 by GC file: 168 names, Hopper second reading of 77 low rows, 2 corrections",""],["a4e0716","10-29",1,3,4487,4119,27,"Canon wave 7 by GC file: 180 names (EAX3DS, FEngInterface, FEPkg_PostRace)",""],["ce86694","10-29",1,3,5853,5545,30,"Canon wave 8 by GC file: 180 names (CollisionBody, Race, FEPkg_MU_Options)",""],["1ea0895","10-29",1,3,7091,6730,25,"Canon wave 9 by GC file: 180 names (FEPkg_InfoDialog, saems, FEPkg_Hud)",""],["d07f831","10-29",1,3,2110,2123,17,"Canon: 8 corrections from rounds 7-8 flags (collision vtable slots, Race, cFEng)",""],["069e7dc","10-29",1,0,139,1,4,"canon: vtable slot propagation (experimental, 5/18 agree, not in queue); 16 free-in-file candidates",""],["f25cbb0","10-29",1,3,661,337,11,"canon: vtables by constructor writes (434 tables, 3948 slots), vtables.py check 79/88, vt hints in queue (40 r",""],["c8d06fc","10-29",1,3,999,878,10,"Canon wave 10 (one worker): PresetBrowser batch, 60 names",""],["c2467f6","10-29",1,3,1956,125,5,"canon: trivial.py names 701 compiler-generated functions from bytes (EH stubs 309, unwind 280, SDD 50); tu_sys",""],["cc181fb","10-29",1,3,1446,339,3,"trivial.py pass 2: 1742 rows (1255 V): FuncInfo unwind members, IAT thunks, static init/atexit, SDD forms, lea",""],["688f21b","10-29",1,3,1833,1,5,"canon: libs.py tags code with no GC file (renderer, EA sound, DirtySock, CRT) by in-region call-graph closure;",""],["0cac853","10-29",1,0,19,0,2,"canon.py batchrange: naming batches by address range for code with no GC file (PC renderer); PLAN: OWNER autho",""],["31b672c","10-29",1,3,1819,1537,2,"libs.py: vtable mates as neighbours, address-neighbour pass for pointer-only functions",""],["b5eaf03","10-29",1,3,323,0,3,"adjacent.py: system from both address neighbours (95.6 % on solid); scoreboard reads it",""],["799a6fe","10-29",1,3,4,1,1,"proposals: drop ?steer=table (OWNER); already answered by e61d1a5, ?steer=pad stays off",""],["8317255","10-29",1,3,1858,5,4,"Merge nfsu-w2 renderer RE: 205 V names, 1528 band tags (D3DX render, EAGL anim -> assets), render_pc.md",""],["5cae399","10-29",1,0,6,0,1,"scoreboard: fix the committed copy (b5eaf03/8317255 put the adjacent/band blocks inside the names loop)",""],["0b0bb03","10-29",1,3,34,0,2,"nfsu-w2 report 3: game-side renderer names; dead fog data at 0x71a05c (0x4090a0, zones 0x588f40)",""],["0cfb737","10-29",1,3,128,0,1,"Cars RE: car_assets.md (parts, kits, materials, remaster hooks); HANDOFF for the cars + Open World block",""],["202c916","10-30",1,1,41,3,4,"Car volume: ?carvol=0|1|2 diffuse-only volume and panel-edge shading on kit and paint (remaster on, original o",""],["0589f54","10-30",1,1,24814,0,14,"AGENTS.md: Engineering rules (no backward compat, simplest full solution, long-term decisions)",""],["269be64","10-30",1,3,8,1,1,"Plan: Open World block 1 (road-graph limits in the exe); AGENTS: switches born with an exit, generated files n",""],["3dc5cad","10-30",1,0,279,0,2,"tools/dash: local progress dashboard (sessions, Open World handling, A/B shots, RE calls, git) on 127.0.0.1:87",""],["59637bf","10-30",1,0,1,1,1,"tools/dash: count an RE call only when the command's first line runs the tool",""],["6faa3ce","10-30",1,0,15,3,2,"tools/dash: RE call detection ignores read-only commands and quoted mentions",""],["adf3f83","10-30",1,0,123,54,2,"tools/dash: Mr. Robot look (CRT, glitch, process tree, bars, A/B wipe, handoff window, boot), sessions older t",""],["5238753","10-30",1,3,35,0,1,"Car Look Pack: frozen scope doc, project hook that prints it with HANDOFF each prompt, handoff",""],["1d7977d","10-30",1,3,243,1,3,"Car Look Pack: RE for kits/parts contrast and HD part textures (Ghidra/Hopper exports, unmeasured); scope allo",""],["f95afd5","10-30",1,3,8,0,1,"Car Look Pack scope: acceptance is a matrix of cars and scenes, judged by looking at the shots",""],["bc5891d","10-30",1,1,102,3,7,"Car Look Pack step 1 (?carpack=0|1|split): diffuse gain fading to 1 at bright pixels, softer cardetail occlusi",""],["79e2c6f","10-30",1,1,36,0,4,"RN_CAR=<CAR>[:tier[:n]] / ?car=: the player's car in every race is a persona of that model (rivals.c build/app",""],["b881e06","10-30",1,1,46,22,2,"RN_CARLIST=1: log the paint RGB/luminance of the first 6 personas of every model (picks the dark and light cel",""],["1827cb2","10-30",1,1,6,1,1,"matrix.sh: world cell waits 14 s after the HUD (player's car in frame), garage cells keep only the Customize/G",""],["80f85db","10-30",1,1,10,10,3,"RN_CAR runs in rival_ride of the first opponent (0x4b4321, player registered, skins not yet composed): the gri",""],["3c48735","10-30",1,1,15,4,8,"carpack: head-lamp star shrinks (RN_FLARE 0.55 under RN_CARPACK=1 scales end alpha of head flare layers 0x6f3e",""],["302a511","10-30",1,1,3,1,1,"carpack: paint volume terms 0.55 -> 0.85 (garage CARLOG: kit parts are body paint, 52 % of prims range 0.41; s",""],["3ec09e8","10-30",1,1,18,11,3,"carpack: dark-paint toe lift (CARPACK_TOE 0.07 below diffuse lum 0.2, hue kept; black/navy were identical cp0/",""],["f42346e","10-30",1,2,10,1,5,"carpack step 3: HD layer views in the skin composite behind ?carpack=1|split (web/gpu.js PACK_SKIN); A/B shots",""],["7de71b7","10-30",1,3,1,44,3,"carpack close: RN_CARLIST prints the persona archetype (show/boso carry vinyls); vinyl A/B shot; HANDOFF; remo",""],["1128435","10-30",1,3,15,10,4,"Car Look Pack on by default in Remaster (?carpack=0 off, Original keeps it off); PLAN Now: Remaster deliveries",""],["28033b5","10-30",1,2,5,3,1,"Blur: PC blur default in Remaster (game's own half-res zoom 0x40cd40, ramp 25-125 m/s 0x702a38, cap 0.65, 'PS2",""],["33064d0","10-30",1,2,3,2,1,"Blur: PC blur cap 0.26 (w 0.39), measured from the real chase camera; 0.65 smears the city at 240 km/h",""],["76f2072","10-30",1,1,38,1,4,"Speed FOV: chase camera grows up to ?speedfov=10 degrees from 90 to 270 km/h (Remaster default; 0 off, Origina",""],["fe8170c","10-30",1,2,20,4,2,"Grade: colour/contrast pass in the race image (Remaster default; ?grade=0 off, Original off)",""],["5f87a2c","10-30",1,1,61,1,3,"Chase cam: ?chasecam=1 (Remaster default, 0 off, Original off) sits the chase camera up to 12% farther and 10%",""],["a2d3634","10-30",1,1,42,3,3,"Rival personalities: clumsy and aggressive skill levels outside the career (?rivalai=0 off, Original off)",""],["99e1e3d","10-30",1,3,0,0,0,"Merge lane/camera from the pod",""],["e0e1223","10-30",1,3,0,0,0,"Merge lane/ai from the pod",""],["e46858f","10-30",1,3,74,7,4,"Nitro cam: ?nitrocam=1 (Remaster default, 0 off, Original off) pulls the chase camera 10% farther and 5% lower",""],["35aa653","10-30",1,3,0,0,0,"Merge lane/camera (nitro cam) from the pod",""],["fe762e6","10-30",1,1,71,0,6,"Traffic yields: a car about to be rear-ended by the player takes a clear lane and honks (?trafyield=0 off, Ori",""],["49e0d24","10-30",1,3,0,0,0,"Merge lane/ai (traffic yields) from the pod",""],["389af4d","10-30",1,3,52,3,4,"Jump cam: Free Run and WORLD run the game's own jump shot again (?jumpcam=0 keeps the chase camera)",""],["165ef33","10-30",1,2,2,2,1,"Road reflection: Remaster default off, a dry road (game ROADREFLECTION level 1, no mirrored world); Original k",""],["ac732a2","10-30",1,3,0,0,0,"Merge lane/camera (jump cam) from the pod",""],["6c0b701","10-30",1,3,64,0,1,"RE: how the game draws the car shadow (docs/re/shadows.md) and the design for a real shadow map. Docs only: no",""],["989d118","10-30",1,3,0,0,0,"Merge lane/camera (shadow RE) from the pod",""],["7029f9c","10-30",1,0,122,10,6,"abbench: A/B bench of URL switches on one race frame (strip, GPU ms); RN_FIXEDCLOCK, ?hold counts race frames",""],["2153440","10-30",1,3,0,0,0,"Merge lane/visual (abbench) from the pod",""],["f3009de","10-30",1,3,0,0,0,"Merge branch 'lane/visual' into lane/camera",""],["ec09eca","10-30",1,3,0,0,0,"Merge branch 'lane/visual' into lane/ai",""],["11ee452","10-30",1,2,29,19,2,"Post: bloom, FXAA and grade run on the scene colour; they were on the light-trails target and never reached th",""],["787d191","10-30",1,3,0,0,0,"Merge lane/visual (post on the scene colour) from the pod",""],["e48e3c1","10-30",1,0,12,6,1,"abbench: own CDP and server ports per run, clean exit on timeout, says when it waits for another bench",""],["47011aa","10-30",1,2,28,11,2,"Tonemap: highlights expanded in linear light and rolled off by a shoulder (Remaster default; ?tonemap=0 off, O",""],["a6970c0","10-30",1,2,9,2,2,"Vignette: corners 14 % darker in the race image, before the HUD (Remaster default; ?vignette=0 off, Original o",""],["ea21225","10-30",1,3,0,0,0,"Merge lane/visual (tonemap, vignette) from the pod",""],["a225209","10-30",1,2,96,6,3,"AO: screen-space ambient occlusion from the game's depth, under cars, kerbs, corners (Remaster default; ?ao=0 ",""],["61cab42","10-30",1,3,0,0,0,"Merge lane/visual (AO) from the pod",""],["3bebbd0","10-30",1,2,82,10,2,"Halo: the light of lamps, neon and windows spreads in the night air, the road stays out (Remaster default; ?ha",""],["975706a","10-30",1,3,0,0,0,"Merge lane/visual (halo) from the pod",""],["8fb24bc","10-30",1,2,10,82,2,"Revert halo: the OWNER finds it ugly (white-blown facades); code deleted, no switch kept",""],["48f7ba0","10-30",1,2,10,82,2,"Revert Halo: the OWNER saw it and calls it ugly; code and switch deleted",""],["051e04e","10-30",1,3,0,0,0,"Merge lane/visual (halo revert, same as main)",""],["6f4e64b","10-30",1,0,42,5,2,"Ghidra on the pod: gpar.sh runs on Linux (GHIDRA_PROJ, same-user flag), ApplyNames.java puts census/names.tsv ",""],["d56af3c","10-30",1,3,13631,13374,8,"Ghidra export with the registry names applied (ApplyNames.java on the pod): 9,799 functions, 2,368 with a real",""],["dbc3eee","10-30",1,2,246,5,6,"Shadows: car shadow map (?shadows=1 default in Remaster, 0 = the game's flat decal, ?shadowres=1024|2048|4096)",""],["b633e56","10-30",1,3,183,0,2,"RE car paint and glass: census/names_carfx.tsv, census/carfx_materials.tsv (139 materials)",""],["29439e1","10-30",1,3,0,0,0,"Merge mac-main into lane/camera: shadow map composes with the visual post (shadow first, then AO, bloom, grade",""],["c2ce625","10-30",1,3,489,0,10,"Handling: rear grip assist cap 0.35 -> 0.18 (?handling=0 off, Original off); RN_AILOG race log; physics, race ",""],["49fe746","10-30",1,3,0,0,0,"Merge lane/camera from the pod",""],["379bb86","10-30",1,3,0,0,0,"Merge lane/visual from the pod",""],["baeb100","10-30",1,3,0,0,0,"Merge lane/ai from the pod",""],["efafc32","10-30",1,2,15,3,3,"City RE tools: ?texlog=1 (what race frame N draws, in the pack or not), ?bbmax= (back buffer cap, default 2560",""],["c6213b3","10-30",1,2,19,7,1,"FXAA only on depth edges: on the scene colour it was blurring the textures",""],["89ec9de","10-30",1,2,2,2,1,"CAS sharpness 0.5 -> 0.8 at the present",""],["5bf80f2","10-30",1,3,0,0,0,"Merge lane/visual (FXAA on depth edges, CAS 0.8) from the pod",""],["d92a985","10-30",1,3,55,4,6,"Facade detail: walls against their local texture mean, frames and ledges read deeper (Remaster default; ?facad",""],["f13eccd","10-30",1,3,0,0,0,"Merge lane/visual (facade detail) from the pod",""],["35be17d","10-30",1,2,49,545,9,"Revert today's render quality work at the OWNER's order (it looked worse): shadow map, AO, tonemap, vignette, ",""],["7f9216b","10-30",1,1,158,33,2,"Traffic: ?trafyield really reacts now (the neighbour list is empty at Present); ?trafmodels=1, ?trafrefill=1, ",""],["d957124","10-30",1,3,0,0,0,"Merge branch 'mac-main' into lane/ai",""],["d248de8","10-30",1,3,0,0,0,"Merge lane/ai (traffic reacts: ?trafyield fixed, opt-in ?trafmodels ?trafrefill ?traffic) from the pod",""],["473e689","10-30",1,2,2,0,1,"RN_JCLOG on in the page (why a jump did or did not get the jump camera, in build/web.log); HANDOFF",""],["cbf887c","10-31",1,3,418,6,7,"Collision pool RE and live counter; host side of the traffic flash; first naming wave from dossiers",""],["bce7485","10-30",1,3,0,0,0,"Merge branch 'pod/ai'",""],["865e82f","10-31",1,3,181,0,3,"Names wave 2: runtime/CRT, ui/audio, camera/render (D3DX) from dossiers; 178 rows, 90 V, 88 I",""],["527ab97","10-31",1,3,37,0,2,"WORLD crash fix: collision body pool 0x400 -> 0x2000 (PATCH 0x4412bd), the int3 at 0x441b82 when 1,024 bodies ",""],["b2819ff","10-31",1,3,287,0,2,"Names wave 3 (core, view) and HANDOFF: pod lane ai closed",""],["d84a0df","10-30",1,3,0,0,0,"Merge lane/ai (WORLD collision pool fix, names waves 2-3) from the pod",""],["889dc9f","10-31",1,3,5057,42,3,"Names wave 4B: 120 functions (screen factory table, near-miss StyleItem, World::ProcessContacts, physics solve",""],["3ef9c15","10-31",1,3,83,0,2,"Traffic AI RE: why traffic ignores the player (finder 0x453920/0x44f470 goal-5 exemption at 0x4539db, flash ga",""],["a76901d","10-31",1,3,456,1,3,"Names wave 4A: 120 functions (AI closest-approach, zone triggers, drivetrain, FEng queue, CRT locale); V 3, I ",""],["a5e2817","10-30",1,1,25,2,2,"Traffic reacts to the player: PATCH 0x4539db limits the goal-5 racer exemption to rivals (finder 0x453920, dri",""],["925ae9e","10-30",1,1,14,1,2,"?hfov=<deg>: horizontal FOV switch for races (k of the widescreen caves, 0x707fc0, written only when [0x77a920",""],["b01514f","10-31",1,1,118,31,4,"Traffic sees a player closing from behind; traffic head flare and flash visible",""],["174d45b","10-30",1,3,43713,6463,10,"RE wave 4B: 319 names from four lanes + 212 local-model rows; corpus gap closed; slicer and audit tools",""],["f415959","10-30",1,3,0,0,0,"Merge branch 'pod/ai'",""],["6f30013","10-30",1,3,4342,424,4,"GPU name pass 2: 301 rows from the 4090 (101 with a quoted artifact); census/strings_func.tsv indexes 3,678 fu",""],["8814788","10-31",1,1,127,21,6,"Jump cam in free mode: eye node with a clear view along the road, or chase camera (0x42c4b0 bridge free_jumpca",""],["0773fdb","10-31",1,1,17,0,1,"WALLCAP probe for walls crossed at speed: polygon cache 0x4407b0 (car+0x7e0, 0xa0), pools [0x72cbf4] 0xa0 and ",""],["1fd158f","10-30",1,3,0,0,0,"Merge branch 'pod/ai'",""],["4733159","10-30",1,3,83,0,2,"Names waves 4C, 4E from pod ai3 (83 rows), saved before the pod ends",""],["dd0b2c6","10-31",1,2,93,500,9,"Feel fixes at their cause: PC camera framing, PC blur, no bloom, car.efx paint",""],["f18769d","10-31",1,1,47,4,5,"Media keys next/previous change the game's song",""],["b7b0db3","10-31",1,3,15,2,1,"feel RE: second pass (accel, jump cam, traffic, halo); rear grip and flare size are Remaster only",""],["6b1662d","10-31",1,3,15,156,1,"Cut the harness after the audit: AGENTS.md and PLAN.md to the essentials, one visible result per request",""],["f92a856","10-31",1,1,34,4,3,"Walls in WORLD: wall body pool 160 -> 2048; Remaster chase camera closer, higher, pitched down; Remaster blur ",""],["ada2b9b","10-31",1,2,1,1,1,"Chase camera change off (OWNER: worse); handoff with session 20-02 findings",""],["809cec0","10-31",1,1,16,0,1,"Probe BIGUPLOAD for the WORLD lag spans; handoff: lag and blur findings",""],["ea0eb10","10-31",1,1,11,1,2,"Remaster: light streaks off (the reddish double of every lamp the OWNER saw as astigmatism)",""],["2f7c828","10-31",1,2,1,1,1,"Revert Remaster light streaks off (OWNER: looks bad); runcap counts launches only",""],["681438f","10-31",1,1,503,138,13,"Revert game code to 4733159 (OWNER: everything since 9 am today regressed); keep rules and runcap hook",""],["4dbd8c9","10-31",1,0,5,0,1,"Walls in WORLD again: wall body pool 0x4669fe 160 -> 2048 (OWNER 19:00 JSON: pool 160/160, walls pass everywhe",""],["dc98025","10-31",1,1,127,21,7,"Remaster: camera higher, softer car reflections, dirt keeps game textures, cars in sight never teleport, jump ",""],["bb24ab7","10-31",1,1,10,4,2,"Remaster camera: steeper angle at the same distance, no speed pull-back (OWNER: too far)",""],["111ea1d","10-31",1,2,4,4,2,"Remaster feel = shipped: rear grip assist as shipped, no speed FOV, no nitrous pull-back (OWNER: feel drifted ",""],["8141096","10-31",1,2,4,25,3,"Remaster 1:1: shipped chase camera rows, shipped world textures by default (OWNER: the steeper eye hid the car",""],["3b8234a","10-31",1,1,97,2,2,"WORLD jump cam: the player's route is seeded by place (0x4561d0 without the progress rank 0x20) and walks alon",""],["b2a30f8","10-31",1,2,3,0,1,"AI evidence in every F10: RN_FREELOG and RN_AILOG on (log lines only)",""],["74b8a62","10-31",1,1,94,1,3,"AI telemetry in every F10 (host/aitel.c, RN_AILOG): player, each rival and near traffic once a second, every i",""],["9c07a2e","10-31",1,2,11,5,2,"Remaster light trails softer: one decay k 0x60 for R G B (was 0x82/0x96/0xb4, blue tail 8.6 frames) and still ",""],["072b36b","10-31",1,1,8,6,2,"Free mode rivals at full pace: the catch-up stays as shipped in Free Run (off; RN_FREECU=1 brings ours back), ",""],["67ca239","10-31",1,1,18,13,1,"ai_log checks every guest pointer: the racer list at the race load held a bad link and native crashed (SIGSEGV",""],["dbb76f6","10-31",1,3,0,5,1,"Method: runcap ignores heredoc text (it blocked writing a file that names a launcher), one file for the three ",""],["f373508","10-31",1,3,8,0,1,"Plan: ghost player career pass on the Mac (measured 71 s/event, ~2 h for the canon), parked for another day",""],["5a8577e","11-01",1,0,67,2,1,"WORLD rivals brake before sharp links: citygraph slow_junctions caps the approach lane speeds (0x44c550 reads ",""],["7146afc","11-01",1,0,81,21,1,"SELECT LOCATION WORLD photo: a mosaic of the shipped TRACK_<id> photos (crops of one city map at 0.192 x 0.239",""],["3b08e06","11-01",1,2,195,1,2,"Remaster pack: 186 keys drawn as shipped (web/remaster_off.tsv): the upscale smeared the SELECT LOCATION photo",""],["8ca9bb4","11-01",1,2,112,8,2,"Opt-in ?pace=vsync (race frames on the display grid, limiter 0x585b40 race wait skipped via mask bit 6 at runt",""],["dfcbf7a","11-01",1,1,35,2,3,"Collision: body ids past 222 (0x466b01 +9) and witness pool 0x100 -> 0x800 (0x466a3e), so WORLD walls keep the",""],["4138ed9","11-01",1,1,116,4,4,"Native D3DXMatrixMultiply 0x5d6f5d (host/native.h, lift.py NATIVE): same x87 ops in the same order, difftest 7",""],["5b251db","11-01",1,0,58,3,2,"Music song log (dsound.c: song index [[0x7356a8]+0x104]+0x2ac into table 0x6f4d08, logged on change, read only",""],["d71811d","11-01",1,1,212,75,6,"WORLD AI: rival personalities (aggressive/clean/nervous per level: block ceiling, nitro cooldown, brake look-a",""],["c09fc2c","11-01",1,1,30,4,3,"WORLD clean rivals pass wide: side line 0x45c8c2 (call 0x45cea0 clearance) -> persona_clear +1.5 m for clean r",""],["ef3d317","11-01",1,1,28,5,1,"WORLD traffic types by speed (0x583a37/0x583a5b -> traffic_speed: bus 0.75, vans 0.85, pickup/firetruck 0.9, t",""],["67a1301","11-02",1,1,136,1,3,"Native D3DX effect state apply 0x5c97cb (host/native.h, lift.py NATIVE): the one-device-call cases (render/TSS",""],["54134d8","11-02",1,1,68,1,2,"Native D3DX parameter -> shader constants copy 0x5c85c1, float type (host/native.h, lift.py NATIVE): the trans",""],["c3fed0f","11-02",1,0,113,8,6,"Web reach: HTTPS on the LAN, iPhone memory, smaller download (webreach steps 1b, 3a, 3b)",""],["fe6545f","11-03",1,1,30,1,3,"Frame limiter sleeps instead of spinning (host/win32.c limiter_sleep, threads.c gil_sleep_us): at the limiter'",""],["1207732","11-03",1,2,8,0,2,"W5 web side: degradation switches ?fx=0 and ?fps=30 (off by default)",""],["32c5f53","11-03",1,1,12,1,1,"RN_FPS=30 (web ?fps=30, W5, OFF by default): the limiter's frame target [0x6f0890] (1/60, read only at 0x585b8",""],["309faa2","11-03",1,1,3,2,1,"Limiter sleep OFF by default (RN_LIMSLEEP=1 on): bench spk5 (race 1103, Mac under load from other sessions) ga",""],["524fe3f","11-03",1,1,11,5,4,"W4 visible stop messages + device loss; ?pace=vsync follows the game's frame target; bench BENCH_ENV",""],["65429a4","11-03",1,2,46,11,1,"Page thread: draws set only the WebGPU state that changes (web/gpu.js), image unchanged",""],["c590d9d","11-03",1,0,3325,7,9,"RN_NOCHK=1 web build switch (off) + native D3DX proofs in the repo + audit fixes",""],["b793058","11-03",1,0,862,12,15,"Car pool behind ?pool=1: neon puddle + animation, game-vinyl liveries over the HD skin, personas in every non-",""],["fef8e7f","11-03",1,0,47,173,4,"Pool: one game vinyl per rival in contrasting colours, pre-rendered liveries removed (OWNER: wonky)",""],["c6b0458","11-03",1,1,21,21,4,"Pool, from the OWNER's F10: neon back to the game's size and alpha, traffic refill on (parked cars are not dra",""],["5b32fe6","11-03",1,1,118,1,5,"WORLD: ?pool=1 opens WORLD directly, Rockport switch removed, rivals roam as gangs and duel when approached, e",""],["b96794e","11-03",1,1,14,9,4,"WORLD traffic: a failed teleporter move no longer parks a car in sight, parked cars always return to the road,",""],["53fe25e","11-03",1,1,84,9,2,"WORLD lag: car smoothing runs on its own thread (a part draws as authored until done), cache 1024 with probed ",""],["50a5a52","11-03",1,1,9,7,2,"WORLD traffic fixes on in track 1010 without ?pool=1 (OWNER), handoff",""],["123adeb","11-03",1,1,11,0,1,"AIBELT log: BeltMover spline state at a rival speed jump, handoff with the mechanism read from code",""],["a5757a3","11-03",1,1,2,0,1,"WORLD: BeltMover off ([0x700740]=0): a respawn restarted it on old road keys, launching rivals sideways",""],["a21fdd7","11-03",1,0,2195,94,18,"Rescue pending engine work from earlier sessions: host, patches, lifter, road cave, city graph, Rockport tools",""],["51cde34","11-03",1,0,2091,26,37,"Rescue pending RE tooling: census, canon integration, Hopper query scripts",""],["e61b563","11-03",1,3,994,16,13,"Rescue pending RE notes, audits and reports",""],["148daa4","11-03",1,3,1,0,1,"Plan: WORLD AI quality scope, rules, agents and RE ladder; HANDOFF replaced",""],["3cd0064","11-03",1,3,431,0,1,"Verify BeltMover fix (w_h: 0 jumps, 0 belt); chavo's 463f20 extract, checked against decomp.c",""],["2d6e5a1","11-03",1,1,26,3,1,"WORLD traffic: recycle cars frozen 10 s and 200 m away (w_j: still 21% -> 13%, longest 176 -> 28 s, traffic-wa",""],["b1981ed","11-03",1,3,59,0,1,"Big scope 2026-11-04: lanes, Becario worktrees, approval gate; feel replaces default in remaster/WORLD",""],["c318b84","11-03",1,3,2,2,1,"Scope: Becarios do not build (build/ is a shared symlink)",""],["36cc562","11-03",1,1,9,5,2,"WORLD AI: BeltMover-off every present (RN_TRAFYIELD=0 safe), frozen-car timers reset per race and while parked",""],["bb6e790","11-03",1,1,180,5,8,"Horn probe + draft fix: 0x52536a -> host, parked/undrawn/recycled skip (both flags off)",""],["3f7198e","11-03",1,1,1,1,1,"horn_start pops its one argument (StartHorn is ret 4; nargs 0 leaked 4 bytes of stack per honk)",""],["fce871f","11-03",1,3,163,0,5,"re: reset causes ranked + RN_RESETLOG probe (lane 1)",""],["43ea77b","11-03",1,1,150,1,5,"Feel: RN_FEELLOG probe (speed, chase row, FOV, 0-60/0-100) and four off-by-default candidates",""],["d6d2154","11-03",1,1,5,5,1,"Frozen-car timers die when the race mode ends (nacho: pointer test missed reused list addresses); refill ring/",""],["ffd6a2d","11-03",1,0,4,0,1,"FEEL C1 default: second blur pass reach /4 (pepa candidate, bytes verified at build)",""],["0928802","11-03",1,0,2,0,1,"FEEL C3 default: chase FOV 71.5 -> 65.9 deg (car 1.11x bigger; garage car too)",""],["13146bc","11-03",1,1,156,51,2,"re: player reset path (0x4314a0) + RN_RESETEVERY probe",""],["7101aef","11-03",1,1,119,38,2,"Feel probe: read the mover's POV and its chase row, keep only real standing starts",""],["0a9053b","11-03",1,2,4,0,1,"F10 carries reset/horn/feel evidence (log only); ?hornfix=1 for the horn gate",""],["500d9e3","11-04",1,3,94,0,1,"traffic cap: Becario's plan tested; the race list [0x7361f8] holds 32 cars (memory fault in 0x421170 at 45): m",""],["3ac0c51","11-04",1,3,104,0,2,"docs/re/ai_stuck.md: rival stuck trigger (0.4 s, 5 m/s, prio 500), reverse -15/-6 for 1.3 s, measured rates",""],["5139b32","11-04",1,1,12,9,3,"AI stuck test: RN_AI_STUCK / ?aistuck=1 writes the two stuck floats at runtime (opt-in), lalo's draft",""],["b99ac33","11-04",1,3,108,0,2,"host: RN_AI_TRAFGO ends dead traffic standstills; docs/re/ai_traffic_stop.md",""],["8283dd1","11-04",1,1,1,0,1,"rivals.c: restore ai_tune closing brace after the merge",""],["31197cc","11-04",1,3,86,0,2,"ai_draft: draft (car+0x47c) has no force path in stock cars, AIDR probe",""],["14b92a3","11-04",1,3,77,30,3,"rebufo wave 2: RN_DRAFT_K (car+0x404 x (1+k*draft), k=0.055), AIDR probe and tow frequency",""],["3a04fa3","11-04",1,3,120,1,2,"aitel: AIDS probe (RN_AIDS) for the target-speed chain; document 0x44c550 storage and the +0x1e4 writers",""],["60078e5","11-04",1,0,14,1,3,"AI: opt-in RN_AI_LOOK (0x44c678) and RN_AI_TRAFP (0x4539db) build patches, traffic unjam (RN_AI_TRAFGO), RN_DR",""],["7231c95","11-04",1,1,0,102,2,"AI: drop the three drafts that did not move their number (RN_AI_LOOK, RN_AI_TRAFGO, RN_DRAFT_K); keep RN_AI_ST",""],["ea08a77","11-04",1,1,4,4,2,"WORLD: every traffic model by default (BUS, AMBULANCE, FIRETRUCK; RN_TRAFMODELS=0 off)",""],["1a4cb4b","11-04",1,1,9,8,1,"WORLD rivals: personalities on in 1010 without ?pool=1, new blocker profile (Block ceiling via style 2, levels",""],["65f21c3","11-04",1,0,23,1,2,"Remaster: clean round lamp glow, no star rays or rainbow ring (pack override of the 3 flare textures, FNV keys",""],["240d25c","11-04",1,0,68,33,7,"WORLD traffic: 40 cars by default, 1 in 4 tuned; entrant table to 64, collision bodies 16384, 3/4 of traffic w",""],["9ee67db","11-04",1,1,59,0,3,"WORLD traffic: driver profiles (slow, normal, fast, very fast) fixed per car, route cap per profile; lane chan",""],["78395bd","11-04",1,1,32,1,3,"WORLD traffic: queues follow the car ahead (Avoid 0x45406c, 0x4540e9); stopped traffic 53% -> 28% at 40 cars",""],["8d4e0d2","11-04",1,0,83,0,3,"Becario monitor for the OWNER on :5180/becarios: asks, answers, what Main did with each",""],["a9952c1","11-04",1,1,87,17,2,"WORLD traffic jams: Avoid brakes only for a car on its own line, safe-speed following, wedged cars recycle out",""],["e2ac2c2","11-04",1,1,16,1,2,"Remaster traffic paint: TRAFFIC material gets METPAINT-like reflection and contrast (RN_TRAFPAINT=0 as shipped",""],["e01e5b5","11-04",1,1,37,0,1,"Remaster traffic body motion: damped pitch and roll from acceleration, drawn only (RN_TRAFLEAN=0 as shipped; o",""],["433ba76","11-05",1,3,170,0,1,"Repo audit 2026-11-05: 12 Becario lanes, each finding contrasted by a Sonnet against the code (27 confirmed, 1",""],["3f561c2","11-05",1,0,14,5,3,"Original mode untouched: feel C1 blur and C3 FOV are a boot switch (RN_FEEL, on by default; original mode sets",""],["98d9d2b","11-05",1,1,5,3,1,"Speed FOV adds its delta to the boot FOV table entry (0x2ee0 with RN_FEEL, 0x32dc in original), not to a fixed",""],["4e06f9e","11-05",1,1,10,5,1,"FREE AIVehicle from the race list (car+0x2c, AI factory 0x425fe0) instead of a 1 GB guest scan every 120 frame",""],["1ff85ee","11-05",1,3,19,13,3,"Docs match the code: traffic cap 64 (0x4322e0), rival AI patches 0x45406c/0x4540e9 and 0x44c573 described, cov",""],["98e395e","11-05",1,2,18,2,2,"F10 telemetry keeps a fixed ring (36000 rows, 20000 events) instead of growing without bound; livery fetch pro",""],["fcb276d","11-05",1,2,3,4,1,"index.html: ?ai=0 handled once; F2 toggles the panel without reaching the game (audit C10, C38)",""],["7973056","11-05",1,1,67,4,3,"Handle table full fails the Windows way (CreateFile/FindFirstFile INVALID_HANDLE, HeapCreate/CreateThread/Even",""],["1f80ac5","11-05",1,1,11,9,4,"rn_env(): one parse for RN_ switches; RN_AI and RN_WORLD read the same in free.c, rivals.c and openworld.c (RN",""],["dca69f0","11-05",1,0,22,5,2,"Build deps follow the headers a chunk includes (host/native.h too), in build.py and difftest.py (audit 2026-11",""],["7da219e","11-05",1,0,10,5,1,"Lifted functions go to chunks by address (census quantiles), so a new or dropped function rewrites only its ow",""],["36b2d57","11-05",1,0,21,1,1,"Lift seal: build/gen/.seal hashes the exe, census, recomp sources and ABK files; same seal = no relift (audit ",""],["8ffabf2","11-05",1,3,688,0,6,"Day plan 2026-11-05: one goal (Safari, LAN, touch, no hitches, feel, WORLD) in 4 blocks, rule cuts, launch bri",""],["3720745","11-05",1,3,52273,675531,149,"docs/re/ai: commit the AI and reset RE notes (GOAL 2026-11-05 Block 1)",""],["18f480e","11-05",1,0,850,931,19,"Block 1 base: delete rockport/ao/canon/dash and build/carao (runtime paths too), patches.py split into patches",""],["983f4b1","11-05",1,0,248,29,8,"Block 1 w2: serve.py HTTP/1.1 keep-alive, /setup (QR, CA, .mobileconfig, plain-HTTP setup port), LaunchAgent, ",""],["3e8bd0f","11-05",1,0,1,1,1,"bench.py: RN_CDP_PORT from the environment (worktree windows use their own CDP port, w1 = 9382)",""],["9cd2dd3","11-05",1,0,213,1,2,"RN_FNTIME=1 (off by default): main-thread self/inclusive time per indirect-call target and per host API, top l",""],["bd576f2","11-05",1,1,137,1,2,"w3 block 1: RN_WALLX wall pass-through counter (off by default), docs/re/reset_walls.md: 0 real pass-throughs ",""],["d85eb07","11-05",1,2,44,0,2,"?watchdog=1 (probe, off by default): a worker logs when the page main thread stops (heartbeat 100 ms), its pha",""],["06b9d13","11-05",1,1,9,1,1,"now_us: per-thread monotonic clock on the web (WebKit bug 258572: performance.timeOrigin drifts during a page'",""],["5c7e006","11-05",1,3,0,0,0,"Merge day/w3 (Block 1)",""],["f8775ec","11-05",1,3,0,0,0,"Merge day/w1 (Block 1)",""],["8b45591","11-05",1,3,0,0,0,"Merge day/w2 (Block 1)",""],["d3d4fb4","11-05",1,0,52,8,2,"bench_headed: frames >20 ms by cause and spike sites; ?stopafter=N self-stops a headed tab",""],["2aece09","11-05",1,2,149,11,6,"Touch overlay (web/touch.js): steer zone, gas, brake, nitro, handbrake, camera, respot, pause; menu d-pad/OK/b",""],["0b6e26b","11-05",1,0,17,4,1,"bench_headed: keep only this session's telemetry rows (a stale tab on the same port posts into the same file)",""],["4fa15c9","11-05",1,1,12,9,3,"d3d9/gpu: draws write straight into the frame list (gpu_put), submit swaps buffers instead of copying the list",""],["e2ccd3f","11-05",1,2,20,7,1,"Touch overlay: gate on ontouchstart, left half steers, hide on keyboard/gamepad",""],["64e3a13","11-05",1,2,159,12,4,"Gamepad + remappable keys: web/binds.js (localStorage rn_binds, overlay on K / pad Select), pad.js camera and ",""],["6b39e04","11-05",1,0,52,8,2,"bench_headed: frames >20 ms by cause and spike sites; ?stopafter=N self-stops a headed tab",""],["967eec7","11-05",1,0,17,4,1,"bench_headed: keep only this session's telemetry rows (a stale tab on the same port posts into the same file)",""],["9c566a3","11-05",1,3,2,1,1,"GOAL: OWNER cuts Safari; focus = lighter game in Chrome + WORLD",""],["edc15fc","11-05",1,3,1,1,1,"AGENTS/GOAL: drop self-imposed caps on becarios and parallel ghosts (OWNER)",""],["b219ef7","11-05",1,1,5,3,1,"WORLD rivals: stuck test 1.5 s under 3 m/s by default (0x6b7680/0x6b7684 read only by finders 0x451b00, 0x451d",""],["9f6f29e","11-05",1,1,5,0,1,"dispatch: guard emscripten.h so native ghosts build again (RN_FNTIME clock falls back to CLOCK_MONOTONIC)",""],["9628c85","11-05",1,3,0,0,0,"Merge branch 'main' into day/w5",""],["d5526a2","11-05",1,0,14,2,3,"reset: player no-path placement starts both ground queries at the car's z (patches_reset.py); RN_RESETEVERY lo",""],["e14faff","11-05",1,3,0,0,0,"Merge branch 'main' into day/w3",""],["0194d9e","11-05",1,3,0,0,0,"Merge branch 'main' into day/w1",""],["e1b81a3","11-05",1,3,9,0,1,"reset_walls.md: Block 2 findings",""],["e0e321d","11-05",1,0,117,5,3,"remaster pack as BC7 by default (GPU memory at title 983 -> 516 MB); webcheck RN_MEASURE (bytes, RSS, heap)",""],["7fd6145","11-05",1,0,10,0,1,"traffic physics: 1 substep per sim step for kind-3 cars (cave 0x797400, hook 0x474be7); substeps/car 3.87 -> 2",""],["7314b28","11-05",1,0,27,11,4,"perf: traffic substep cave moved to patches_perf.py, gated to WORLD (1010) and traffic > 100 m from the player",""],["a9c79f0","11-05",1,1,16,5,1,"Free/WORLD rivals: the stuck/far respawn tries 4 spots (not 1) and the next rival keeps its turn when a spot i",""],["bc25a83","11-05",1,1,5,2,1,"limiter sleep (RN_LIMSLEEP=1, still off): wake 3 ms before the limiter's exit, not 0.3 ms",""],["df0c3ae","11-05",1,1,7,0,1,"WORLD AI look-ahead [0x7006ec] 2.0 -> 3.0 s (RN_AI_HORIZON, 0 = factory): the Avoid finder 0x44f8a0 acts only ",""],["8e48900","11-05",1,3,0,0,0,"Merge day/w3 (Block 2)",""],["8019aa9","11-05",1,3,0,0,0,"Merge day/w1 (Block 2)",""],["0813ee4","11-05",1,3,0,0,0,"Merge day/w5 (Block 2)",""],["2b189f4","11-05",1,3,0,0,0,"Merge day/w2 (Block 2)",""],["580cdd8","11-05",1,3,0,0,0,"Merge day/w4 (Block 2)",""],["a17bbbb","11-05",1,2,39,18,2,"loadDds streams the gunzip: each mip is uploaded as it arrives, no whole-file buffer held (peak RSS); webcheck",""],["abbfe26","11-05",1,3,0,0,0,"Merge day/w2 (Block 2, peak fix)",""],["31a0260","11-06",1,1,127,52,10,"host/phase.c: one owner of the game flow and of \"this race\" (P1 + P3)","Game Flow State Machine (phase.c)"],["fe42c09","11-06",1,1,109,96,1,"free.c: each rival is an explicit state machine per race (P2)",""],["8a9c538","11-06",1,1,16,3,3,"phase.c: race-finished edge (RaceCoordinator 0x423f20: state 8, or 1 with [coord+0x14]==8); free.c leaves fini",""],["b0047ed","11-06",1,3,70,13,2,"free.c: guest object lifetime from RE (teleporter read live, xrec dropped at the grid edge, no rdir after the ",""],["d06be86","11-06",1,1,80,32,2,"free.c riv_place: one ring of road spots a second (both ways, 40-600 m) and the game's 0x59b1e0 spacing rule; ",""],["b25a03e","11-06",1,1,29,14,6,"rivals.c: back in the front end, put back the trackinfo spacing, the 3 traffic weights and the skill records i",""],["d41c07f","11-06",1,3,0,941,9,"Scope change (OWNER 2026-11-06): docs/GOAL.md = Original 100 % in Chrome, then more browsers, then Remaster, t",""],["9b0a851","11-06",1,3,42,87,15,"Scope reconciliation: GOAL.md is the only scope; every pointer to old scopes now says docs/archive/; AGENTS.md",""],["4d67f32","11-06",1,3,3950,2,33,"Baseline: 34 Becario RE docs from bec/* (2026-11-03..04, never merged) into docs/re and docs/prior_art as refe",""],["e6de996","11-06",1,0,16,5,3,"Original gap list in docs/GOAL.md; lifter reads neg-indexed jump tables (CRT memmove 0x672630, 0x678d30); orig",""],["36ea20e","11-06",1,1,3,2,2,"Original mode loads no WORLD content (RN_WORLDROW=0, car overlay gated on RN_FREE); gap list row 3 note, row 1",""],["d71ce61","11-06",1,0,123,0,2,"tools/playindex.py: index what the OWNER's downloaded sessions already show, checked before any test",""],["d816037","11-06",1,2,3,1,1,"Page always logs game flow (RN_FLOWLOG): an F10 session now shows menus and files; route PASS, 0 OPENWORLD lin",""],["ece44b9","11-06",1,2,990,2,27,"Pre-game launcher on bare /: 2003 street-tuning scene (layered images by Codex Paola, parallax, rain, neon), m",""],["eb5bdcd","11-07",2,1,35,7,4,"F3 cheat: the current race counts as won (RN_FINISH path); from the menus it also passes the briefing's buy-al",""],["23f7b75","11-07",2,3,766,0,3,"/goal tracker from maxpayne-re: tools/goal.py renders out/goal/goal.json (blocks, phases, steps, evidence, OWN",""],["30d559a","11-07",2,2,3939,715,52,"Launcher v2: WebGL2 2.5D street scene (depth, living light, rain, PS2 bloom), menu in the game's own font/logo",""],["a1f00a9","11-07",2,2,9115,1123,55,"Launcher v3: real 3D street in three.js 0.170 (vendored); the game's own SKYLINE exported to glTF (tools/launc","3D Street Launcher (Three.js)"],["4d31062","11-07",2,0,2,2,2,"Goal reconciled (OWNER 2026-11-07): the game 100 % in WASM (Original checklist green and no lifter gap) plus t",""],["91e3aab","11-07",2,3,2,0,1,"HANDOFF: audit findings (3 of 24 commits touched Original code; difftest stale with 0x67a337 mismatch; worktre",""],["431eec2","11-07",2,1,5,1,3,"Remaster: remove grazing wall rebound",""],["c24e545","11-07",2,1,67,3,1,"Log career cash and reputation",""],["87d143b","11-07",2,0,3,2,1,"Exclude cheat sessions from career finishes",""],["ad79dff","11-07",2,3,0,0,0,"Merge day/w2: remaster-only wall softening (RN_WALLSOFTEN)",""],["b1f3564","11-07",2,3,28,735,1,"census/difftest.json regenerated: gate pass. 0x67a337 no longer mismatches (the neg-indexed jump-table fix in ",""],["6e04931","11-07",2,3,0,0,0,"Merge branch 'day/w1'",""],["808be14","11-07",2,3,699,17,1,"census/difftest.json with 8 cases per function (as on 10-29): gate pass, 5805 functions compared (was 5798), 3",""],["90eb750","11-07",2,2,84,35,4,"Launcher UI polish: accent hover/focus/press states, press thunk, glass logo and hint bar, staged intro, accep",""],["b43281e","11-07",2,2,89,30,1,"Improve wet street reflections and living neon light",""],["141224d","11-07",2,2,232,23,2,"Launcher rain (Codex Paola): depth layers, gusting wind, light-tinted streaks, splashes on road and SKYLINE, l",""],["4cdfaf7","11-07",2,2,228,104,6,"Launcher round 2: light NFSU-style 3D menu (no plates), chromatic aberration off, rain crowns/streak sheets, s",""],["059f7ca","11-07",2,2,49,29,3,"Launcher round 3: rain visible again (tight sprite UVs, thin lit streaks, ground crowns), broken lamp in frame",""],["a5c1132","11-07",2,2,255,632,5,"Launcher round 4: DOM main menu after the game's own Main Menu (teal panel, right-aligned italic list, descrip",""],["16b8948","11-07",2,0,35,1,1,"Plan harness page /plan/harness: comparator (curtain, A/B flicker, side by side, locked pixel zoom), live laun",""],["b99358e","11-07",2,1,24,0,21,"Launcher art directions A (After Hours) and B (Night Press) by Codex Paola and Angel: key frames, UI kits, FX ",""],["a0a8f63","11-07",2,2,31269,2424,40,"Launcher direction A: Marble world (marble-1.1, Spark 2.4 splats, three r187, pmndrs postprocessing) with the ",""],["5933bf7","11-07",2,2,79,31,3,"Launcher: lens drops read as water, splashes only on surfaces, no square focus box, legible inactive menu item",""],["4f11b17","11-07",2,2,12,4,1,"Launcher: camera locked to Marble's capture view and the plate's measured field of view (64.7x39.2 deg), so no",""],["d6f708e","11-07",2,0,20,6,2,"Launcher: Marble gen 2 (4 views, multi-image) and gen 3 (360 pano) worlds, upscaled with Real-ESRGAN; ?w=g2|g3",""],["36d8b43","11-07",2,2,1,1,1,"Launcher: Marble gen 3 is the world (OWNER pick); g1/g2 removed from the served folder",""],["2d26173","11-07",2,2,2346,31369,57,"Revert the launcher to its 14:28 state (808be14) by OWNER order: direction A/B art, Marble worlds, Spark/postp",""],["c893af4","11-07",2,0,7,7,1,"Launcher hygiene: plan reset to the 14:28 baseline with three details (light and reflections, rain, car); plan",""],["4a6c1c2","11-07",2,0,13,90,12,"Independence: RE-NFSU no longer points at NFSU1-RE, NFSU2-RE, Dashboards or other sibling repos",""],["5656ab2","11-09",2,2,50,24,1,"Launcher: light and reflections, then rain, on the 14:28 baseline (work from 2026-11-07, OWNER verdict pending",""],["894ded6","11-09",2,3,35,1103,26,"Hygiene and reconciliation: GOAL is a short context map, state lives in plan.json rows (state + ev; next = fir",""],["99f8454","11-09",2,2,30,6,1,"Launcher: ground tyres, aim headlights and add subtle neon rim",""],["0366cd4","11-09",2,3,12,2,2,"Remaster audit table; gate the goal-5 traffic exemption patch 0x4539db on RN_TRAFFIC so Original keeps the shi",""],["5a2f1d1","11-09",2,3,0,0,0,"Merge slice remaster: audit table + RN_TRAFFIC gate on 0x4539db",""],["2a32426","11-09",2,3,0,0,0,"Merge slice launcher: car detail (contact shadow, headlights on wet ground, neon rim)",""],["22afdee","11-09",2,1,27,0,3,"Autopilot only: request the player's own reset (car+0x87c, 0x4264d0) after 15 s inside a 40 m circle so events",""],["8843260","11-09",2,3,0,0,0,"Merge slice original: autopilot-only stuck reset (car+0x87c) for events 104 and 109",""],["6f42b8f","11-09",2,0,27,3,2,"shots_gc: run shots live 10 min, last shot kept as census/shots/<run>__last.webp, also purges slice clones of ",""],["ebb26c7","11-09",2,2,284,9155,68,"Launcher v4: painted 2D street with hand-keyed atlas animation replaces the three.js scene",""],["3c57765","11-09",2,3,0,0,0,"Merge slice launcher2: painted 2D launcher v4 with hand-keyed atlas animation (OWNER chose 'Todo 2D pintado')",""],["95bb443","11-09",2,2,26,29,1,"Launcher v4: Perfiles, Opciones and Controles in the v4 neon palette",""],["a9bce54","11-09",2,3,0,0,0,"Merge slice launcher2: v4 sub-screens (Perfiles, Opciones, Controles) in the v4 palette, CSS only",""],["7c2f70e","11-09",2,3,1369,0,2,"natural.py -> census/natural.json: rows finished naturally (autopilot, no RN_FINISH); draft 154/167 while the ",""],["478cab6","11-09",2,1,13,10,1,"input_unstick: reset on 20 s without route progress (car+0x810) instead of a 40 m circle",""],["f7af2b0","11-09",2,0,1,1,1,"natural.py: count the new 'no progress' autopilot resets",""],["79ab6b4","11-09",2,0,2,2,1,"completion: RN_OPEN rows get 120 s (45 s ended in LS_IntroFMV on 2026-11-09)",""],["176310e","11-09",2,3,0,0,0,"Merge slice original: autopilot unstick by route progress car+0x810 (0x443a10/0x4338c0, REA + capstone)",""],["3ddc33f","11-09",2,3,42,42,1,"natural: 162/167 after the rerun of the stalled events with the autopilot unstick (22afdee)",""],["87d7202","11-09",2,3,13,12,3,"completion: 8 splash RETURNs for the profile path (4 lost the splash), save_reload proof = the source's last c",""],["68ebc6f","11-09",2,1,42,3,1,"autopilot: the second reset at the same progress places the car 40 m per repeat further along the AI route (cu",""],["bda275b","11-09",2,0,3,3,1,"completion: garage/options first tap at 20 s as cjump, the = NewOrLoad tap back out of the comment (87d7202 sw",""],["e926dbe","11-09",2,3,0,0,0,"Merge slice original: second reset at the same progress moves the AI cursor 40 m along the driver route (0x5a6",""],["b5abc83","11-09",2,3,8,8,1,"natural: 166/167 (garage, options, save_reload, movies, profile proven; career.64 drift stalls)",""],["937b920","11-09",2,1,15,7,1,"autopilot route reset: skip nodes without a piece (0x5a6194/0x5a619c), log why a route reset is skipped; cjump",""],["c93d836","11-09",2,0,2,1,1,"shots_gc: keep career0/prologue frames (the game.movies proof)",""],["5f8f0bd","11-09",2,2,55,0,2,"Proposal A: bare / is the game's own boot flow; one corner overlay (profile, mute, controls) in web/overlay.js",""],["fff38ce","11-09",2,2,55,1,5,"A+B: ?fast=1 skips intro movies and splash (PATCH 0x4de395 start node = profile screen, RN_FAST), the game's o",""],["fbff546","11-09",2,2,126605,2,14,"A+B: scene B (from 8092afb, web/launcher_b only) as the boot cover; the WASM boot waits for B's first frame (R",""],["5bca4d5","11-09",2,2,13,4,2,"Cover: first key or click unlocks audio (RN_ACTX resume), text PRESIONA CUALQUIER TECLA then ENTER PARA JUGAR;",""],["2d27cfc","11-09",2,2,2391,416,35,"Launcher: 3D street (launcher_b scene) replaces the v4 painted 2D scene; ?fast=1&go=1 loading curtain, sky/fla",""],["e485336","11-09",2,2,278,174,13,"Launcher v5 baseline: dark worn street UI, night grade metered against real game frames (OWNER: baseline as se",""],["7aac9ed","11-09",2,3,0,0,0,"Merge slice/launcher-a: launcher v5 baseline on main (OWNER approved)",""],["dc63477","11-09",2,3,1,1,1,"Docs: open the Minecraft lane inside Remaster, pause the others, fix launcher baseline and next-task rule",""],["9876dec","11-09",2,3,104,0,1,"RE: Max Payne facts to fit the character into a foreign scene (M1-M6)",""],["36f7dd2","11-09",2,3,82,0,1,"docs: map NFSU and Max Payne host-web seam",""],["362d984","11-09",2,3,0,0,0,"Merge branches 'slice/mc-max' and 'slice/mc-seam' into slice/mc-import",""],["96cef92","11-09",2,2,667,2,8,"F-Max import from maxpayne-re b28fb1a: Max guest beside Speed, player draws into the NFSU scene (kept=0 still)",""],["65284ea","11-09",2,1,440,17,14,"F-Speed: leave the car in Free Run, walk, get back in (Remaster only)",""],["a8a925e","11-09",2,1,810,7,13,"Voxels slices 1-3 (Free Run, Remaster only): chunks, scene-depth drawing, place/break, collision sweep, flood-",""],["34c86e1","11-09",2,1,286,14,2,"Voxels slice 4: generation around the street from the ground query 0x440a40, streaming by distance",""],["aa7bce5","11-09",2,2,138,0,3,"Voxels slice 5: hotbar, block panel (I) and crosshair, in the Remaster overlay's glass language",""],["cb42253","11-09",2,2,96,27,4,"F-Max: the Max Payne body draws in NFSU Free Run (view from the dominant WV, bounds-centre selection, McPed pl",""],["f594006","11-09",2,3,0,0,0,"Merge branch 'slice/mc-speed' into slice/mc-import",""],["8998b18","11-09",2,1,321,3,3,"Voxel slice 6: 20 Hz block physics (grit falls, oil runs off edges), random ticks, gutter rats and lamp moths",""],["b4bb0fd","11-09",2,2,44,62,7,"F-Max join: Max is F-Speed's pedestrian (McPed placement, walk keys from its velocity); no Esc from the page, ",""],["82d6139","11-09",2,3,0,0,0,"Join: on foot + Max Payne as the pedestrian + own voxels in one build",""],["328abb8","11-09",2,3,0,0,0,"Merge slice/mc-import: on-foot + Max pedestrian + own voxels (Remaster Free Run)",""],["b7be7f5","11-10",2,2,176,54,5,"Page lifecycle as one state machine (web/app.js) with a player gate",""],["3bc7033","11-10",2,3,49062,1531,18,"UG2 baseline: SPEED2.EXE v1.2 facts, function census, full lift with numbers","UG2 Baseline \u00b7 SPEED2.EXE v1.2"],["e4a5818","11-10",2,3,189,1275,16,"UG2 collision decoded + bridge placement chosen (rank 1, R270)",""],["3cd6c22","11-10",2,2,1024,5,17,"Reconcile UG2 scope (re-nfsu-6b WIP) + render placement = bridge rank 1",""],["344d0e8","11-10",2,0,194,13,7,"UG2 collision in Free Run: u32 widx (reader patch + loader host fn) and TRACKB1010 = NFSU1 rows + UG2 rows (R2",""],["b5aedca","11-10",2,3,0,0,0,"Merge slice/ug2coll: u32 collision index + TRACKB1010 with UG2 rows",""],["eb9f106","11-10",2,2,1,1,1,"Close: UG2 collision FIXED in plan, render PLACE quantized like collision, HANDOFF map, real-orchestration del",""],["8bc2075","11-10",2,1,5,0,1,"RN_JUMP: refuse a track missing from the track table (WORLD 1010 absent in original mode) instead of null-read",""],["f260519","11-10",2,2,4,4,3,"Default mode = remaster (OWNER 2026-11-10): the UG2 city lives in Free Run's WORLD row, which original mode tu",""],["73b6292","11-10",2,0,221,2,3,"UG2 bridge road: 32 ground rows + side walls, dead-end cap and UG2 south wall opened, drawable mesh (bridge.bi",""],["ced8633","11-10",2,3,0,0,0,"Merge slice/ug2bridge: bridge road rows + UG2M mesh between the NFSU1 dead end and the UG2 south edge",""],["4b72e26","11-10",2,0,427,0,4,"UG2 textures: tools/ug2_tex.py decodes TPK packs, links solid->group->texture hash, side file city_tex.bin",""],["7c35ef2","11-10",2,3,0,0,0,"Merge slice/ug2tex: UG2 world texture decoder (tools/ug2_tex.py) + mesh->group->slot->hash link (census/ug2/te",""],["845f2bf","11-10",2,3,193,0,4,"census/ug2: decoder gap census and prior-art leads (intern output, leads not proof)",""],["ec2bea3","11-10",2,1,69,5,4,"UG2 render: city.bin from STREAML4RA only, cropped to the collision footprint; RN_SPAWN web teleport",""],["d03e7bd","11-10",2,2,19,11,1,"UG2: bridge.bin drawn with the city (same PLACE); plan rows 1-2 VERIFIED: UG2 seen around a spawned car, drive",""],["42f99b2","11-10",2,3,134,0,2,"census/ug2: prior-art leads for TPK (intern output, leads not proof)",""],["2da15f3","11-10",2,0,163,90,3,"UG2 textures: P8 palette is BGRA (exe 0x5ce170), per-texture alpha-test/blend from record +0x55/+0x56, vertex-",""],["6a0d6cc","11-10",2,3,0,0,0,"Merge slice/ug2tex: P8 palette BGRA (0x5ce230), alpha/blend from texture record +0x55/+0x56 (0x5bcc30), per-ma",""],["f4d1d67","11-10",2,2,198,58,2,"UG2 textured: shading as IDI_WORLD_FX (tex x vertex colour x 2), texture arrays per size with GPU mips, one dr",""],["dc690f2","11-10",2,3,167,0,2,"UG2 light.md: world shading facts from the exe's embedded D3DX effects (modulate2x, linear vertex fog, materia",""],["4a4f949","11-10",2,3,0,0,0,"Merge slice/ug2tex: census/ug2/light.md (world effect = 2 x tex x vertex colour, fog formula 0x5cb032, mask ->",""],["779f6c5","11-10",2,0,178,9,3,"UG2 light.md: fog S/D/colour writer + L4RA night tables (Night Normal Fog quadtree rows in L4RA.BUN), TOD stat",""],["887dec3","11-10",2,3,0,0,0,"Merge slice/ug2tex: fog tables (L4RA.BUN 0x8003b600, writer 0x614300) and sky dome facts in census/ug2/light.m",""],["ed295e4","11-10",2,0,28,13,6,"UG2 open city: drop race barriers by identity (instance flag 0x10 via 0x5710a0/0x5db0e0: 5,999 instances; coll",""],["be2bd3c","11-10",2,0,128,5,5,"UG2 sky: LOC4DYNTEX.BIN is a JDLZ block pack (exe decoder 0x573700); SKY_SUNRISE_A/_CAP and SKY_NIGHT_A/_CAP d",""],["fffe966","11-10",2,3,0,0,0,"Merge slice/ug2tex: sky textures from LOC4DYNTEX.BIN (JDLZ, decoder 0x573700) + SKYDOME mesh web/ug2/sky.json",""],["0bcc4ef","11-10",2,0,5,128,5,"Revert \"Merge slice/ug2tex: sky textures from LOC4DYNTEX.BIN (JDLZ, decoder 0x573700) + SKYDOME mesh web/ug2/s",""],["f30aec1","11-10",2,2,9,4,2,"UG2 pass at the end of the 3D scene (bumper camera composited before the first HUD quad: the sky-only frames);",""],["8c0b889","11-11",2,2,2,1,1,"?pool=1 boot keys: drop the two RETURN taps after flow 6 (in the race RETURN cycles the camera: POV 1 -> 2 -> ",""],["be9fbed","11-11",2,0,477,0,8,"UG2 road graph decoded (RoutesFreeRoam.bin 0x34121/22/23), NFSU1 net format and limits, field mapping, recomme",""],["8dc4685","11-11",2,0,88,20,3,"Bridge as a real UG2 road piece: deck carries the mouth lane texture RDP_LANEB_WD_AA_KT, its median vertex col","UG2 Road Graph & Bridge Deck"],["61dff0f","11-11",2,0,553,1,4,"UG2 traffic stage 1: 15 UG2 sections near the bridge + connector section appended to the Free Run road net (to",""],["6cedaca","11-11",2,3,0,0,0,"Merge slice/ug2traf: UG2 road sections near the bridge + connector appended to the Free Run traffic net (tools",""],["7b67845","11-11",2,1,11,2,2,"Front F: NFSU1 traffic drives over the bridge both ways and on the UG2 road; connector runs on west to 82.4 so",""],["bb5c036","11-11",2,0,17,7,2,"Front G: traffic lane speed bytes 11/17 = 20 m/s on the new nodes (they are speeds read by 0x5a7690, the templ",""],["2fc6634","11-11",2,2,4,3,1,"WORLD: Max Payne layer opt-in (?max=1): it booted a second game beside the UG2 city and logged a GPU out of me",""],["3139633","11-11",2,0,10,13,4,"No intro movies or splash, always: cave 0x797540 jumps the boot sequence to the profile screen without the RN_",""],["2b423a9","11-11",2,0,139,17,3,"WORLD minimap shows both cities: UG2's own TRACKMAP4000 (2048 DXT5, row 4000 bounds X0 -3425.43 Y0 3287.26 S 5",""],["bbfe008","11-11",2,3,0,0,0,"Merge branch 'slice/ug2map'",""],["2422bda","11-11",2,3,4,0,2,"Reconcile state with the scope: one next-task rule (first row not VERIFIED, OWNER-verdict rows skipped) in AGE",""],["a01a15b","11-11",2,0,154,45,3,"UG2 traffic on 175 UG2 sections (was 15): the section-id byte binds (<= 254 sections, 0x44a2ae), so ug2_traffi",""],["51c3a83","11-11",2,3,60,0,3,"Agencia for the widened WORLD scope (OWNER 2026-11-11): Fable orchestrates (account 3), Opus 5.5 foreman (acco",""],["651f880","11-11",2,3,11,1,3,"RE leads every row (OWNER 2026-11-11): name the row's code path in the census before patching; census/ug2/name",""],["6a972ae","11-11",2,3,52,0,2,"Row 8 RE: front-end menu path named (census/names_frontend.tsv, 22 rows; docs/re/frontend_menu.md): MU_Main_PC",""],["70d537d","11-11",2,3,98,0,1,"census/names.tsv: append 98 rows not yet merged (names_frontend + earlier w4c/w4e files); full regen not run: ",""],["c6931cd","11-11",2,3,87,0,2,"Row 11 RE: race setup named (census/names_racesetup.tsv 44 rows, 43 V; docs/re/race_setup.md): events 0x5a00a0",""],["d5ae18a","11-11",2,3,0,0,0,"Merge branch 'slice/wrace'",""],["0875faa","11-11",2,3,2,0,1,"census/names.tsv: append new racesetup rows",""],["f3b1a45","11-11",2,2,28,8,7,"UG2 city in Original inside WORLD (plan row 10): the gate is the race's track id 1010 (rn_mc.track, written by",""],["5c1c6b3","11-11",2,3,0,0,0,"Merge branch 'slice/worig'",""],["d6d0f13","11-11",2,3,1,0,1,"census/names.tsv: append row 10 world rows",""],["3048fbd","11-11",2,3,99,0,2,"Row 9 RE: unlock state, checks, GC-named unlock-all globals, WORLD gate candidates (census/names_unlock.tsv, d",""],["197f8a2","11-11",2,3,0,0,0,"Merge branch 'slice/wunlock'",""],["676761a","11-11",2,3,31,0,1,"census/names.tsv: append row 9 unlock rows",""],["48debf1","11-11",2,0,531,0,3,"Row 12 lane D: Bayview gaps map, gap table, 39 UG2 streaming names",""],["bd2cce6","11-11",2,3,0,0,0,"Merge branch 'slice/wbay'",""],["1cf3866","11-11",2,0,34,0,2,"Row 9 gaps: sponsor/preset rows and purchases follow the debug byte 0x735ec1 (patches_unlock.py caves 0x797700",""],["a22e8e0","11-11",2,3,0,0,0,"Merge branch 'slice/wunlock2'",""],["d6049d8","11-11",2,3,7,0,1,"census/names.tsv: append row 9 gap rows",""],["3bf60ed","11-11",2,1,95,28,14,"Row 8: main-menu Online button becomes WORLD (starts track 1010 in any mode), launcher v5 WORLD entry, hidden ",""],["905515e","11-11",2,2,2,4,2,"Row 8: hold the launcher WORLD entry on slice/wlauncher (main's working tree has uncommitted launcher edits fr",""],["e9491d1","11-11",2,3,0,0,0,"Merge branch 'slice/wworld'",""],["a6ad075","11-11",2,3,4,0,1,"census/names.tsv: append row 8 frontend rows",""],["d91e6f7","11-11",2,3,446,0,2,"Row 12 G1 RE: road section id carriers named (census/names_roadid.tsv 392 rows; docs/re/roadid.md): widen = ~1",""],["3214e99","11-11",2,3,0,0,0,"Merge branch 'slice/wroadid'",""],["e0cee6f","11-11",2,3,352,0,1,"census/names.tsv: append road id rows",""],["0901be6","11-11",2,3,2,2,2,"Row 12 G3: the 84 RA instances beyond 160 m of collision are drawn (REACH 160 -> 600): all from STREAML4RA, 0 ",""],["e1483a3","11-11",2,2,41,43,9,"Launcher: v6 art buttons become the base (OWNER 2026-11-11 approved v6 art buttons as the base): four photogra",""],["70d2c59","11-11",2,3,15,1,2,"Row 12 G5 RE: nothing east of x 1898 in RA or RD (collision ends 1900, roads 1891, scenery 2041; the airport p",""],["35ae967","11-11",2,0,268,0,2,"UG2 names from the GameCube Speed.elf: 103 rows (37 V, 66 I) for streaming, roads, traffic in census/ug2/names",""],["b86fdaf","11-11",2,3,0,0,0,"Merge branch 'slice/wug2names'",""],["426b34e","11-11",2,3,101,0,1,"census/ug2/names.tsv: append GC-sweep rows (new addresses only; 2 corrections stay in names_gcsweep.tsv)",""],["825ab7e","11-11",2,0,525,0,3,"Row 11: race proposal map (12 proposals, 5 from UG2's own race data) + decoded UG2 race tables",""],["54d1f21","11-11",2,3,0,0,0,"Merge slice/wraces: row 11 race proposals map (12 proposals, 5 from UG2's own race data)",""],["53872ad","11-11",2,2,9,3,4,"Launcher: WORLD wheatpasted-poster button on the v6 base (first item, click -> launch pool=1)",""],["5cd1230","11-11",2,3,0,0,0,"Merge branch 'slice/wlaunch6'",""],["09a2b65","11-11",2,3,0,0,0,"Merge branch 'slice/wcity'",""],["eb18a28","11-11",2,3,5,0,1,"census/ug2/names.tsv: append city-fill rows (G5 RE)",""],["ed58e5b","11-12",2,0,491,114,1,"UG2 traffic net resegmented: 175 longer UG2 sections (254 total), 1,902 entries, 110.68 of 114.51 km of the de",""],["59ffdfd","11-12",2,3,0,0,0,"Merge branch 'slice/wtraffic'",""],["b8ebf4e","11-12",2,0,376,4,4,"WORLD races: Park Loop (Circuit) and bridge challenge (Sprint) as TRACKB1010 variants (tools/ug2_race.py), ser",""],["a1327c4","11-12",2,3,0,0,0,"Merge main (resegmented UG2 net) into slice/wrace1",""],["0064f9f","11-12",2,0,25,11,2,"WORLD races: bridge race net-independent (UG2 free-roam path), census rows, shots race_park_loop / race_bridge",""],["1156558","11-12",2,3,6,0,1,"census/names.tsv: append row 11 race rows",""],["036e65c","11-12",2,0,57,4,1,"WORLD bridge race: racing lanes pulled inside the walls (side_room), a rival no longer aims behind the wall co",""],["82bd6ea","11-12",2,0,3,1,2,"WORLD Park Loop: route runs the way the grid faces (heading from ForwardStartingPosition, not the StartLine an",""],["b022d68","11-12",2,3,1,0,1,"census/names.tsv: append 0x4333c0 RacingCar init (lap byte -1)",""],["28a2ce5","11-12",2,3,20,69,4,"Agencia as an org chart (Fable > Sub > leads > becarios + blind auditor); GPS milestone: plan row 13, board, G",""],["06d0153","11-12",2,3,69,0,2,"GPS recon (G1): position, teleport, joined road net, minimap path, input read in Speed.exe and data",""],["99c1416","11-12",2,1,35,2,6,"GPS block contract: host/gps.h (pose, teleport request, route polyline) exported as _rn_gps_addr; stubs for le",""],["f4a0e65","11-12",2,3,2315,2,17,"Add verified mid-drive WORLD GPS teleport onto resident ground",""],["4bc1a7b","11-12",2,2,237,1,7,"Add WORLD GPS street map with live player pose and M capture",""],["eac14e0","11-12",2,3,0,0,0,"Merge slice/gpsmap: F1 GPS map on M with live pose",""],["40d21f9","11-12",2,3,0,0,0,"Merge slice/gpstp: F3 mid-drive teleport",""],["1a1bf9d","11-12",2,3,0,1,1,"census gps: one name for 0x427c50",""],["0f06378","11-12",2,3,703,0,10,"Add WORLD GPS routing and route on the native HUD minimap",""],["f4fe557","11-12",2,3,0,0,0,"Merge slice/gpsroute: F2 route, HUD minimap line, arrival, clear, teleport button",""],["7db9c7d","11-12",2,3,181,3,2,"GPS final run on :5180 (launcher WORLD, teleport by the map button): shots + evidence",""],["b88341b","11-12",2,3,0,1,1,"gps-recon: drop the unused Tab row",""],["909b244","11-12",2,3,46,0,2,"plan.json row 13: blind auditor approved G2-G5; waits on the OWNER's play",""],["df562f2","11-13",3,0,85,3,5,"Public static build: tools/build_public.py -> dist/, static test server, no /log or /telemetry when RN_PUBLIC","Public Static Build & Browser Saves"],["7e8024d","11-13",3,3,2031,0,3,"public pack: which files the game opens, bytes link->menu->driving, opener map (plan.json step 2 rows 3-4)",""],["fa24a42","11-13",3,2,166,111,8,"Saves live in the visitor's browser: in-memory /save in the wasm host, kept in IndexedDB (web/saves.js); launc",""],["8e7a60a","11-13",3,0,6,6,4,"Public build drives in WORLD from dist/: world/ and remaster/ linked, dev server seeds saves without a query f",""],["af94549","11-13",3,0,221,0,3,"ug2_groundcheck: drawn vs collision ground under every road node, 51 zones (census/ug2/ground_gaps.*)",""],["37fe003","11-13",3,0,18,2,3,"UG2 city: drop OBJECT01 backdrop (bbox > 600 m rule, ground crossed through at the bridge mouth); light cones ",""],["e0a7b93","11-13",3,3,49,52,1,"plan.json step 1: row 4 FIXED (backdrop OBJECT01 over the road at the bridge mouth, 37fe003), row 6 note on li",""],["e63dfc1","11-13",3,3,11,2,2,"WORLD duel starts when a rival is within 15 m for 1.5 s: no hit, same-heading or speed gate (was 40 m, same wa",""],["0972048","11-13",3,3,0,0,0,"Merge slice/duel: a WORLD duel starts when the player stays within 15 m of a rival for 1.5 s (was 40 m, same h",""],["6a4a82d","11-13",3,0,11,16,2,"UG2 exporter: backdrop sections = all-zero 0x34106 chunk (23 of 606), replaces the 600 m size rule; same outpu",""],["58f09e3","11-13",3,2,62,31,5,"Session report on the public build too (B marks a spot, Reporte in the map and on the stop card, car trail), m",""],["af69d97","11-13",3,1,290,7,13,"Crash family 0x5838c3 / 0x44c56e: the decider cache 0x458bd0 wrote AIVehicle+8 when full (ebp = -1); a full ca",""],["f82d9b6","11-13",3,3,0,0,0,"Merge slice/crash: decider cache 0x458bd0 no longer overwrites the AIVehicle driver pointer when full (crash 0",""],["3cd8d9b","11-13",3,0,1,3,1,"UG2 lamp glow: HEADLIGHTGLOW (3394fe62) was unresolved and 12,446 triangles drew white squares; ug2_tex.py no ",""],["1ca9df3","11-14",3,2,73,0,1,"web/diag.html: times the game's read path in the real browser (worker sync Range XHR with Resource Timing phas",""],["7e19552","11-14",3,0,120,8,6,"Expose per-race 23 ms stability telemetry and reporting",""],["51a40b9","11-14",3,2,96,25,1,"Live stability panel (E, F9, ?live=1): per-race frames over 23 ms, p99, worst, verdict, last 5 spikes with cau",""],["3a8a5ff","11-14",3,3,0,0,0,"Merge branch 'slice/stabpanel'",""],["a9a696d","11-14",3,3,16,3,2,"Stability panel: spikes one per line, 0x540698 named (QPC read in Solid_FindInAllLists 0x540680, objdump), HEA",""],["f440ab1","11-14",3,3,737,0,2,"Census for the 23 ms hunt: perf_files.tsv (674 files with frame data), spike_fixes.tsv (62 past spike commits ",""],["86002af","11-14",3,2,16,8,2,"Stability window = the race HUD: frames over 23 ms count only while driving (grid load and pause shown apart a",""],["09a1374","11-14",3,3,354,14,11,"Reduce cold WORLD transfer with compressed assets and opt-in HD pack",""],["d1f8552","11-14",3,1,17,5,4,"Race frames on the display grid by default (?pace=0 off): headless WORLD race 24 -> 8 frames over 23 ms, worst",""],["e24fe01","11-14",3,3,0,0,0,"Merge branch 'slice/spikes'",""],["a88bef1","11-14",3,3,0,0,0,"Merge branch 'slice/loadfast'",""],["8942fcb","11-14",3,2,3,3,2,"Speed block close: remaster textures stay on by default (slice/loadfast opt-in waits on the OWNER), plan.json ",""],["2bf58d4","11-14",3,2,4,4,2,"Remaster texture pack opt-in (OWNER 2026-11-14): off by default, on with the launcher toggle or ?remaster=1; r",""],["dc37cdd","11-14",3,3,269,0,6,"Texture foundation check: 50 remaster textures as BC7 gz (today) vs KTX2 UASTC vs webp + spark.js GPU encode; ",""],["e70fa69","11-14",3,1,140,6,10,"Add native main-menu Original/Remaster switch",""],["5f6346d","11-14",3,3,0,0,0,"Merge branch 'slice/modebtn'",""],["22d1590","11-14",3,0,73,14,1,"Public pack: dist/ only what the game fetches (ug2 .gz, default remaster lists, no installer files), 2.7 -> 1.",""],["134daac","11-14",3,0,40,0,2,"Hosting prep for Cloudflare R2 (OWNER choice): upload script with gzipped speed.wasm, zone rules map; nothing ",""],["3a8401f","11-15",3,2,130,36,6,"Mobile: touch controls redone (safe areas, thumb-sized pedals and steer pads, icon top bar), game cursor parke","Mobile Touch Controls & nfsu.cc CF"],["f15cd24","11-15",3,3,1,0,1,"Cloudflare: www.nfsu.cc 301 to nfsu.cc and 1-day cache rule live; Range 206 served from cache (HIT)",""],["99e5217","11-15",3,2,13,6,4,"Public build: FULL profile seeded on an empty browser store (made by the game, renamed), so phones skip the na",""],["0243297","11-15",3,2,3,2,1,"Public seed: FULL also when a visit stored only the input map (no Profiles.usr), e.g. a phone that stopped at ",""],["2647980","11-15",3,0,3,1,1,"upload_r2.sh: speed.wasm always re-sent (a same-size re-run's server-side copy dropped Content-Encoding: gzip ",""],["2ca2c75","11-15",3,2,140,92,5,"Mobile: touch HUD redone (layout follows the game's own screens via flow fe, steering rocker + pedal arc, roun",""],["053172c","11-15",3,2,84,27,6,"Phones always start light (Original, fx off, 30 fps) and WORLD is cut for them: half-size WebP city pack (59 -",""],["fb59381","11-15",3,2,15,4,3,"Phones: speed blur off and short light trails, the frame limiter sleeps (menus 110 % -> 13-29 % of a core in t",""],["2e81b16","11-15",3,2,24,33,5,"Phones: no WORLD (RN_NOWORLD from the coarse pointer: the menu button reads WORLD (PC), world_arm refuses, not",""],["ac4aabf","11-15",3,2,167,112,3,"Touch HUD redone from prior art: gas auto with a setting (two thumbs brake), invisible halves per thumb, white",""],["fb30b4e","11-15",3,2,2,0,1,"Phones: the sharpen-on-upscale pass stays on (OWNER 2026-11-15: 1280 + sharpen), other effects off",""],["c189882","11-15",3,2,96,0,3,"Phones: on-screen keys for the profile name (web/namekeys.js: a TECLADO chip on the profile screen, keys throu",""],["6d565e5","11-15",3,2,62,99,4,"Phones: touch HUD only presses keys (OWNER 2026-11-15: no automatic gas, no PC cursor): arrows + gas/brake but",""],["a3eedcd","11-15",3,2,94,83,4,"Phones: one composition for the game's HUD and the touch layer (OWNER 2026-11-15): game HUD at the wide edges ",""],["e26182c","11-15",3,2,45,35,6,"Phones: touch layer laid on the picture's real rect, notch inset live (ring word 7), in-race menus stay centre",""],["e20c97e","11-15",3,2,6,3,1,"Phones: CAMERA and RESET word circles beside the pause (OWNER 2026-11-15: both back); plan and handoff: PC lau",""],["af78fbe","11-15",3,2,700,784,35,"PC launcher, the real one (plan row 10, OWNER's picks 2026-11-15): one JUGAR + settings board + folded Avanzad",""],["cbc5d46","11-15",3,2,5,2,2,"Launcher: before/after cards stay empty (captures did not match between runs); plan row 10 FIXED with shots, r",""],["8d222db","11-15",3,0,4,2,1,"Public build ships the launcher scene (launcher_b) and versions launcher.css and module scripts",""],["8e444cf","11-15",3,2,54,13,4,"Phones: BACK really goes back (menus' Back is Backspace, table 0x7032d8 row 0x17; Esc is only Pause), left / r",""],["4296167","11-15",3,2,194,508,26,"PC launcher rebuilt as one more screen of the game (OWNER's pick 'Estilo del juego' after rejecting the cardbo",""],["3f7789c","11-15",3,2,23,18,5,"Game switches leave the address: everything plays at the bare / (OWNER 2026-11-15)",""],["8b41246","11-16",3,2,1593,43,37,"SEO: search and share tags, icons, robots, sitemap, 5 guides in English and Spanish, launcher bilingual by bro",""],["43cc02a","11-16",3,3,482,0,9,"README for GitHub with four paintings made by code (docs/art/paint.html), language bar rules",""],["4cc2ce0","11-16",3,3,112,414,20,"README rebuilt on real captures: banner from two game shots, gallery, road network plot; code paintings remove",""],["971e2f8","11-16",3,2,13,19,6,"No scripted keys in a normal visit: the game never presses its own menus (OWNER 2026-11-16)",""],["5c62c92","11-16",3,2,47,33,12,"Launcher: three entries JUGAR (main menu), WORLD (straight into the city), CARRERA (Go Underground, all open o",""],["5b5928e","11-16",3,2,4,1,1,"In-game panel: a changed setting reloads into the same launcher entry (main menu, WORLD or Go Underground)",""],["dae7823","11-16",3,3,1504,93,13,"WORLD entry 66 s -> 23 s at 80 ms a request: whole small files, shared pieces, prefetch threads, city under th",""],["ef0244e","11-16",3,0,82,8,4,"Load: key script rule restored (test scripts rely on it), launcher retries 1.2 s; whole files tied to the cach",""],["40c5f45","11-16",3,0,5,3,1,"Live on nfsu.cc as build 2385985ed1 (OWNER go): WORLD entry 65.7 s -> 28.2 s cold, 21.4 s on the second visit;",""],["62c0b77","11-16",3,3,49,0,1,"Census: names for 48 state machines of host/ and web/ (3 explicit, 2 semi, the rest implicit), read-only audit",""],["99f50d6","11-16",3,2,14,11,1,"Curtain: its arrival follows where the trip really ends (DEST), not the raw ?start=; no flag of its own, down ",""],["e4fd064","11-17",3,0,229,5300,65,"WORLD retired (OWNER 2026-11-17): off everywhere, its code and data isolated in attic/world/ for a possible re","WORLD Retired \u00b7 Focus on NFSU1 Live"],["4d08ad7","11-17",3,2,0,122,1,"Live on nfsu.cc as build 4d6d0f2c48 (OWNER go): WORLD retired; AGENTS.md goal line; prefetch list without WORL",""],["7d7ba10","11-17",3,2,1027,38,23,"Blog: 5 devlog posts EN/ES (recompilation, RE tools, DirectX on WebGPU, load + hosting, AI agents), GitHub lin",""],["b556609","11-17",3,2,12,43,5,"nfsu.cc opens the launcher on every computer visit (a tab that chose stays in the game on reload); launcher ra",""],["ab75542","11-17",3,2,23,16,4,"Launcher opens at once: redirect before any game script, menu no longer waits for the 3D street (cold, 80 ms R",""],["f1ad136","11-17",3,2,57,28,5,"Launcher: readable volume (\u2039 70 % \u203a, menu sounds follow it), Idioma line (Espa\u00f1ol/English, saved), panel fits ",""],["9ecd0ea","11-17",3,0,599,289,147,"Swallowed errors: saves read/write failures and a missing seed reach the log and the player; entry_hint.tsv fa",""],["b4d40cc","11-17",3,3,168,76,10,"README play-first in English + README.es.md: Play button to nfsu.cc, guides and devlog links, WORLD removed (b",""],["26ccabc","11-17",3,0,19,6,3,"Search: README titles and first lines on what people type (play NFS Underground online, free, no download; ES ",""],["f107d57","11-18",3,3,53,0,1,"Census: validation inventory between layers (49 rows: launcher/URL/env/host, saves, serving, key scripts, patc",""],["12ec5f2","11-18",3,2,34,17,8,"Validation L1-L7, S2: launcher choices reach the game as shown",""],["95d3f82","11-18",3,3,2335,18,5,"Track prefetch per race: t<id> hint lines for the 8 Free Run tracks queued when [0x78a2f0] changes; race load ",""],["cd026ab","11-18",3,1,73,10,5,"Race prefetch: entrant cars all at once at Accept (cars_hook) and the track highlighted in the Quick Race menu",""],["5007e22","11-18",3,0,1,1,1,"loadcap: RN_CDP picks the Chrome debug port so slices measure in parallel",""],["0ab0b2d","11-18",3,3,213,10,7,"Merge load lanes: A gzip read pieces (data-chunks), C phone prefetch + 96 MB cache; B found Chrome's HTTP cach",""],["9ef8b33","11-18",3,2,3988,6,8,"WebGL 2 fallback: browsers without WebGPU (iOS 18, Firefox Android/Linux) draw through web/webgpu_gl.js (webgp",""],["037f350","11-18",3,2,2,0,1,"?dbg=1 opens the log panel from the start (phones have no F2)",""],["b03b27d","11-19",3,2,129,47,3,"WebGL 2 path: less garbage and fewer GL calls for Safari (cached uniform locations, texture binding facts, GL ",""],["8db1af0","11-19",3,3,9,0,1,"plan: Safari findings (WebKit footprint before/after, gate not met, rest of the garbage in web/gpu.js)",""],["d179fa4","11-19",3,3,13,0,1,"Close the Safari night block: auditor verdict, corrected numbers, handoff",""],["1bf1dac","11-19",3,1,53,238,8,"Sunk-cost cleanup: WORLD out of the plan and the live code (OWNER go 2026-11-19)",""],["8a05362","11-19",3,3,13,0,1,"Census: names_aiplus.tsv, the 7 WORLD-era exe patches read in Speed.exe (REA + objdump): each is the shipped b",""],["37e33fc","11-19",3,1,28,142,7,"Remove 5 WORLD-era exe patches and the ai_plus host code: shipped bytes back",""],["ee58055","11-19",3,2,2,2,1,"Fix the R2 404 page shown as the loading curtain after Jugar on nfsu.cc",""],["876a8a5","11-19",3,2,1,0,1,"noindex on the launcher_b curtain page; R2 bucket trimmed to dist (29 orphan launcher/ images removed)",""],["0736335","11-19",3,2,9,2,2,"Gate: no cross-origin isolation (Android WebView browsers like LineageOS Jelly) gets a player message and an O",""],["d1cef60","11-19",3,2,173,271,9,"Audit Waves 1+2: fix WebGL2 blend/mipgen/MSAA, gpu.js STOP, binds UX, boot loggers, d3d9 reserve, aitel UAF, m",""],["64ea385","11-19",3,2,20,8,2,"Reconcile d1cef60: WebGL 2 views set BASE/MAX_LEVEL (no feedback loop in GPU mip passes), RN_FLOWLOG always on",""],["90fd853","11-19",3,2,184,78,33,"SEO: repo sections link to the guides and the guides link back to the repo",""],["3b149fb","11-19",3,3,26,13,6,"Internal work notes stay on this machine, not on GitHub",""],["03d16cf","11-19",3,0,3,620,8,"Remove propagated WORLD leftovers and two wrong census names",""],["57c6aee","11-20",4,1,285,493,14,"Reconcile gpu.js GC churn, WebGL 2 cache traps, and dead mc.c hook",""],["31c1167","11-20",4,3,193,22,13,"Mobile & fast-load opt (Phases 1+2): 1024MB WASM, 384MB guest, 4MB stacks, parallel boot, car data-chunks, imm",""],["8cbf571","11-20",4,2,126,47,4,"Phase 3A/3B mobile GPU opt (lazy shaders, WebGL2 960x540) + Safari/WebKit gate",""],["d6ef04c","11-20",4,1,31,14,2,"Cap uncapped Present() loops to 60 fps in pace_plan() (fixes PC_Loading.fng WebGL2 crash)",""],["e79e9d2","11-20",4,2,303,141,2,"Pool WebGL 2 command tape in webgpu_gl.js (-62.5% Safari WebGL2 RAM at 90s)",""],["dd951c1","11-20",4,1,2,0,1,"Guard track_drop() under __EMSCRIPTEN__ (28/28 host/*.c pass native clang)",""],["3a4e6ab","11-20",4,2,221,80,4,"Fix iPhone XR WebGL2 race crash: 960x442 RN_SCREEN floor, FBO/dirty-state/buffer RAM fixes",""],["a47fd99","11-21",4,0,10986,0,44,"recomp-kit: x86-32 to WASM bridge, real RE toolchain, CLI-to-Web live telemetry",""],["e011b0e","11-21",4,0,624,2,6,"recomp-kit: REA on-demand anchors, C-speed .text xrefs, and 10ms single-function lift",""],["30ceb78","11-21",4,0,52,29,7,"Mobile reach: brotli wasm + data pieces, 896 MB wasm memory, in-app browsers jump to Chrome/Safari",""],["d836a33","11-21",4,2,5,598,9,"Free Run as shipped in both modes (RN_FREE off by default), Max Payne branch out of the boot, pool comment mat",""],["c3430e8","11-21",4,0,52,1,5,"Crash reports from nfsu.cc: anonymous beacon on the first stop line, Worker into a private R2 bucket (not depl",""],["dd1146b","11-21",4,3,27,18,1,"Census: lift report of today's build (13,764 functions, unlock caves in, WORLD patches out)",""],["bc04daf","11-21",4,3,49,213653,205,"Repo shows the current game: retired WORLD/UG2 material, audits, boards and dated memos out of git; docs/re in",""],["0850cc8","11-21",4,3,80,100,2,"README EN/ES: what plays today and why it works, current numbers (11 MB brotli program, 13,764 functions); pro",""],["4b626cc","11-21",4,2,336,360,21,"Blog EN/ES: how-it-works posts in present tense with today's numbers (32.6 MB to the menu, 11.1 MB brotli prog",""],["11fc8dd","11-21",4,3,100,150,23,"docs/re: no dead references. Notes retired from git link to their dd1146b copy; never-published working notes ",""],["dc7edb7","11-22",4,2,56,12,4,"feat(render): detect hardware tiers and bound Ultra-Lite rendering",""],["4f09a0b","11-22",4,1,61,6,7,"Add Lite and Ultra-Lite content flow and loading policy",""],["521ad50","11-22",4,3,136,8,5,"Add isolated Lite WASM and Ultra-Lite RAM budgets",""],["a37ea5f","11-22",4,3,0,0,0,"Merge commit '4f09a0b'",""],["8476468","11-22",4,3,0,0,0,"Merge commit '521ad50'",""],["3aafd5b","11-22",4,2,11,3,2,"web: load speed_lite.js/.wasm on lite and ultralite tiers",""],["724d0b5","11-22",4,1,1,1,1,"host/win32.c: lower RN_SCREEN min width to 400x240 so ultralite never falls back to 1080p",""],["e19daa6","11-22",4,0,11,4,2,"build_public + upload_r2: ship brotli speed_lite.wasm alongside speed.wasm",""],["7b43deb","11-22",4,2,31,14,2,"web: conservative -1 / 80% hardware tier detection and rnSetTier sync",""],["9545ee5","11-22",4,1,2,3,1,"ultralite keeps music (OWNER 2026-11-13 never cut the music)",""],["40e6aff","11-22",4,2,48,3,5,"Always-on frame stats: host ring of 256 presents, web/stats.js windows, rnReport and crash line",""],["00e474c","11-22",4,2,69,8,4,"DXT1/3/5 textures stay BC1/2/3 on the GPU (RN_S3TC, WebGPU + WebGL2 s3tc shim), upload counters in the boot lo","Hardware Tiers & BC1/2/3 GPU Textures"],["8aeb122","11-22",4,3,0,0,0,"Merge branch 'worktree-agent-a5a4851ea49e1273c'",""],["63c931f","11-22",4,3,0,0,0,"Merge branch 'worktree-agent-a3458fe4619126371'",""],["c0ed22e","11-22",4,1,61,11,5,"host: rn_set_fps and rn_request_screen levers (screen applied inside Reset)",""],["b9c9753","11-22",4,2,160,5,6,"web/quality.js: frame-time quality controller (res > blur > fx > fps > tier), measured tier in localStorage rn",""],["d03de35","11-22",4,3,0,0,0,"Merge branch 'worktree-agent-a36e7154a10722e7c'",""],["32b8d2f","11-22",4,3,0,0,0,"Merge branch 'worktree-agent-a8c2c84e3fcfe9cbd'",""],["73d74eb","11-22",4,2,3,3,2,"web: saves hook runs after speed*.js loads (3aafd5b loaded it late, so /save was never seeded and every boot s",""],["c8e94a4","11-22",4,2,44,1,1,"web/quality.js: below-the-floor notice (ultralite, 2 windows p50 > 100 ms), floor/floorDismissed in rn_quality",""],["fd1bb2f","11-22",4,0,57,0,1,"tools/probe/phone_profile.mjs: per-worker CPU profile of the game page on a USB Android phone",""],["69f51fb","11-23",4,0,138,19,3,"lift.py: CHK_IMG for constant image addresses, one CHK_SP per straight-line esp block; rt.h: cold CHK, RN_FAST",""],["da60e88","11-23",4,0,4,2,2,"lift.py: loop targets and overlap-stream entries end an esp block; difftest trace build: RN_STRICT_X87 only",""],["8444027","11-23",4,0,368,100,3,"Prune dead guest flags in the recompiler",""],["deb8f28","11-23",4,1,85,55,6,"opt(draws): zero-waste draw pipeline, compact dynamic UBO, and post bindGroup cache",""],["20f25e0","11-23",4,3,0,0,0,"Merge branch 'slice/opt-flags' into slice/opt-all",""],["fc8ef2e","11-23",4,3,0,0,0,"Merge slice/opt-chk-x87: CHK_IMG/CHK_SP esp coalescing on top of flag liveness",""],["921e827","11-24",4,2,118,30,7,"fix(web,host): harden prod crashes from nfsu-crash (bgra fallback, waitAsync, net retries, audio, storage, Exi",""],["511830f","11-24",4,1,22,11,7,"fix(host,web,build): cut 50-min OOM and lower speed_lite WASM to 448 MB","448 MB Phone WASM & 50-min OOM Fix"],["52fdc3b","11-24",4,2,437,110,30,"Enable Cloudflare RUM in dist/ and upgrade site + repo SEO",""],["9776828","11-24",4,0,0,15,1,"Remove duplicate manual RUM tag (CF already auto-injects beacon)",""],["a10fb9d","11-24",4,2,12877,53,136,"feat(seo,geo,re): publish 44-system RE Atlas, engineering devlog, Atom RSS, .md mirrors, and llms-full.txt",""],["02761d6","11-24",4,2,22,10,9,"sec(opsec): disable ?bridge in prod, exclude diag/README from dist, sanitize local paths",""],["ab2f271","11-24",4,2,1,1,1,"fix(web): guard RN_B curtain iframe read with try/catch so blocked iframes never crash boot",""],["c57d553","11-24",4,2,170,12,2,"feat(mobile): upgrade rotate-phone screen with fullscreen comparison and iOS/Android Add-to-Home-Screen wizard",""],["59cc348","11-24",4,2,7,4,1,"fix(mobile): rotate gate scrolls from its top on short screens; Listo closes the Home Screen wizard",""],["653dc84","11-25",4,0,158,37,7,"perf(web,deploy): preserve V8 WASM code cache, skip 3D curtain on mobile, immutable R2 headers, funnel beacon",""],["08e1374","11-25",4,2,2981,323,100,"feat(seo,geo,re): global /reverse-engineering hub (ELI5+tech), 653dc84 devlog, symbol/patch catalogs, 49-syste","49-System RE Atlas & V8 WASM Cache"]];
+
+const SUB_META = [
+  { id: 0, key: "recomp", label: "tools/recomp", color: "#f59e0b", glow: "rgba(245,158,11,0.55)" },
+  { id: 1, key: "host",   label: "host/C",       color: "#fb7185", glow: "rgba(251,113,133,0.55)" },
+  { id: 2, key: "web",    label: "web/GPU",      color: "#38bdf8", glow: "rgba(56,189,248,0.55)" },
+  { id: 3, key: "re",     label: "census/RE",    color: "#a78bfa", glow: "rgba(167,139,250,0.55)" },
+];
+
+// 5 Harmonic Acts (total = 80 bars = 1280 sixteenth-note steps)
+const ACTS = [
+  {
+    id: 0, short: "ACT I · BOOT", title: "I · Boot & First Frame", dates: "Oct 19–24",
+    startBar: 0, bars: 12, tint: "rgba(56, 189, 248, 0.08)",
+    chords: [
+      { name: "Dm9",    bass: 38, pad: [50, 57, 60, 64], scale: [62, 64, 65, 69, 72, 74, 76, 77] },
+      { name: "Bbmaj7", bass: 46, pad: [53, 57, 62, 65], scale: [62, 65, 69, 70, 74, 77, 81] },
+      { name: "C6/9",   bass: 48, pad: [52, 55, 57, 62], scale: [60, 62, 64, 67, 69, 72, 74, 76] },
+      { name: "Am7",    bass: 45, pad: [52, 55, 60, 64], scale: [60, 64, 67, 69, 72, 76, 79] },
+    ],
+    motif: [0, 2, 3, 2, 4, 3, 2, 1],
+    energy: 0.65,
+  },
+  {
+    id: 1, short: "ACT II · DEEP RE", title: "II · Deep RE & Streets", dates: "Oct 25–Nov 06",
+    startBar: 12, bars: 28, tint: "rgba(245, 158, 11, 0.085)",
+    chords: [
+      { name: "Dm9",    bass: 38, pad: [50, 57, 60, 64], scale: [62, 64, 65, 69, 72, 74, 76, 77] },
+      { name: "Fmaj7",  bass: 41, pad: [53, 57, 60, 64], scale: [60, 64, 65, 67, 69, 72, 76, 77] },
+      { name: "Gm9",    bass: 43, pad: [53, 58, 62, 65], scale: [62, 65, 67, 69, 70, 74, 77, 79] },
+      { name: "A7sus4", bass: 45, pad: [52, 55, 62, 64], scale: [62, 64, 67, 69, 72, 74, 76, 79] },
+    ],
+    motif: [2, 3, 4, 2, 5, 4, 3, 2],
+    energy: 0.92,
+  },
+  {
+    id: 2, short: "ACT III · UG2 DETOUR", title: "III · UG2 Detour", dates: "Nov 07–12",
+    startBar: 40, bars: 16, tint: "rgba(167, 139, 250, 0.095)",
+    chords: [
+      { name: "Bbmaj7", bass: 46, pad: [53, 57, 62, 65], scale: [62, 65, 69, 70, 74, 77, 81] },
+      { name: "Gm7",    bass: 43, pad: [53, 58, 62, 67], scale: [62, 65, 67, 70, 74, 77, 79] },
+      { name: "Ebmaj7", bass: 39, pad: [51, 55, 58, 62], scale: [62, 63, 67, 70, 74, 75, 79] },
+      { name: "Fsus4",  bass: 41, pad: [53, 58, 60, 65], scale: [60, 65, 67, 70, 72, 77, 79] },
+    ],
+    motif: [3, 4, 5, 3, 2, 4, 3, 1],
+    energy: 0.85,
+  },
+  {
+    id: 3, short: "ACT IV · NFSU.CC LIVE", title: "IV · nfsu.cc Live", dates: "Nov 13–19",
+    startBar: 56, bars: 12, tint: "rgba(52, 211, 153, 0.08)",
+    chords: [
+      { name: "Fmaj7",  bass: 41, pad: [53, 57, 60, 64], scale: [60, 64, 65, 69, 72, 74, 76, 77] },
+      { name: "C/E",    bass: 40, pad: [52, 55, 60, 62], scale: [60, 62, 64, 67, 72, 74, 76, 79] },
+      { name: "Dm9",    bass: 38, pad: [50, 57, 60, 64], scale: [62, 64, 65, 69, 72, 74, 76, 77] },
+      { name: "Bbmaj7", bass: 46, pad: [53, 57, 62, 65], scale: [62, 65, 69, 70, 74, 77, 81] },
+    ],
+    motif: [0, 2, 4, 5, 4, 2, 3, 2],
+    energy: 0.90,
+  },
+  {
+    id: 4, short: "ACT V · 448 MB & ATLAS", title: "V · 448 MB & Atlas", dates: "Nov 20–25",
+    startBar: 68, bars: 12, tint: "rgba(245, 158, 11, 0.10)",
+    chords: [
+      { name: "Dm9",    bass: 38, pad: [50, 57, 60, 64], scale: [62, 64, 65, 69, 72, 74, 76, 77] },
+      { name: "Bbmaj7", bass: 46, pad: [53, 57, 62, 65], scale: [62, 65, 69, 70, 74, 77, 81] },
+      { name: "Fmaj7",  bass: 41, pad: [53, 57, 60, 64], scale: [60, 64, 65, 69, 72, 74, 76, 77] },
+      { name: "Cmaj9",  bass: 48, pad: [52, 55, 59, 62], scale: [62, 64, 67, 71, 74, 76, 79] },
+    ],
+    motif: [4, 3, 2, 4, 5, 4, 2, 0],
+    energy: 0.78,
+  },
+];
+
+const TOTAL_BARS = 80;
+const STEPS_PER_BAR = 16;
+const TOTAL_STEPS = TOTAL_BARS * STEPS_PER_BAR; // 1280 steps
+
+// ═══════════════════════════════════════════════════════════════
+// 2. COMPOSITIONAL SCORE COMPILER (Voice-Led Melody + 4-Part Harmony)
+// ═══════════════════════════════════════════════════════════════
+function getActAtStep(step) {
+  const bar = Math.floor(Math.max(0, Math.min(TOTAL_STEPS - 1, step)) / STEPS_PER_BAR);
+  for (let i = ACTS.length - 1; i >= 0; i--) {
+    if (bar >= ACTS[i].startBar) return ACTS[i];
+  }
+  return ACTS[0];
+}
+
+function getChordAtStep(step) {
+  const act = getActAtStep(step);
+  const barInAct = Math.floor(step / STEPS_PER_BAR) - act.startBar;
+  return act.chords[barInAct % act.chords.length];
+}
+
+// Compile all 906 real commits into quantized musical notes with smooth voice leading
+function compileScore() {
+  const byAct = [[], [], [], [], []];
+  RAW_COMMITS.forEach((c, idx) => byAct[c[2]].push({ raw: c, idx }));
+
+  const events = [];
+  const stepBuckets = Array.from({ length: TOTAL_STEPS }, () => []);
+  const milestones = [];
+
+  // Voice-leading state per subsystem so melodies glide naturally instead of jumping wildly
+  const lastPitch = [69, 45, 74, 60];
+
+  function pickVoiceLed(candidates, prevMidi, maxJump = 7) {
+    let best = candidates[0];
+    let bestScore = Infinity;
+    for (const m of candidates) {
+      const dist = Math.abs(m - prevMidi);
+      // Prefer small stepwise motion (1..5 semitones), penalize huge leaps and excessive repeats
+      const repeatPenalty = dist === 0 ? 1.8 : 0;
+      const leapPenalty = dist > maxJump ? (dist - maxJump) * 3 : 0;
+      const score = dist + repeatPenalty + leapPenalty;
+      if (score < bestScore) { bestScore = score; best = m; }
+    }
+    return best;
+  }
+
+  for (let a = 0; a < ACTS.length; a++) {
+    const act = ACTS[a];
+    const list = byAct[a];
+    const actStartStep = act.startBar * STEPS_PER_BAR;
+    const actSteps = act.bars * STEPS_PER_BAR;
+
+    for (let i = 0; i < list.length; i++) {
+      const { raw, idx } = list[i];
+      const [hash, mmdd, actId, sub, add, del, files, msg, msLabel] = raw;
+      const churn = add + del;
+
+      // Distribute commits chronologically across the Act's musical steps
+      const frac = list.length > 1 ? i / (list.length - 1) : 0;
+      // Leave the last 4 steps of the final Act for the resolving final chord
+      const usableSteps = a === 4 ? actSteps - 8 : actSteps - 2;
+      let step = actStartStep + Math.round(frac * usableSteps);
+      // Snap milestones to strong beats (downbeat or beat 3) when possible
+      if (msLabel) {
+        step = Math.min(actStartStep + usableSteps, Math.round(step / 4) * 4);
+      }
+
+      const chord = getChordAtStep(step);
+      const phraseSlot = Math.floor((step % 16) / 2); // 0..7
+      const motifDeg = act.motif[phraseSlot % act.motif.length];
+      const scale = chord.scale;
+
+      // Deterministic musical pitch per subsystem with voice leading
+      let midi;
+      const hashSeed = parseInt(hash.slice(0, 4), 16);
+      if (sub === 0) {
+        // tools/recomp -> Expressive Lead Melody anchored to the Act's motif
+        const targetIdx = (motifDeg + (churn > 1500 ? 1 : 0) + (hashSeed % 2)) % scale.length;
+        const target = scale[targetIdx];
+        const near = scale.filter(n => Math.abs(n - target) <= 5);
+        midi = pickVoiceLed(near.length ? near : scale, lastPitch[0], churn > 5000 ? 9 : 5);
+        lastPitch[0] = midi;
+      } else if (sub === 1) {
+        // host/C -> Deep Analog Bass (chord root, fifth, or octave)
+        const bassOpts = [chord.bass, chord.bass + 7, chord.bass + 12];
+        midi = (step % 8 === 0) ? chord.bass : bassOpts[hashSeed % bassOpts.length];
+        lastPitch[1] = midi;
+      } else if (sub === 2) {
+        // web/GPU -> Shimmering Upper Arpeggio (upper chord tones)
+        const upper = scale.slice(2).map(n => n + (n < 72 ? 12 : 0));
+        const arpIdx = (step + hashSeed) % upper.length;
+        const candidates = [upper[arpIdx], upper[(arpIdx + 1) % upper.length]];
+        midi = pickVoiceLed(candidates, lastPitch[2], 7);
+        lastPitch[2] = midi;
+      } else {
+        // census/RE/docs -> Mid Harmonic Pad / Bell Accent
+        const padOpts = chord.pad;
+        midi = pickVoiceLed(padOpts, lastPitch[3], 5);
+        lastPitch[3] = midi;
+      }
+
+      // Duration & velocity from churn (logarithmic so huge commits feel grand without clipping)
+      const logChurn = Math.log10(Math.max(10, churn));
+      const durSteps = msLabel
+        ? 8
+        : sub === 3
+          ? Math.min(8, Math.max(3, Math.round(logChurn * 1.6)))
+          : sub === 1
+            ? 2
+            : Math.min(5, Math.max(1.5, Math.round(logChurn * 0.9)));
+      const vel = Math.min(0.95, Math.max(0.32, 0.34 + logChurn * 0.11 + (msLabel ? 0.18 : 0)));
+
+      const ev = {
+        idx, hash, date: "2026-" + mmdd, mmdd, act: actId, sub,
+        add, del, files, churn, msg, msLabel,
+        step, midi, durSteps, vel,
+        chordName: chord.name,
+        isMilestone: Boolean(msLabel),
+      };
+      events.push(ev);
+      stepBuckets[step].push(ev);
+      if (msLabel) milestones.push(ev);
+    }
+  }
+
+  // Compute musical voice-leading stats for verification
+  const leadNotes = events.filter(e => e.sub === 0);
+  let smallIntervals = 0;
+  for (let i = 1; i < leadNotes.length; i++) {
+    if (Math.abs(leadNotes[i].midi - leadNotes[i - 1].midi) <= 7) smallIntervals++;
+  }
+  const stepwiseRatio = leadNotes.length > 1 ? smallIntervals / (leadNotes.length - 1) : 1;
+
+  // Build per-bar density for the bottom minimap
+  const barDensity = Array.from({ length: TOTAL_BARS }, () => ({ total: 0, subs: [0, 0, 0, 0] }));
+  for (const ev of events) {
+    const b = Math.min(TOTAL_BARS - 1, Math.floor(ev.step / STEPS_PER_BAR));
+    barDensity[b].total++;
+    barDensity[b].subs[ev.sub]++;
+  }
+  const maxBarDensity = Math.max(1, ...barDensity.map(b => b.total));
+
+  return { events, stepBuckets, milestones, barDensity, maxBarDensity, stepwiseRatio };
+}
+
+const SCORE = compileScore();
+window.__NFSU_SCORE_STATS__ = {
+  totalCommits: SCORE.events.length,
+  milestones: SCORE.milestones.length,
+  stepwiseRatio: Number(SCORE.stepwiseRatio.toFixed(3)),
+  totalBars: TOTAL_BARS,
+  acts: ACTS.map(a => ({ id: a.id, title: a.title, bars: a.bars })),
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 3. STUDIO WEB AUDIO ENGINE (Synthwave Nocturno + Piano Cinemático)
+// ═══════════════════════════════════════════════════════════════
+const midiToFreq = m => 440 * Math.pow(2, (m - 69) / 12);
+
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.mode = "synth"; // "synth" | "piano"
+    this.voicesEnabled = [true, true, true, true, true]; // 0..3 subs, 4 pulse
+    this.analyser = null;
+    this.freqData = null;
+    this.master = null;
+    this.reverbSend = null;
+    this.delaySend = null;
+  }
+
+  init() {
+    if (this.ctx) {
+      if (this.ctx.state === "suspended") this.ctx.resume();
+      return;
+    }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AC();
+
+    // Master warmth & anti-clipping compressor
+    const comp = this.ctx.createDynamicsCompressor();
+    comp.threshold.value = -14;
+    comp.knee.value = 18;
+    comp.ratio.value = 4;
+    comp.attack.value = 0.008;
+    comp.release.value = 0.18;
+
+    const tilt = this.ctx.createBiquadFilter();
+    tilt.type = "lowshelf";
+    tilt.frequency.value = 140;
+    tilt.gain.value = 2.5;
+
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.78;
+
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 256;
+    this.analyser.smoothingTimeConstant = 0.82;
+    this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
+
+    this.master.connect(tilt);
+    tilt.connect(comp);
+    comp.connect(this.analyser);
+    this.analyser.connect(this.ctx.destination);
+
+    // Procedural dark-hall stereo reverb impulse
+    const convolver = this.ctx.createConvolver();
+    convolver.buffer = this.createImpulse(2.3, 2.8);
+    const revLP = this.ctx.createBiquadFilter();
+    revLP.type = "lowpass";
+    revLP.frequency.value = 2900;
+    const revGain = this.ctx.createGain();
+    revGain.gain.value = 0.34;
+    this.reverbSend = this.ctx.createGain();
+    this.reverbSend.gain.value = 1.0;
+    this.reverbSend.connect(convolver);
+    convolver.connect(revLP);
+    revLP.connect(revGain);
+    revGain.connect(this.master);
+
+    // Dotted-8th stereo ping-pong delay for nocturnal width
+    this.delaySend = this.ctx.createGain();
+    this.delaySend.gain.value = 0.38;
+    const dL = this.ctx.createDelay(1.0);
+    const dR = this.ctx.createDelay(1.0);
+    dL.delayTime.value = 0.416; // dotted-8th at 108 BPM
+    dR.delayTime.value = 0.416;
+    const fbL = this.ctx.createGain(); fbL.gain.value = 0.32;
+    const fbR = this.ctx.createGain(); fbR.gain.value = 0.32;
+    const dFilter = this.ctx.createBiquadFilter();
+    dFilter.type = "lowpass";
+    dFilter.frequency.value = 2200;
+    const merger = this.ctx.createChannelMerger(2);
+
+    this.delaySend.connect(dFilter);
+    dFilter.connect(dL);
+    dL.connect(dR);
+    dR.connect(fbL);
+    fbL.connect(dL);
+    dL.connect(merger, 0, 0);
+    dR.connect(merger, 0, 1);
+    merger.connect(this.master);
+  }
+
+  createImpulse(duration, decay) {
+    const rate = this.ctx.sampleRate;
+    const len = Math.floor(rate * duration);
+    const buf = this.ctx.createBuffer(2, len, rate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = buf.getChannelData(ch);
+      let lp = 0;
+      for (let i = 0; i < len; i++) {
+        const env = Math.pow(1 - i / len, decay);
+        const white = (Math.random() * 2 - 1) * env;
+        lp = lp * 0.65 + white * 0.35;
+        data[i] = lp;
+      }
+    }
+    return buf;
+  }
+
+  // ── Harmonic Pad (sustained chord bed every bar) ──
+  playChordPad(chord, time, durSec, energy) {
+    if (!this.voicesEnabled[3] || !this.ctx) return;
+    const isPiano = this.mode === "piano";
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(isPiano ? 1100 : 750 + energy * 750, time);
+    filter.frequency.linearRampToValueAtTime(isPiano ? 700 : 1200 + energy * 600, time + durSec * 0.55);
+    filter.frequency.linearRampToValueAtTime(520, time + durSec);
+
+    const peak = (isPiano ? 0.055 : 0.085) * (0.7 + energy * 0.3);
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(peak, time + 0.35);
+    gain.gain.setValueAtTime(peak * 0.85, time + durSec * 0.7);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + durSec + 0.35);
+
+    filter.connect(gain);
+    gain.connect(this.master);
+    gain.connect(this.reverbSend);
+
+    chord.pad.forEach((m, i) => {
+      const osc = this.ctx.createOscillator();
+      osc.type = isPiano ? "triangle" : (i % 2 === 0 ? "sawtooth" : "triangle");
+      osc.frequency.setValueAtTime(midiToFreq(m), time);
+      osc.detune.setValueAtTime((i - 1.5) * (isPiano ? 4 : 9), time);
+      osc.connect(filter);
+      osc.start(time);
+      osc.stop(time + durSec + 0.4);
+    });
+  }
+
+  // ── Driving Analog Bass / Left-Hand Piano Bass ──
+  playBass(midi, time, durSec, vel) {
+    if (!this.voicesEnabled[1] || !this.ctx) return;
+    const freq = midiToFreq(midi);
+    if (this.mode === "piano") {
+      this.playFeltPiano(midi, time, Math.max(0.7, durSec * 1.8), vel * 0.72);
+      return;
+    }
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    osc1.type = "sawtooth";
+    osc2.type = "sine";
+    osc1.frequency.setValueAtTime(freq, time);
+    osc2.frequency.setValueAtTime(freq * 0.5, time); // sub weight
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.Q.value = 2.4;
+    filter.frequency.setValueAtTime(980 * vel + 220, time);
+    filter.frequency.exponentialRampToValueAtTime(165, time + Math.min(0.28, durSec));
+
+    const gain = this.ctx.createGain();
+    const peak = 0.20 * vel;
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(peak, time + 0.012);
+    gain.gain.exponentialRampToValueAtTime(peak * 0.45, time + durSec * 0.65);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + durSec + 0.06);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.master);
+
+    osc1.start(time);
+    osc2.start(time);
+    osc1.stop(time + durSec + 0.08);
+    osc2.stop(time + durSec + 0.08);
+  }
+
+  // ── Expressive Lead Melody (tools/recomp) ──
+  playLead(midi, time, durSec, vel, isMilestone) {
+    if (!this.voicesEnabled[0] || !this.ctx) return;
+    if (this.mode === "piano") {
+      this.playFeltPiano(midi, time, Math.max(0.65, durSec * 1.9), vel * (isMilestone ? 1.05 : 0.88));
+      return;
+    }
+    const freq = midiToFreq(midi);
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    osc1.type = "sawtooth";
+    osc2.type = "triangle";
+    osc1.frequency.setValueAtTime(freq, time);
+    osc2.frequency.setValueAtTime(freq * 1.003, time);
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.Q.value = isMilestone ? 3.4 : 1.9;
+    filter.frequency.setValueAtTime(2400 * vel + 850, time);
+    filter.frequency.exponentialRampToValueAtTime(620, time + durSec);
+
+    const gain = this.ctx.createGain();
+    const peak = (isMilestone ? 0.17 : 0.125) * vel;
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(peak, time + 0.014);
+    gain.gain.exponentialRampToValueAtTime(peak * 0.4, time + durSec * 0.55);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + durSec + 0.14);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.master);
+    gain.connect(this.reverbSend);
+    gain.connect(this.delaySend);
+
+    osc1.start(time);
+    osc2.start(time);
+    osc1.stop(time + durSec + 0.16);
+    osc2.stop(time + durSec + 0.16);
+  }
+
+  // ── Shimmering Upper Arpeggio / Celesta (web/GPU) ──
+  playArp(midi, time, durSec, vel) {
+    if (!this.voicesEnabled[2] || !this.ctx) return;
+    const freq = midiToFreq(midi);
+    const isPiano = this.mode === "piano";
+
+    const osc = this.ctx.createOscillator();
+    const over = this.ctx.createOscillator();
+    osc.type = "sine";
+    over.type = "triangle";
+    osc.frequency.setValueAtTime(freq, time);
+    over.frequency.setValueAtTime(freq * (isPiano ? 2 : 3), time);
+
+    const overGain = this.ctx.createGain();
+    overGain.gain.setValueAtTime(isPiano ? 0.16 : 0.09, time);
+    overGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+
+    const gain = this.ctx.createGain();
+    const peak = (isPiano ? 0.09 : 0.08) * vel;
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(peak, time + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + Math.max(0.28, durSec));
+
+    osc.connect(gain);
+    over.connect(overGain);
+    overGain.connect(gain);
+    gain.connect(this.master);
+    gain.connect(this.reverbSend);
+    if (!isPiano) gain.connect(this.delaySend);
+
+    osc.start(time);
+    over.start(time);
+    osc.stop(time + Math.max(0.32, durSec) + 0.04);
+    over.stop(time + 0.22);
+  }
+
+  // ── Felt Cinematic Piano Voice (additive warm harmonics) ──
+  playFeltPiano(midi, time, durSec, vel) {
+    const freq = midiToFreq(midi);
+    const out = this.ctx.createGain();
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(900 + vel * 2100, time);
+    lp.frequency.exponentialRampToValueAtTime(420, time + durSec);
+
+    const peak = 0.16 * vel;
+    out.gain.setValueAtTime(0.0001, time);
+    out.gain.linearRampToValueAtTime(peak, time + 0.012);
+    out.gain.exponentialRampToValueAtTime(peak * 0.35, time + durSec * 0.45);
+    out.gain.exponentialRampToValueAtTime(0.0001, time + durSec + 0.22);
+
+    lp.connect(out);
+    out.connect(this.master);
+    out.connect(this.reverbSend);
+
+    const partials = [
+      { mult: 1, amp: 1.0, type: "triangle" },
+      { mult: 2, amp: 0.36, type: "sine" },
+      { mult: 3, amp: 0.11, type: "sine" },
+    ];
+    for (const p of partials) {
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = p.type;
+      osc.frequency.setValueAtTime(freq * p.mult, time);
+      osc.detune.setValueAtTime((p.mult - 1) * 1.5, time);
+      g.gain.value = p.amp;
+      osc.connect(g);
+      g.connect(lp);
+      osc.start(time);
+      osc.stop(time + durSec + 0.25);
+    }
+  }
+
+  // ── Milestone Signature Shimmer Cadence ──
+  playMilestoneChime(chord, time) {
+    if (!this.ctx) return;
+    const notes = [chord.scale[0] + 12, chord.scale[2] + 12];
+    notes.forEach((m, i) => {
+      this.playArp(m, time + i * 0.055, 1.35, 0.95);
+    });
+  }
+
+  // ── Restrained 80s Nocturnal Pulse (Synthwave only, toggleable) ──
+  playPulse(stepInBar, time, energy) {
+    if (!this.voicesEnabled[4] || !this.ctx) return;
+    if (this.mode === "piano") return; // keep cinematic piano pure
+
+    // Kick on beats 1 & 3 (steps 0, 8)
+    if (stepInBar === 0 || stepInBar === 8) {
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(118, time);
+      osc.frequency.exponentialRampToValueAtTime(42, time + 0.095);
+      g.gain.setValueAtTime(0.24 * energy, time);
+      g.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
+      osc.connect(g);
+      g.connect(this.master);
+      osc.start(time);
+      osc.stop(time + 0.24);
+    }
+
+    // Soft gated-reverb snare on beats 2 & 4 (steps 4, 12)
+    if ((stepInBar === 4 || stepInBar === 12) && energy > 0.68) {
+      const len = Math.floor(this.ctx.sampleRate * 0.18);
+      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.8);
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 1450;
+      bp.Q.value = 0.8;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.085 * energy, time);
+      g.gain.exponentialRampToValueAtTime(0.0001, time + 0.17);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(this.master);
+      g.connect(this.reverbSend);
+      src.start(time);
+    }
+
+    // Silky closed hat on off-beat 8ths (steps 2, 6, 10, 14) in high-energy acts
+    if (stepInBar % 4 === 2 && energy > 0.82) {
+      const len = Math.floor(this.ctx.sampleRate * 0.04);
+      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      const hp = this.ctx.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 7200;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.028 * energy, time);
+      g.gain.exponentialRampToValueAtTime(0.0001, time + 0.038);
+      src.connect(hp);
+      hp.connect(g);
+      g.connect(this.master);
+      src.start(time);
+    }
+  }
+}
+
+const AUDIO = new SoundEngine();
+
+// ═══════════════════════════════════════════════════════════════
+// 4. TRANSPORT & LOOKAHEAD SCHEDULER
+// ═══════════════════════════════════════════════════════════════
+const state = {
+  isPlaying: false,
+  bpm: 108, // 108 BPM for Synthwave, 92 BPM for Piano
+  playheadStep: 0, // continuous float in [0, TOTAL_STEPS]
+  nextScheduleStep: 0,
+  nextStepAudioTime: 0,
+  activeCommit: SCORE.events[0],
+  hoveredCommit: null,
+  ripples: [],
+  reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  lastFrameTime: performance.now(),
+  schedulerTimer: null,
+};
+
+const secPerStep = () => 60 / state.bpm / 4;
+
+function scheduleStep(step, time) {
+  if (step < 0 || step >= TOTAL_STEPS) return;
+  const act = getActAtStep(step);
+  const chord = getChordAtStep(step);
+  const stepInBar = step % STEPS_PER_BAR;
+  const sDur = secPerStep();
+
+  // 1. Harmonic pad every bar (16 steps)
+  if (stepInBar === 0) {
+    AUDIO.playChordPad(chord, time, sDur * 16, act.energy);
+  }
+
+  // 2. Rhythmic bass anchor on beats (8th-note synthwave drive)
+  if (stepInBar % 2 === 0) {
+    const isDownbeat = stepInBar % 4 === 0;
+    const bassMidi = isDownbeat ? chord.bass : chord.bass + (stepInBar === 6 || stepInBar === 14 ? 7 : 0);
+    if (AUDIO.mode === "synth" || stepInBar % 8 === 0) {
+      AUDIO.playBass(bassMidi, time, sDur * (AUDIO.mode === "synth" ? 1.8 : 6.0), isDownbeat ? 0.78 : 0.52);
+    }
+  }
+
+  // 3. Restrained pulse
+  AUDIO.playPulse(stepInBar, time, act.energy);
+
+  // 4. Real commit events on this step (at most 1 voice per subsystem per step so chords stay clean!)
+  const bucket = SCORE.stepBuckets[step];
+  if (bucket && bucket.length) {
+    const pickedBySub = new Map();
+    let milestoneEv = null;
+    for (const ev of bucket) {
+      if (ev.isMilestone) milestoneEv = ev;
+      const cur = pickedBySub.get(ev.sub);
+      if (!cur || ev.churn > cur.churn || ev.isMilestone) {
+        pickedBySub.set(ev.sub, ev);
+      }
+    }
+
+    // Play lead melody with natural phrasing (avoid machine-gun 16th spam unless peak)
+    const leadEv = pickedBySub.get(0);
+    if (leadEv && (stepInBar % 2 === 0 || leadEv.isMilestone || bucket.length >= 3)) {
+      AUDIO.playLead(leadEv.midi, time, leadEv.durSteps * sDur, leadEv.vel, leadEv.isMilestone);
+    }
+
+    // Play shimmering web arpeggio
+    const webEv = pickedBySub.get(2);
+    if (webEv) {
+      AUDIO.playArp(webEv.midi, time, webEv.durSteps * sDur, webEv.vel);
+    }
+
+    // Play RE accent bell on significant RE commits
+    const reEv = pickedBySub.get(3);
+    if (reEv && (reEv.churn > 400 || reEv.isMilestone || stepInBar % 4 === 0)) {
+      AUDIO.playArp(reEv.midi + 12, time, reEv.durSteps * sDur * 1.1, reEv.vel * 0.62);
+    }
+
+    // Play host accent bass
+    const hostEv = pickedBySub.get(1);
+    if (hostEv && stepInBar % 2 === 1) {
+      AUDIO.playBass(hostEv.midi, time, sDur * 1.8, hostEv.vel * 0.65);
+    }
+
+    if (milestoneEv) {
+      AUDIO.playMilestoneChime(chord, time);
+    }
+  }
+
+  // Final warm Dadd9 cadence on the closing bar
+  if (step === TOTAL_STEPS - 4) {
+    const finalChord = { pad: [50, 57, 62, 64, 69], scale: [62, 64, 69, 74] };
+    AUDIO.playChordPad(finalChord, time, 4.2, 0.9);
+    AUDIO.playBass(38, time, 3.8, 0.85);
+    AUDIO.playLead(74, time, 3.5, 0.85, true);
+  }
+}
+
+function runScheduler() {
+  if (!state.isPlaying || !AUDIO.ctx) return;
+  const lookaheadSec = 0.12;
+  while (state.nextStepAudioTime < AUDIO.ctx.currentTime + lookaheadSec) {
+    if (state.nextScheduleStep >= TOTAL_STEPS) {
+      // Clean stop at the end of the piece
+      stopPlayback(false);
+      state.playheadStep = TOTAL_STEPS - 1;
+      break;
+    }
+    scheduleStep(state.nextScheduleStep, state.nextStepAudioTime);
+    state.nextStepAudioTime += secPerStep();
+    state.nextScheduleStep++;
+  }
+}
+
+function startPlayback() {
+  AUDIO.init();
+  document.getElementById("introOverlay").classList.add("hidden");
+  if (state.playheadStep >= TOTAL_STEPS - 2) {
+    state.playheadStep = 0;
+  }
+  state.isPlaying = true;
+  state.nextScheduleStep = Math.floor(state.playheadStep);
+  state.nextStepAudioTime = AUDIO.ctx.currentTime + 0.04;
+  clearInterval(state.schedulerTimer);
+  state.schedulerTimer = setInterval(runScheduler, 25);
+  updatePlayButton();
+}
+
+function stopPlayback(resetBtn = true) {
+  state.isPlaying = false;
+  clearInterval(state.schedulerTimer);
+  if (resetBtn) updatePlayButton();
+}
+
+function seekToStep(targetStep) {
+  const clamped = Math.max(0, Math.min(TOTAL_STEPS - 0.01, targetStep));
+  state.playheadStep = clamped;
+  if (state.isPlaying && AUDIO.ctx) {
+    state.nextScheduleStep = Math.floor(clamped);
+    state.nextStepAudioTime = AUDIO.ctx.currentTime + 0.03;
+  }
+  syncCommitHud(clamped);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 5. HYBRID CANVAS RENDERER (Malinowski Living Score + Minimap)
+// ═══════════════════════════════════════════════════════════════
+const scoreCanvas = document.getElementById("scoreCanvas");
+const sctx = scoreCanvas.getContext("2d");
+const miniCanvas = document.getElementById("minimapCanvas");
+const mctx = miniCanvas.getContext("2d");
+
+let scoreW = 0, scoreH = 0, miniW = 0, miniH = 0, dpr = 1;
+const PLAYHEAD_RATIO = 0.27;
+const PX_PER_STEP = 14.5; // crisp horizontal spacing for Malinowski readability
+const MIN_MIDI = 36;
+const MAX_MIDI = 88;
+
+function resizeCanvases() {
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  const sRect = scoreCanvas.parentElement.getBoundingClientRect();
+  scoreW = sRect.width;
+  scoreH = sRect.height;
+  scoreCanvas.width = Math.round(scoreW * dpr);
+  scoreCanvas.height = Math.round(scoreH * dpr);
+  sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const mRect = miniCanvas.parentElement.getBoundingClientRect();
+  miniW = mRect.width;
+  miniH = mRect.height;
+  miniCanvas.width = Math.round(miniW * dpr);
+  miniCanvas.height = Math.round(miniH * dpr);
+  mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener("resize", resizeCanvases);
+resizeCanvases();
+
+function midiToY(midi) {
+  const topPad = 46;
+  const botPad = 94; // room for floating commit HUD
+  const usable = Math.max(100, scoreH - topPad - botPad);
+  const norm = (midi - MIN_MIDI) / (MAX_MIDI - MIN_MIDI);
+  return topPad + (1 - Math.max(0, Math.min(1, norm))) * usable;
+}
+
+function stepToX(step) {
+  return scoreW * PLAYHEAD_RATIO + (step - state.playheadStep) * PX_PER_STEP;
+}
+
+function xToStep(x) {
+  return state.playheadStep + (x - scoreW * PLAYHEAD_RATIO) / PX_PER_STEP;
+}
+
+let lastTriggeredStep = -1;
+let lastHudActId = -1;
+
+function syncCommitHud(curStep) {
+  const s = Math.floor(curStep);
+  // Find latest commit at or before curStep
+  let found = SCORE.events[0];
+  for (let i = SCORE.events.length - 1; i >= 0; i--) {
+    if (SCORE.events[i].step <= s) { found = SCORE.events[i]; break; }
+  }
+  state.activeCommit = found;
+
+  const sub = SUB_META[found.sub];
+  document.getElementById("hudDot").style.background = sub.color;
+  document.getElementById("hudHash").textContent = found.hash;
+  document.getElementById("hudDate").textContent = found.date;
+  document.getElementById("hudSub").textContent = sub.label;
+  document.getElementById("hudAdd").textContent = "+" + found.add.toLocaleString();
+  document.getElementById("hudDel").textContent = "-" + found.del.toLocaleString();
+  document.getElementById("hudMsg").textContent = found.msg;
+
+  const msEl = document.getElementById("hudMs");
+  if (found.msLabel) {
+    msEl.textContent = "★ " + found.msLabel;
+    msEl.style.display = "inline-block";
+  } else {
+    msEl.style.display = "none";
+  }
+
+  const act = getActAtStep(curStep);
+  const chord = getChordAtStep(curStep);
+  document.getElementById("hudAct").textContent = act.short;
+  document.getElementById("hudChord").textContent = chord.name;
+  document.getElementById("hudProgress").textContent = `${found.idx + 1} / ${SCORE.events.length}`;
+
+  if (act.id !== lastHudActId) {
+    lastHudActId = act.id;
+    document.querySelectorAll(".act-btn").forEach(btn => {
+      btn.classList.toggle("active", Number(btn.dataset.act) === act.id);
+    });
+  }
+
+  // Timecode
+  const totalSec = TOTAL_STEPS * secPerStep();
+  const curSec = curStep * secPerStep();
+  const fmt = sec => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
+  document.getElementById("timecode").textContent = `${fmt(curSec)} / ${fmt(totalSec)}`;
+}
+
+function drawRoundedPill(ctx, x, y, w, h, r) {
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
+
+function renderScore(now) {
+  const dt = Math.min(0.05, (now - state.lastFrameTime) / 1000);
+  state.lastFrameTime = now;
+
+  if (state.isPlaying) {
+    state.playheadStep += dt / secPerStep();
+    if (state.playheadStep >= TOTAL_STEPS) {
+      state.playheadStep = TOTAL_STEPS - 0.01;
+      stopPlayback();
+    }
+  }
+
+  const curStepFloor = Math.floor(state.playheadStep);
+  if (curStepFloor !== lastTriggeredStep) {
+    lastTriggeredStep = curStepFloor;
+    syncCommitHud(state.playheadStep);
+    if (state.isPlaying && !state.reducedMotion) {
+      const bucket = SCORE.stepBuckets[curStepFloor];
+      if (bucket) {
+        for (const ev of bucket) {
+          if (!AUDIO.voicesEnabled[ev.sub]) continue;
+          state.ripples.push({
+            x: scoreW * PLAYHEAD_RATIO,
+            y: midiToY(ev.midi),
+            color: SUB_META[ev.sub].color,
+            r: ev.isMilestone ? 7 : 4,
+            maxR: ev.isMilestone ? 52 : 24,
+            alpha: ev.isMilestone ? 0.85 : 0.55,
+          });
+        }
+      }
+    }
+  }
+
+  const act = getActAtStep(state.playheadStep);
+
+  // 1. Background nocturnal gradient tinted softly by current Act
+  sctx.fillStyle = "#060b12";
+  sctx.fillRect(0, 0, scoreW, scoreH);
+
+  const bgGrad = sctx.createRadialGradient(
+    scoreW * PLAYHEAD_RATIO, scoreH * 0.45, 20,
+    scoreW * PLAYHEAD_RATIO, scoreH * 0.45, scoreW * 0.72
+  );
+  bgGrad.addColorStop(0, act.tint);
+  bgGrad.addColorStop(1, "rgba(6, 11, 18, 0)");
+  sctx.fillStyle = bgGrad;
+  sctx.fillRect(0, 0, scoreW, scoreH);
+
+  // 2. Subtle octave staff lines (C3, C4, C5, C6)
+  sctx.lineWidth = 1;
+  for (const m of [48, 60, 72, 84]) {
+    const y = Math.round(midiToY(m)) + 0.5;
+    sctx.strokeStyle = "rgba(255, 255, 255, 0.045)";
+    sctx.beginPath();
+    sctx.moveTo(0, y);
+    sctx.lineTo(scoreW, y);
+    sctx.stroke();
+  }
+
+  // 3. Visible step range
+  const minVisibleStep = Math.floor(xToStep(-120));
+  const maxVisibleStep = Math.ceil(xToStep(scoreW + 80));
+
+  // Bar grid lines & Act headers
+  const startBar = Math.max(0, Math.floor(minVisibleStep / STEPS_PER_BAR));
+  const endBar = Math.min(TOTAL_BARS, Math.ceil(maxVisibleStep / STEPS_PER_BAR));
+  for (let b = startBar; b <= endBar; b++) {
+    const x = Math.round(stepToX(b * STEPS_PER_BAR)) + 0.5;
+    const actBoundary = ACTS.find(a => a.startBar === b);
+    sctx.strokeStyle = actBoundary ? "rgba(245, 158, 11, 0.28)" : "rgba(255, 255, 255, 0.035)";
+    sctx.beginPath();
+    sctx.moveTo(x, 0);
+    sctx.lineTo(x, scoreH);
+    sctx.stroke();
+
+    if (actBoundary) {
+      sctx.fillStyle = "rgba(245, 158, 11, 0.78)";
+      sctx.font = '600 10.5px "JetBrains Mono", ui-monospace, monospace';
+      sctx.fillText(actBoundary.short + " · " + actBoundary.dates, x + 8, 20);
+    }
+  }
+
+  // 4. Milestone vertical filaments (with automatic anti-overlap row staggering)
+  let lastLabelRight = [-Infinity, -Infinity, -Infinity];
+  for (const ms of SCORE.milestones) {
+    if (ms.step < minVisibleStep - 20 || ms.step > maxVisibleStep + 20) continue;
+    const x = Math.round(stepToX(ms.step)) + 0.5;
+    const passed = ms.step <= state.playheadStep;
+    const labelText = "★ " + ms.msLabel;
+    sctx.font = '500 10.5px -apple-system, BlinkMacSystemFont, sans-serif';
+    const tw = sctx.measureText(labelText).width + 18;
+
+    let row = 0;
+    for (let r = 0; r < lastLabelRight.length; r++) {
+      if (x >= lastLabelRight[r]) { row = r; break; }
+      row = (r + 1) % lastLabelRight.length;
+    }
+    const labelY = 36 + row * 16;
+    lastLabelRight[row] = x + tw;
+
+    const grad = sctx.createLinearGradient(x, labelY + 4, x, scoreH - 60);
+    grad.addColorStop(0, passed ? "rgba(253, 230, 138, 0.38)" : "rgba(253, 230, 138, 0.18)");
+    grad.addColorStop(1, "rgba(253, 230, 138, 0.0)");
+    sctx.strokeStyle = grad;
+    sctx.lineWidth = 1;
+    sctx.beginPath();
+    sctx.moveTo(x, labelY + 4);
+    sctx.lineTo(x, scoreH - 50);
+    sctx.stroke();
+
+    sctx.fillStyle = passed ? "#fde68a" : "rgba(253, 230, 138, 0.72)";
+    sctx.fillText(labelText, x + 6, labelY);
+  }
+
+  // 5. Render all visible commit notes (Malinowski score pills)
+  const playX = scoreW * PLAYHEAD_RATIO;
+  for (const ev of SCORE.events) {
+    if (ev.step + ev.durSteps < minVisibleStep || ev.step > maxVisibleStep) continue;
+    if (!AUDIO.voicesEnabled[ev.sub]) continue;
+
+    const x = stepToX(ev.step);
+    const y = midiToY(ev.midi);
+    const w = Math.max(8, ev.durSteps * PX_PER_STEP - 2);
+    const h = ev.isMilestone ? 11 : (ev.sub === 0 ? 8 : ev.sub === 1 ? 7 : 6);
+    const sub = SUB_META[ev.sub];
+
+    const isActive = state.playheadStep >= ev.step && state.playheadStep <= ev.step + ev.durSteps;
+    const isPast = ev.step + ev.durSteps < state.playheadStep;
+    const isHover = state.hoveredCommit === ev;
+
+    sctx.save();
+    if (isActive || isHover) {
+      sctx.shadowColor = sub.color;
+      sctx.shadowBlur = isHover ? 18 : 14;
+      sctx.fillStyle = isHover ? "#ffffff" : sub.color;
+      sctx.globalAlpha = 1;
+    } else if (isPast) {
+      const fade = Math.max(0.18, 0.52 - (playX - x) / (scoreW * 0.45));
+      sctx.fillStyle = sub.color;
+      sctx.globalAlpha = fade;
+    } else {
+      sctx.fillStyle = sub.color;
+      sctx.globalAlpha = ev.isMilestone ? 0.92 : 0.68;
+    }
+
+    drawRoundedPill(sctx, x, y - h / 2, w, h, h / 2);
+    sctx.fill();
+
+    // Subtle specular cap on active or milestone notes
+    if (isActive || ev.isMilestone) {
+      sctx.fillStyle = "rgba(255, 255, 255, 0.42)";
+      drawRoundedPill(sctx, x + 1, y - h / 2 + 1, Math.max(3, w - 2), h * 0.35, h / 4);
+      sctx.fill();
+    }
+    sctx.restore();
+  }
+
+  // 6. Harmonic bloom ripples at playhead
+  for (let i = state.ripples.length - 1; i >= 0; i--) {
+    const rp = state.ripples[i];
+    rp.r += dt * 42;
+    rp.alpha -= dt * 1.15;
+    if (rp.alpha <= 0 || rp.r >= rp.maxR) {
+      state.ripples.splice(i, 1);
+      continue;
+    }
+    sctx.save();
+    sctx.strokeStyle = rp.color;
+    sctx.globalAlpha = Math.max(0, rp.alpha);
+    sctx.lineWidth = 1.5;
+    sctx.beginPath();
+    sctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+    sctx.stroke();
+    sctx.restore();
+  }
+
+  // 7. Live audio aura along the Playhead beam (silky mirrored glow ribbon, no jagged zigzag)
+  let energyGlow = 0;
+  if (AUDIO.analyser && state.isPlaying) {
+    AUDIO.analyser.getByteFrequencyData(AUDIO.freqData);
+    let sum = 0;
+    for (let i = 0; i < 24; i++) sum += AUDIO.freqData[i];
+    energyGlow = sum / (24 * 255);
+
+    if (!state.reducedMotion && energyGlow > 0.01) {
+      const auraW = 14 + energyGlow * 34;
+      const auraGrad = sctx.createLinearGradient(playX - auraW, 0, playX + auraW, 0);
+      auraGrad.addColorStop(0, "rgba(245, 158, 11, 0)");
+      auraGrad.addColorStop(0.5, `rgba(245, 158, 11, ${0.06 + energyGlow * 0.14})`);
+      auraGrad.addColorStop(1, "rgba(245, 158, 11, 0)");
+      sctx.fillStyle = auraGrad;
+      sctx.fillRect(playX - auraW, 0, auraW * 2, scoreH);
+    }
+  }
+
+  // Playhead vertical beam
+  const beamGrad = sctx.createLinearGradient(playX, 0, playX, scoreH);
+  beamGrad.addColorStop(0, "rgba(245, 158, 11, 0.05)");
+  beamGrad.addColorStop(0.5, `rgba(253, 230, 138, ${0.55 + energyGlow * 0.4})`);
+  beamGrad.addColorStop(1, "rgba(245, 158, 11, 0.05)");
+  sctx.strokeStyle = beamGrad;
+  sctx.lineWidth = 1.6;
+  sctx.beginPath();
+  sctx.moveTo(playX, 0);
+  sctx.lineTo(playX, scoreH);
+  sctx.stroke();
+
+  renderMinimap();
+  requestAnimationFrame(renderScore);
+}
+
+function renderMinimap() {
+  mctx.clearRect(0, 0, miniW, miniH);
+
+  // Act background bands
+  for (const act of ACTS) {
+    const x0 = (act.startBar / TOTAL_BARS) * miniW;
+    const w = (act.bars / TOTAL_BARS) * miniW;
+    mctx.fillStyle = act.tint;
+    mctx.fillRect(x0, 0, w, miniH);
+    mctx.strokeStyle = "rgba(255,255,255,0.06)";
+    mctx.beginPath();
+    mctx.moveTo(x0, 0);
+    mctx.lineTo(x0, miniH);
+    mctx.stroke();
+  }
+
+  // 80-bar commit density mountain silhouette
+  const barW = miniW / TOTAL_BARS;
+  for (let b = 0; b < TOTAL_BARS; b++) {
+    const d = SCORE.barDensity[b];
+    if (!d.total) continue;
+    const h = Math.max(4, (d.total / SCORE.maxBarDensity) * (miniH - 12));
+    // Pick dominant subsystem color for this bar
+    let dom = 0;
+    for (let s = 1; s < 4; s++) if (d.subs[s] > d.subs[dom]) dom = s;
+    const passed = (b + 0.5) * STEPS_PER_BAR <= state.playheadStep;
+    mctx.fillStyle = SUB_META[dom].color;
+    mctx.globalAlpha = passed ? 0.78 : 0.34;
+    mctx.fillRect(b * barW + 1, miniH - h - 2, Math.max(1.5, barW - 2), h);
+  }
+  mctx.globalAlpha = 1;
+
+  // Milestone ticks
+  for (const ms of SCORE.milestones) {
+    const mx = (ms.step / TOTAL_STEPS) * miniW;
+    mctx.fillStyle = "#fde68a";
+    mctx.fillRect(mx - 1, 2, 2, 7);
+  }
+
+  // Minimap playhead
+  const px = (state.playheadStep / TOTAL_STEPS) * miniW;
+  mctx.fillStyle = "#fef3c7";
+  mctx.fillRect(px - 1, 0, 2, miniH);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 6. INTERACTIONS (Scrubbing, Hover Tooltips, Acts, Presets, Keys)
+// ═══════════════════════════════════════════════════════════════
+function updatePlayButton() {
+  const label = document.getElementById("playLabel");
+  const icon = document.getElementById("iconPlay");
+  if (state.isPlaying) {
+    label.textContent = "Pause";
+    icon.innerHTML = '<rect x="2" y="1.5" width="3" height="9" rx="0.8"/><rect x="7" y="1.5" width="3" height="9" rx="0.8"/>';
+  } else {
+    label.textContent = "Play";
+    icon.innerHTML = '<path d="M2.5 1.5l8 4.5-8 4.5z"/>';
+  }
+}
+
+document.getElementById("btnPlay").addEventListener("click", () => {
+  if (state.isPlaying) stopPlayback(); else startPlayback();
+});
+document.getElementById("introPlayBtn").addEventListener("click", startPlayback);
+document.getElementById("btnRestart").addEventListener("click", () => {
+  seekToStep(0);
+  if (!state.isPlaying) startPlayback();
+});
+
+function setMode(mode) {
+  AUDIO.mode = mode;
+  state.bpm = mode === "synth" ? 108 : 92;
+  document.getElementById("modeSynth").classList.toggle("active", mode === "synth");
+  document.getElementById("modePiano").classList.toggle("active", mode === "piano");
+  syncCommitHud(state.playheadStep);
+}
+document.getElementById("modeSynth").addEventListener("click", () => setMode("synth"));
+document.getElementById("modePiano").addEventListener("click", () => setMode("piano"));
+
+// Act buttons
+document.getElementById("actsBar").addEventListener("click", e => {
+  const btn = e.target.closest(".act-btn");
+  if (!btn) return;
+  const act = ACTS[Number(btn.dataset.act)];
+  document.getElementById("introOverlay").classList.add("hidden");
+  seekToStep(act.startBar * STEPS_PER_BAR);
+  if (!state.isPlaying) startPlayback();
+});
+
+// Voice layer mute toggles
+document.getElementById("voicesBar").addEventListener("click", e => {
+  const chip = e.target.closest(".voice-chip");
+  if (!chip) return;
+  const v = Number(chip.dataset.voice);
+  AUDIO.voicesEnabled[v] = !AUDIO.voicesEnabled[v];
+  chip.classList.toggle("muted", !AUDIO.voicesEnabled[v]);
+});
+
+// Main canvas drag-to-scrub + hover commit inspector
+let draggingStage = false, dragStartX = 0, dragStartStep = 0;
+const tooltip = document.getElementById("tooltip");
+
+scoreCanvas.addEventListener("pointerdown", e => {
+  draggingStage = true;
+  dragStartX = e.clientX;
+  dragStartStep = state.playheadStep;
+  scoreCanvas.setPointerCapture(e.pointerId);
+  document.getElementById("introOverlay").classList.add("hidden");
+});
+
+scoreCanvas.addEventListener("pointermove", e => {
+  const rect = scoreCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (draggingStage) {
+    const dx = e.clientX - dragStartX;
+    seekToStep(dragStartStep - dx / PX_PER_STEP);
+    tooltip.classList.remove("show");
+    return;
+  }
+
+  // Hit-test visible commit pills for hover inspection
+  const hoverStep = xToStep(mx);
+  let hit = null;
+  let bestDist = 18;
+  for (const ev of SCORE.events) {
+    if (hoverStep < ev.step - 1 || hoverStep > ev.step + ev.durSteps + 1) continue;
+    const ny = midiToY(ev.midi);
+    const dy = Math.abs(my - ny);
+    if (dy < bestDist) { bestDist = dy; hit = ev; }
+  }
+  state.hoveredCommit = hit;
+  if (hit) {
+    const sub = SUB_META[hit.sub];
+    document.getElementById("ttTop").innerHTML =
+      `<span style="color:${sub.color};font-weight:600">${hit.hash}</span><span>${hit.date}</span><span>+${hit.add}/-${hit.del}</span>`;
+    document.getElementById("ttMsg").textContent = hit.msLabel ? `★ ${hit.msLabel} — ${hit.msg}` : hit.msg;
+    const tx = Math.min(scoreW - 355, Math.max(12, mx + 14));
+    const ty = Math.max(12, my - 56);
+    tooltip.style.left = tx + "px";
+    tooltip.style.top = ty + "px";
+    tooltip.classList.add("show");
+  } else {
+    tooltip.classList.remove("show");
+  }
+});
+
+scoreCanvas.addEventListener("pointerup", e => {
+  if (draggingStage && Math.abs(e.clientX - dragStartX) < 5 && state.hoveredCommit) {
+    seekToStep(state.hoveredCommit.step);
+  }
+  draggingStage = false;
+});
+scoreCanvas.addEventListener("pointerleave", () => {
+  state.hoveredCommit = null;
+  tooltip.classList.remove("show");
+});
+
+// Minimap click & drag scrub
+let draggingMini = false;
+const miniWrap = document.getElementById("minimapWrap");
+function scrubMini(e) {
+  const rect = miniWrap.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  document.getElementById("introOverlay").classList.add("hidden");
+  seekToStep(ratio * TOTAL_STEPS);
+}
+miniWrap.addEventListener("pointerdown", e => {
+  draggingMini = true;
+  miniWrap.setPointerCapture(e.pointerId);
+  scrubMini(e);
+});
+miniWrap.addEventListener("pointermove", e => { if (draggingMini) scrubMini(e); });
+miniWrap.addEventListener("pointerup", () => { draggingMini = false; });
+
+// Keyboard controls
+window.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.code === "Space") {
+    e.preventDefault();
+    if (state.isPlaying) stopPlayback(); else startPlayback();
+  } else if (e.code === "ArrowRight") {
+    e.preventDefault();
+    seekToStep(state.playheadStep + STEPS_PER_BAR);
+  } else if (e.code === "ArrowLeft") {
+    e.preventDefault();
+    seekToStep(state.playheadStep - STEPS_PER_BAR);
+  } else if (e.key >= "1" && e.key <= "5") {
+    const act = ACTS[Number(e.key) - 1];
+    document.getElementById("introOverlay").classList.add("hidden");
+    seekToStep(act.startBar * STEPS_PER_BAR);
+  } else if (e.key === "m" || e.key === "M") {
+    setMode(AUDIO.mode === "synth" ? "piano" : "synth");
+  } else if (e.key === "r" || e.key === "R") {
+    seekToStep(0);
+  }
+});
+
+// Initial render
+syncCommitHud(0);
+requestAnimationFrame(renderScore);
+</script>
+</body>
+</html>
