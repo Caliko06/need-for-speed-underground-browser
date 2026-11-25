@@ -390,6 +390,6 @@ async function loadScript(src) {
   memTick = setInterval(() => {
     if (RN_APP.state === 'stop') { clearInterval(memTick); memTick = 0; return; }
     const v = [0, 1, 2].map(k => M._rn_mem_mb(k)), key = v.map(x => x >> 4).join();
-    if (key !== memLast) { memLast = key; line(`mem: wasm break ${v[0]} MB (guest ${wasmUrl.includes('lite') ? 256 : 384} untouched until used), guest heap ${v[1]} MB, guest virtual ${v[2]} MB`); }
+    if (key !== memLast) { memLast = key; line(`mem: wasm break ${v[0]} MB (guest ${/lite|nano/.test(wasmUrl) ? 256 : 384} untouched until used), guest heap ${v[1]} MB, guest virtual ${v[2]} MB`); }
   }, 2000);
 })();

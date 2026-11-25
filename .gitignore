@@ -30,3 +30,5 @@ dist/
 /docs/prior_art/
 /attic/
 /.claude/
+/tools/crash/dump/
+/.scratchpad/

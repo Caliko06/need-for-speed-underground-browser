@@ -207,7 +207,9 @@ def compile_web():
     # RN_NANO_MB=<n>: a third, smaller lite link for phones with 2 GB RAM (default-principles 2026-11-25 H3:
     # WebKit bug 269777 gives only 300-500 MB after a reload, Unity ships per-platform budgets). Objects are shared.
     # 352 MB: guest flat space is 256 MB (peak measured 118 MB, host/host.h) + lite cache 32 MB (host/files.c) + ~18 MB
-    # pthread stacks + ~96 MB host slack; down from 448 MB, the reservation that fails on deviceMemory=2 phones.
+    # pthread stacks; down from 448 MB, the reservation that fails on deviceMemory=2 phones.
+    # MEASURED 2026-11-25 (webcheck --route, RN_DEVMEM=2, tier=lite): 352 MB aborts with OOM at boot. speed_lite's wasm break
+    # is 351 MB at boot and 363 MB in the race, so a nano link needs more than ~364 MB plus margin.
     nano_mb = int(os.environ.get("RN_NANO_MB", "0") or 0)
     output = "speed_lite" if lite else "speed"
     if nano_mb:

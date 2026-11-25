@@ -186,6 +186,8 @@ if (process.env.RN_PHONE) {
   await send('Emulation.setDeviceMetricsOverride', { width: 844, height: 390, deviceScaleFactor: 3, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
   await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
 }
+// RN_DEVMEM=<GB>: navigator.deviceMemory as a phone reports it (boot.js picks speed_nano at <= 2 on lite tiers).
+if (process.env.RN_DEVMEM) await send('Page.enable'), await send('Page.addScriptToEvaluateOnNewDocument', { source: `Object.defineProperty(Navigator.prototype, 'deviceMemory', { get: () => ${+process.env.RN_DEVMEM} })` });
 await send('Page.navigate', { url });
 const t0 = Date.now();
 let text = '', seen = 0;

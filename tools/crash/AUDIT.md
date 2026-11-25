@@ -4,7 +4,7 @@ CIERRE (mismo dia): H1/H2/H4 y H3 y el shim quedaron implementados y verificados
 shim rescue probado end-to-end en un host sin headers). Secciones 5 y 6: lo marcado ahi es lo PENDIENTE de
 medir en produccion tras el proximo deploy, no de implementar. Ver HANDOFF.md.
 
-Datos: bucket privado R2 `nfsu-crash` (rclone). Dump crudo: `tools/crash/dump/2026-11-25/`
+Datos: bucket privado R2 `nfsu-crash` (rclone). Dump crudo: `tools/crash/dump/2026-11-25/` (solo local, fuera de git: datos de visitantes; regenerable con dump_audit.py)
 (`crash.jsonl` 400 reportes, `funnel.jsonl` 864 beacons, cada linea con su dia UTC).
 
 Build vivo: `af14b300fc`. Builds anteriores: `b7dd88e9bf`, `233cad7d29`, `a32b59f504`, ...

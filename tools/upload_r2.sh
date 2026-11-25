@@ -41,7 +41,7 @@ if [ -f dist/out/speed_lite.wasm ]; then
   rclone copyto "$T/speed_lite.wasm" "r2:$B/out/speed_lite.wasm" --ignore-times --s3-no-check-bucket --header-upload "$IMMUTABLE" \
     --header-upload "Content-Encoding: br" --header-upload "Content-Type: application/wasm"
 fi
-# speed_nano.wasm (320 MB link for 2 GB phones): same immutable+br treatment so V8 code-cache applies to it too.
+# speed_nano.wasm (352 MB link for 2 GB phones): same immutable+br treatment so V8 code-cache applies to it too.
 if [ -f dist/out/speed_nano.wasm ]; then
   brotli -q 11 -w 24 -c dist/out/speed_nano.wasm > "$T/speed_nano.wasm"
   rclone copyto "$T/speed_nano.wasm" "r2:$B/out/speed_nano.wasm" --ignore-times --s3-no-check-bucket --header-upload "$IMMUTABLE" \
