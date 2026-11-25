@@ -49,8 +49,11 @@ const RN_APP = (() => {
     #gate.load { display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7vh; letter-spacing: .2em; text-transform: uppercase;
       text-shadow: 0 0 .9em rgba(255,47,168,.45), 0 2px 8px #000; font-variant-numeric: tabular-nums; }
     #gate.load i { position: absolute; left: 30vw; right: 30vw; bottom: calc(7vh - 14px); height: 2px; transform-origin: 0 50%; background: linear-gradient(90deg, #ff2fa8, #b9c3ec); box-shadow: 0 0 10px rgba(255,47,168,.6); }
-    #gate.card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; pointer-events: auto; overflow-y: auto;
+    #gate.card { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px; pointer-events: auto; overflow-y: auto;
       background: radial-gradient(120% 80% at 50% 0%, #0d2238 0%, #05080d 72%); }
+    /* auto margins center the card but let a tall one scroll from its top (justify-content: center cuts the top off) */
+    #gate.card > :first-child { margin-top: auto; }
+    #gate.card > :last-child { margin-bottom: auto; }
     #gate h2 { margin: 0; font-size: clamp(22px, 5vw, 34px); letter-spacing: .1em; text-transform: uppercase; color: #fff; text-wrap: balance; text-shadow: 0 2px 14px rgba(56,189,248,.35); }
     #gate p { margin: 0; max-width: 44ch; font: 400 15px/1.45 system-ui, -apple-system, sans-serif; color: #c7d4e8; text-wrap: pretty; }
     #gate .tech { font: 12px/1.4 ui-monospace, Menlo, monospace; color: #6e7681; word-break: break-word; user-select: text; -webkit-user-select: text; }
@@ -101,7 +104,7 @@ const RN_APP = (() => {
   document.body.appendChild(gate);
   const el = (tag, text, cls) => { const e = Object.assign(document.createElement(tag), { textContent: text }); if (cls) e.className = cls; return e; };
 
-  let note = 'Cargando…', frac = null, why = '', shown = '', wizStep = 0;
+  let note = 'Cargando…', frac = null, why = '', shown = '', wizStep = 0, wizDone = false;
   function render() {
     const s = app.state;
     const view = s === 'stop' ? 'stop' : upright() ? 'turn' : s === 'check' || s === 'load' ? 'load:' + note + (frac === null ? '' : '|' + Math.round(frac * 200)) : '';
@@ -150,7 +153,7 @@ const RN_APP = (() => {
       gate.append(wrap);
 
       // Mini wizard: show why Home Screen (standalone) is much better + platform-specific steps. Hidden once already standalone.
-      if (!isStandalone()) {
+      if (!isStandalone() && !wizDone) {
         const ICONS = {
           share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',
           plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
@@ -211,7 +214,7 @@ const RN_APP = (() => {
           dotBtns.forEach((d, idx) => d.classList.toggle('on', idx === wizStep));
         };
         prev.onclick = e => { e.stopPropagation(); if (wizStep > 0) { wizStep--; drawStep(); } };
-        next.onclick = e => { e.stopPropagation(); wizStep = (wizStep + 1) % steps.length; drawStep(); };
+        next.onclick = e => { e.stopPropagation(); if (wizStep < steps.length - 1) { wizStep++; drawStep(); } else { wizDone = true; wiz.remove(); } };
         stepBox.append(icoEl, txtEl);
         nav.append(prev, dots, next);
         drawStep();
