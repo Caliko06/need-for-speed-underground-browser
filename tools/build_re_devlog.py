@@ -23,7 +23,7 @@ DATE = "2026-11-25"
 EXTRA_RE_DOCS = ["flare_re", "night_re", "re_audio_default", "re_minimap", "traffic_placement"]
 ORG = {
     "@type": "Organization",
-    "name": "NFSU.cc",
+    "name": "NFS Underground Web",
     "url": SITE + "/",
     "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"},
 }
@@ -478,7 +478,7 @@ def shell_page(lang, canonical_path, title, desc, inner_html, ld_obj, md_alt=Non
             alt_links.append(f'<link rel="alternate" hreflang="x-default" href="{SITE}/{hreflang_alts["en"]}">')
     if md_alt:
         alt_links.append(f'<link rel="alternate" type="text/markdown" href="{SITE}/{md_alt}">')
-    alt_links.append(f'<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="{SITE}/feed.xml">')
+    alt_links.append(f'<link rel="alternate" type="application/atom+xml" title="NFS Underground Web Engineering Devlog" href="{SITE}/feed.xml">')
 
     img = f"{SITE}/blog/img/olympic-city-world.webp"
     og_loc = "es_MX" if lang == "es" else "en_US"
@@ -498,15 +498,18 @@ def shell_page(lang, canonical_path, title, desc, inner_html, ld_obj, md_alt=Non
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#04121a">
-<title>{esc(title)} | NFSU.cc</title>
+<title>{esc(title)} | NFS Underground Web</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{canon}">
 {chr(10).join(alt_links)}
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
 <meta property="og:type" content="{og_type}">
-<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:site_name" content="NFS Underground Web">
 <meta property="og:locale" content="{og_loc}">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
@@ -725,7 +728,7 @@ def build_re_atlas():
             "description": lead,
             "url": f"{SITE}/{canon_rel}",
             "inLanguage": lang,
-            "isPartOf": {"@type": "WebSite", "name": "NFSU.cc", "url": f"{SITE}/"},
+            "isPartOf": {"@type": "WebSite", "name": "NFS Underground Web", "url": f"{SITE}/"},
             "hasPart": [{"@type": "TechArticle", "headline": n["title"], "url": f"{SITE}/re/{n['stem']}.html"} for n in notes.values()],
         }
         open(os.path.join(W, canon_rel), "w", encoding="utf-8").write(

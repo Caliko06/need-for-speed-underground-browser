@@ -322,12 +322,12 @@ def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=N
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#04121a">
-<title>{e(title)} | NFSU.cc</title>
+<title>{e(title)} | NFS Underground Web</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{url(lang, name)}">
 {alts}<meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="{'website' if name == 'index' else 'article'}">
-<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:site_name" content="NFS Underground Web">
 <meta property="og:url" content="{url(lang, name)}">
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
@@ -340,9 +340,12 @@ def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=N
 <meta name="twitter:description" content="{e(desc)}">
 <meta name="twitter:image" content="{og_url_img}">
 <meta name="twitter:image:alt" content="{alt_txt}">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/icon-180.png">
-<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="{SITE}/feed.xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+<link rel="alternate" type="application/atom+xml" title="NFS Underground Web Engineering Devlog" href="{SITE}/feed.xml">
 <link rel="stylesheet" href="../blog.css">
 <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
 </head>
@@ -381,7 +384,7 @@ def figure(a, lang, n=""):
 
 HEIGHT = {"olympic-city-world.webp": 700, "bayview-palms.webp": 703, "bayview-race.webp": 703, "world-map.webp": 850, "phone-touch.webp": 462, "olympic-city-drive.webp": 703}
 BACK = ["olympic-city-drive.webp", "olympic-city-world.webp"]   # behind the sheet: a street picture that is not the one shown in the text
-ORG = {"@type": "Organization", "name": "NFSU.cc", "url": SITE + "/", "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"}}
+ORG = {"@type": "Organization", "name": "NFS Underground Web", "url": SITE + "/", "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"}}
 PLAY_FAQ = {
     "en": [
         ("Is NFSU.cc an emulator or a remake?", "Neither. It is a static recompilation of the original 2003 PC executable (Speed.exe) to WebAssembly, so the physics, AI rivals, menus and career progression are the original game's own code."),
@@ -406,7 +409,7 @@ for lang in LANGS:
     names = {l: "index" for l in LANGS}
     inner = f'<h1>{u["hub_h1"]}</h1>\n<p class="lead">{e(u["hub_lead"])}</p>\n{rows(lang, only=False)}\n<h2 class="more">{u["dev"]}</h2>\n{rows(lang, only=True)}\n<p><a href="{REPO}" rel="noopener">{u["code"]}</a></p>\n<div class="cta"><a href="/">{u["cta"]}</a></div>'
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": u["hub_title"], "description": u["hub_desc"], "url": url(lang, "index"), "inLanguage": lang,
-          "isPartOf": {"@type": "WebSite", "name": "NFSU.cc", "url": SITE + "/"},
+          "isPartOf": {"@type": "WebSite", "name": "NFS Underground Web", "url": SITE + "/"},
           "hasPart": [{"@type": "Article", "headline": a["title"][lang], "url": url(lang, a["slug"][lang])} for a in ARTICLES]}
     open(os.path.join(W, "blog", lang, "index.html"), "w", encoding="utf-8").write(page(lang, "index", names, u["hub_title"], u["hub_desc"], BACK[1], u["hub_h1"], inner, ld))
     pages.append((lang, "index", names))

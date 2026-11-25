@@ -5,18 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#04121a">
-<title>Bitácora de Ingeniería y Actualizaciones (Devlog) | NFSU.cc</title>
+<title>Bitácora de Ingeniería y Actualizaciones (Devlog) | NFS Underground Web</title>
 <meta name="description" content="Bitácora técnica real sobre cómo recompilamos Need for Speed Underground (2003, x86) a WebAssembly y WebGPU/WebGL 2: optimizaciones del recompilador, memoria móvil de 448 MB, texturas BC1/2/3 y fixes de crashes reales. Entradas en inglés técnico con RSS y Markdown (.md).">
 <link rel="canonical" href="https://nfsu.cc/devlog/es/index.html">
 <link rel="alternate" hreflang="en" href="https://nfsu.cc/devlog/index.html">
 <link rel="alternate" hreflang="es" href="https://nfsu.cc/devlog/es/index.html">
 <link rel="alternate" hreflang="x-default" href="https://nfsu.cc/devlog/index.html">
-<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<link rel="alternate" type="application/atom+xml" title="NFS Underground Web Engineering Devlog" href="https://nfsu.cc/feed.xml">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:site_name" content="NFS Underground Web">
 <meta property="og:locale" content="es_MX">
 <meta property="og:title" content="Bitácora de Ingeniería y Actualizaciones (Devlog)">
 <meta property="og:description" content="Bitácora técnica real sobre cómo recompilamos Need for Speed Underground (2003, x86) a WebAssembly y WebGPU/WebGL 2: optimizaciones del recompilador, memoria móvil de 448 MB, texturas BC1/2/3 y fixes de crashes reales. Entradas en inglés técnico con RSS y Markdown (.md).">
@@ -55,7 +58,7 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 .stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
 .stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Blog", "name": "Bitácora de Ingeniería y Actualizaciones (Devlog)", "description": "Bitácora técnica real sobre cómo recompilamos Need for Speed Underground (2003, x86) a WebAssembly y WebGPU/WebGL 2: optimizaciones del recompilador, memoria móvil de 448 MB, texturas BC1/2/3 y fixes de crashes reales. Entradas en inglés técnico con RSS y Markdown (.md).", "url": "https://nfsu.cc/devlog/es/index.html", "inLanguage": "es", "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "blogPost": [{"@type": "TechArticle", "headline": "Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers", "datePublished": "2026-11-25", "url": "https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html"}, {"@type": "TechArticle", "headline": "Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB", "datePublished": "2026-11-24", "url": "https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html"}, {"@type": "TechArticle", "headline": "Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87", "datePublished": "2026-11-23", "url": "https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html"}, {"@type": "TechArticle", "headline": "DirectX 9 to WebGPU & WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline", "datePublished": "2026-11-23", "url": "https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html"}, {"@type": "TechArticle", "headline": "One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds", "datePublished": "2026-11-22", "url": "https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html"}, {"@type": "TechArticle", "headline": "Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)", "datePublished": "2026-11-24", "url": "https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Blog", "name": "Bitácora de Ingeniería y Actualizaciones (Devlog)", "description": "Bitácora técnica real sobre cómo recompilamos Need for Speed Underground (2003, x86) a WebAssembly y WebGPU/WebGL 2: optimizaciones del recompilador, memoria móvil de 448 MB, texturas BC1/2/3 y fixes de crashes reales. Entradas en inglés técnico con RSS y Markdown (.md).", "url": "https://nfsu.cc/devlog/es/index.html", "inLanguage": "es", "publisher": {"@type": "Organization", "name": "NFS Underground Web", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "blogPost": [{"@type": "TechArticle", "headline": "Preserving V8 WebAssembly Code Cache, Cutting 30s Off Mobile Boot, and In-Place R2 Immutable Headers", "datePublished": "2026-11-25", "url": "https://nfsu.cc/devlog/v8-wasm-code-cache-mobile-boot-and-r2-immutable.html"}, {"@type": "TechArticle", "headline": "Hunting a 50-Minute Browser OOM and Shrinking Mobile WASM to 448 MB", "datePublished": "2026-11-24", "url": "https://nfsu.cc/devlog/production-crash-hardening-and-448mb-phone-wasm.html"}, {"@type": "TechArticle", "headline": "Static Recompiler Optimizations: Dead x86 Flag Pruning, CHK_SP Coalescing, and Fast x87", "datePublished": "2026-11-23", "url": "https://nfsu.cc/devlog/recompiler-dead-flags-chk-sp-fast-x87.html"}, {"@type": "TechArticle", "headline": "DirectX 9 to WebGPU & WebGL 2: Native BC1/2/3 Textures and a Zero-Waste Draw Pipeline", "datePublished": "2026-11-23", "url": "https://nfsu.cc/devlog/zero-waste-webgpu-draw-pipeline-and-bc-textures.html"}, {"@type": "TechArticle", "headline": "One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds", "datePublished": "2026-11-22", "url": "https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html"}, {"@type": "TechArticle", "headline": "Opening the Complete Reverse Engineering Atlas of Speed.exe (44 Subsystems)", "datePublished": "2026-11-24", "url": "https://nfsu.cc/devlog/reverse-engineering-44-subsystems-of-speed-exe.html"}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-drive.webp)">
 <header class="top">

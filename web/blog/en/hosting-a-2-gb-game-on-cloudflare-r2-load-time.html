@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#04121a">
-<title>Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu | NFSU.cc</title>
+<title>Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu | NFS Underground Web</title>
 <meta name="description" content="How NFSU.cc serves the whole of Need for Speed Underground, music included, so a first visit reaches the menu after 32 MB: brotli pieces cut to the game&#x27;s own reads, whole small files and prefetch.">
 <link rel="canonical" href="https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html">
 <link rel="alternate" hreflang="en" href="https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html">
@@ -13,7 +13,7 @@
 <link rel="alternate" hreflang="x-default" href="https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:site_name" content="NFS Underground Web">
 <meta property="og:url" content="https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html">
 <meta property="og:title" content="Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu">
 <meta property="og:description" content="How NFSU.cc serves the whole of Need for Speed Underground, music included, so a first visit reaches the menu after 32 MB: brotli pieces cut to the game&#x27;s own reads, whole small files and prefetch.">
@@ -28,11 +28,14 @@
 <meta name="twitter:description" content="How NFSU.cc serves the whole of Need for Speed Underground, music included, so a first visit reaches the menu after 32 MB: brotli pieces cut to the game&#x27;s own reads, whole small files and prefetch.">
 <meta name="twitter:image" content="https://nfsu.cc/og.jpg">
 <meta name="twitter:image:alt" content="Driving through Olympic City after the game finished loading">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/icon-180.png">
-<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+<link rel="alternate" type="application/atom+xml" title="NFS Underground Web Engineering Devlog" href="https://nfsu.cc/feed.xml">
 <link rel="stylesheet" href="../blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu", "description": "How NFSU.cc serves the whole of Need for Speed Underground, music included, so a first visit reaches the menu after 32 MB: brotli pieces cut to the game's own reads, whole small files and prefetch.", "inLanguage": "en", "datePublished": "2026-11-21", "dateModified": "2026-11-21", "image": "https://nfsu.cc/blog/img/olympic-city-drive.webp", "mainEntityOfPage": "https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://nfsu.cc/blog/en/index.html"}, {"@type": "ListItem", "position": 3, "name": "Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu", "item": "https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html"}]}, {"@type": "SoftwareSourceCode", "name": "need-for-speed-underground-browser", "codeRepository": "https://github.com/Caliko06/need-for-speed-underground-browser", "url": "https://github.com/Caliko06/need-for-speed-underground-browser", "programmingLanguage": ["C", "Python", "JavaScript"], "runtimePlatform": "WebAssembly", "description": "Static recompilation of Need for Speed Underground (2003, PC) to WebAssembly."}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu", "description": "How NFSU.cc serves the whole of Need for Speed Underground, music included, so a first visit reaches the menu after 32 MB: brotli pieces cut to the game's own reads, whole small files and prefetch.", "inLanguage": "en", "datePublished": "2026-11-21", "dateModified": "2026-11-21", "image": "https://nfsu.cc/blog/img/olympic-city-drive.webp", "mainEntityOfPage": "https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html", "author": {"@type": "Organization", "name": "NFS Underground Web", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFS Underground Web", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground", "url": "https://nfsu.cc/"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://nfsu.cc/blog/en/index.html"}, {"@type": "ListItem", "position": 3, "name": "Hosting a 2 GB PC game on Cloudflare R2: 32 MB to the main menu", "item": "https://nfsu.cc/blog/en/hosting-a-2-gb-game-on-cloudflare-r2-load-time.html"}]}, {"@type": "SoftwareSourceCode", "name": "need-for-speed-underground-browser", "codeRepository": "https://github.com/Caliko06/need-for-speed-underground-browser", "url": "https://github.com/Caliko06/need-for-speed-underground-browser", "programmingLanguage": ["C", "Python", "JavaScript"], "runtimePlatform": "WebAssembly", "description": "Static recompilation of Need for Speed Underground (2003, PC) to WebAssembly."}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-world.webp)">
 <header class="top">

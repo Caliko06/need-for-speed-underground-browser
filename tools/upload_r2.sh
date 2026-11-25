@@ -22,8 +22,12 @@ rclone copy dist "r2:$B" --filter "- /data-chunks/**" --filter "- /game/**" --fi
   --filter "- /manifest.json" --filter "- _headers" --filter "- /*.{html,js,json,webmanifest}" --transfers 16 \
   --checksum --s3-no-check-bucket --header-upload "$CACHE" --progress
 # Entrypoints & unversioned manifests stay no-cache so browsers always pick up the latest RN_V hash.
-rclone copy dist "r2:$B" --filter "- _headers" --filter "- /manifest.json" --filter "+ /*.{html,json,webmanifest}" --filter "- **" \
+rclone copy dist "r2:$B" --filter "- _headers" --filter "- /manifest.json" --filter "- /app.webmanifest" --filter "+ /*.{html,json}" --filter "- **" \
   --ignore-times --transfers 16 --s3-no-check-bucket --header-upload "Cache-Control: no-cache"
+rclone copyto dist/app.webmanifest "r2:$B/app.webmanifest" --ignore-times --s3-no-check-bucket \
+  --header-upload "Cache-Control: no-cache" --header-upload "Content-Type: application/manifest+json; charset=utf-8"
+rclone copyto dist/favicon.ico "r2:$B/favicon.ico" --ignore-times --s3-no-check-bucket \
+  --header-upload "$CACHE" --header-upload "Content-Type: image/x-icon"
 # Versioned scripts (?v=RN_V in index.html, launcher.html, boot.js): immutable so returning browsers skip 304 round-trips.
 rclone copy dist "r2:$B" --filter "+ /*.js" --filter "+ /out/speed.js" --filter "+ /out/speed_lite.js" --filter "- **" \
   --ignore-times --transfers 16 --s3-no-check-bucket --header-upload "$IMMUTABLE"

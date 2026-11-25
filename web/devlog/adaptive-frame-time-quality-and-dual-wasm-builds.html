@@ -5,16 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#04121a">
-<title>One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds — NFSU.cc Devlog | NFSU.cc</title>
+<title>One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds — NFSU.cc Devlog | NFS Underground Web</title>
 <meta name="description" content="How nfsu.cc measures its own 256-frame present ring, scales resolution and effects automatically via web/quality.js, ships a brotli speed_lite.wasm for phones, and never cuts the 2003 soundtrack.">
 <link rel="canonical" href="https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html">
 <link rel="alternate" type="text/markdown" href="https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.md">
-<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<link rel="alternate" type="application/atom+xml" title="NFS Underground Web Engineering Devlog" href="https://nfsu.cc/feed.xml">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:site_name" content="NFS Underground Web">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds — NFSU.cc Devlog">
 <meta property="og:description" content="How nfsu.cc measures its own 256-frame present ring, scales resolution and effects automatically via web/quality.js, ships a brotli speed_lite.wasm for phones, and never cuts the 2003 soundtrack.">
@@ -53,7 +56,7 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 .stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
 .stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds", "description": "How nfsu.cc measures its own 256-frame present ring, scales resolution and effects automatically via web/quality.js, ships a brotli speed_lite.wasm for phones, and never cuts the 2003 soundtrack.", "inLanguage": "en", "datePublished": "2026-11-22", "dateModified": "2026-11-22", "url": "https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "Performance, Mobile, WebAssembly, Telemetry"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds", "item": "https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds", "description": "How nfsu.cc measures its own 256-frame present ring, scales resolution and effects automatically via web/quality.js, ships a brotli speed_lite.wasm for phones, and never cuts the 2003 soundtrack.", "inLanguage": "en", "datePublished": "2026-11-22", "dateModified": "2026-11-22", "url": "https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html", "image": "https://nfsu.cc/blog/img/olympic-city-world.webp", "author": {"@type": "Organization", "name": "NFS Underground Web", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFS Underground Web", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "keywords": "Performance, Mobile, WebAssembly, Telemetry"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "Devlog", "item": "https://nfsu.cc/devlog/index.html"}, {"@type": "ListItem", "position": 3, "name": "One URL for Desktops and Phones: Frame-Time Quality Control and Dual WASM Builds", "item": "https://nfsu.cc/devlog/adaptive-frame-time-quality-and-dual-wasm-builds.html"}]}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-drive.webp)">
 <header class="top">

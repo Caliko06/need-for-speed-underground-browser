@@ -5,16 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#04121a">
-<title>Unlock state and checks in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering | NFSU.cc</title>
+<title>Unlock state and checks in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering | NFS Underground Web</title>
 <meta name="description" content="Tools: G Ghidra, C capstone, GC ref/_ext/gc/Speed.elf (NFSU1 GameCube, symbols). Everything below V unless marked I.">
 <link rel="canonical" href="https://nfsu.cc/re/unlock.html">
 <link rel="alternate" type="text/markdown" href="https://nfsu.cc/re/unlock.md">
-<link rel="alternate" type="application/atom+xml" title="NFSU.cc Engineering Devlog" href="https://nfsu.cc/feed.xml">
+<link rel="alternate" type="application/atom+xml" title="NFS Underground Web Engineering Devlog" href="https://nfsu.cc/feed.xml">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="NFSU.cc">
+<meta property="og:site_name" content="NFS Underground Web">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Unlock state and checks in Speed.exe — NFS Underground (Speed.exe) Reverse Engineering">
 <meta property="og:description" content="Tools: G Ghidra, C capstone, GC ref/_ext/gc/Speed.elf (NFSU1 GameCube, symbols). Everything below V unless marked I.">
@@ -53,7 +56,7 @@ blockquote{margin:1rem 0;padding:.6rem 1rem;border-left:3px solid #f59e0b;backgr
 .stat-card b{display:block;font-size:1.25rem;color:#fcd34d;line-height:1.15}
 .stat-card span{display:block;font-size:.78rem;opacity:.82;margin-top:.2rem}
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Unlock state and checks in Speed.exe", "description": "Tools: G Ghidra, C capstone, GC ref/_ext/gc/Speed.elf (NFSU1 GameCube, symbols). Everything below V unless marked I.", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/unlock.html", "author": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFSU.cc", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Unlock state and checks in Speed.exe", "item": "https://nfsu.cc/re/unlock.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Unlock state and checks in Speed.exe", "description": "Tools: G Ghidra, C capstone, GC ref/_ext/gc/Speed.elf (NFSU1 GameCube, symbols). Everything below V unless marked I.", "inLanguage": "en", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "url": "https://nfsu.cc/re/unlock.html", "author": {"@type": "Organization", "name": "NFS Underground Web", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "publisher": {"@type": "Organization", "name": "NFS Underground Web", "url": "https://nfsu.cc/", "logo": {"@type": "ImageObject", "url": "https://nfsu.cc/icon-512.png"}}, "about": {"@type": "VideoGame", "name": "Need for Speed Underground (2003)"}, "proficiencyLevel": "Expert"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "NFSU.cc", "item": "https://nfsu.cc/"}, {"@type": "ListItem", "position": 2, "name": "RE Atlas", "item": "https://nfsu.cc/re/index.html"}, {"@type": "ListItem", "position": 3, "name": "Unlock state and checks in Speed.exe", "item": "https://nfsu.cc/re/unlock.html"}]}]}</script>
 </head>
 <body style="--pic: url(/blog/img/olympic-city-drive.webp)">
 <header class="top">
