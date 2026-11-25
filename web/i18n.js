@@ -88,6 +88,26 @@
     // web/saves.js
     'No se pudo guardar tu partida en este navegador': 'Your progress could not be saved in this browser',
     'No se pudieron leer tus partidas en este navegador': 'Your saves could not be read in this browser',
+    // web/app.js (rotate screen + fullscreen home-screen wizard)
+    'Gira el teléfono': 'Rotate your phone',
+    'El juego es horizontal y espera en pausa.': 'The game runs in landscape and is paused.',
+    'Si no gira, quita el bloqueo de rotación.': 'If it does not rotate, unlock screen orientation.',
+    'Pantalla completa ahora': 'Enter full screen',
+    'Instalar acceso directo': 'Install shortcut',
+    'Mejor a pantalla completa': 'Better in full screen',
+    'Sin barras del navegador, más espacio para los botones táctiles y acceso en un toque.': 'No browser bars, more room for touch controls, and one-tap launch.',
+    'En navegador': 'In browser',
+    'Desde tu inicio': 'Home screen',
+    'Recomendado': 'Recommended',
+    'Cómo agregarlo al inicio': 'How to add to Home Screen',
+    'Toca el botón Compartir en la barra inferior de Safari.': 'Tap the Share button in Safari’s bottom bar.',
+    'Desliza y elige "Agregar a inicio".': 'Scroll down and tap "Add to Home Screen".',
+    'Abre NFS Underground desde tu pantalla de inicio y gira el teléfono.': 'Open NFS Underground from your Home Screen and rotate your phone.',
+    'Toca el menú (⋮) arriba a la derecha en Chrome.': 'Tap the menu (⋮) in the top right of Chrome.',
+    'Elige "Agregar a pantalla principal" o "Instalar app".': 'Tap "Add to Home screen" or "Install app".',
+    'Ábrelo desde tu inicio para jugar sin barras y gira el teléfono.': 'Open it from your Home screen for full screen and rotate your phone.',
+    'Paso': 'Step',
+    'Listo': 'Done',
   };
   window.RN_LANG = lang;
   window.RN_TR = s => (lang === 'en' && typeof s === 'string' && EN[s]) || s;

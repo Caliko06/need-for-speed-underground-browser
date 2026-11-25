@@ -35,6 +35,12 @@ const RN_APP = (() => {
     [/: ExitProcess\(0\)/, 'Saliste del juego. Toca Recargar para volver a jugar.'],
   ];
 
+  const TR = s => (window.RN_TR ? window.RN_TR(s) : s);
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  const isStandalone = () => matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
+  let deferredInstall = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; if (shown === 'turn') { shown = ''; render(); } });
+
   const css = document.createElement('style');
   css.textContent = `
     #gate { position: fixed; inset: 0; z-index: 14; display: none; box-sizing: border-box; pointer-events: none; text-align: center; color: #b9c3ec;
@@ -43,25 +49,59 @@ const RN_APP = (() => {
     #gate.load { display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7vh; letter-spacing: .2em; text-transform: uppercase;
       text-shadow: 0 0 .9em rgba(255,47,168,.45), 0 2px 8px #000; font-variant-numeric: tabular-nums; }
     #gate.load i { position: absolute; left: 30vw; right: 30vw; bottom: calc(7vh - 14px); height: 2px; transform-origin: 0 50%; background: linear-gradient(90deg, #ff2fa8, #b9c3ec); box-shadow: 0 0 10px rgba(255,47,168,.6); }
-    #gate.card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; pointer-events: auto;
-      background: radial-gradient(120% 90% at 50% 0%, #1a1030 0%, #05080d 70%); }
-    #gate h2 { margin: 0; font-size: clamp(20px, 3.2vw, 34px); letter-spacing: .12em; text-transform: uppercase; color: #fff; text-shadow: 0 0 .9em rgba(255,47,168,.45); }
-    #gate p { margin: 0; max-width: 46ch; font: 400 16px/1.5 system-ui, sans-serif; color: #c9cdea; }
+    #gate.card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; pointer-events: auto; overflow-y: auto;
+      background: radial-gradient(120% 80% at 50% 0%, #0d2238 0%, #05080d 72%); }
+    #gate h2 { margin: 0; font-size: clamp(22px, 5vw, 34px); letter-spacing: .1em; text-transform: uppercase; color: #fff; text-wrap: balance; text-shadow: 0 2px 14px rgba(56,189,248,.35); }
+    #gate p { margin: 0; max-width: 44ch; font: 400 15px/1.45 system-ui, -apple-system, sans-serif; color: #c7d4e8; text-wrap: pretty; }
     #gate .tech { font: 12px/1.4 ui-monospace, Menlo, monospace; color: #6e7681; word-break: break-word; user-select: text; -webkit-user-select: text; }
-    #gate button { font: inherit; letter-spacing: .14em; text-transform: uppercase; color: #fff; padding: 12px 28px; border: 0; border-radius: 999px; cursor: pointer;
-      background: linear-gradient(135deg, #ff7a18, #af002d); box-shadow: 0 8px 24px rgba(175,0,45,.45); transition: transform .12s; }
+    #gate button { font: inherit; letter-spacing: .12em; text-transform: uppercase; color: #fff; min-height: 44px; padding: 10px 24px; border: 0; border-radius: 10px; cursor: pointer;
+      background: linear-gradient(135deg, #f59e0b, #ea580c); box-shadow: 0 6px 20px rgba(234,88,12,.35); transition: transform 130ms cubic-bezier(.22,1,.36,1), opacity 130ms; }
     #gate button:active { transform: scale(.97); }
     #gate button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    #gate .btn-ghost { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16); box-shadow: none; font-size: 13px; padding: 8px 14px; min-height: 40px; }
     #gate svg { width: 84px; height: 84px; }
+    #gate .rot-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 380px; }
+    #gate .rot-stage { position: relative; width: 96px; height: 72px; display: grid; place-items: center; }
+    #gate .rot-phone { width: 42px; height: 70px; border: 2.5px solid #e2ecf8; border-radius: 9px; background: linear-gradient(180deg, #0b1b2e 0%, #102a45 58%, #07101b 100%);
+      position: relative; box-shadow: 0 8px 22px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08); transform-origin: center;
+      animation: rn-rot 2.6s cubic-bezier(.22,1,.36,1) infinite; }
+    #gate .rot-phone::before { content: ''; position: absolute; left: 50%; top: 5px; width: 12px; height: 2px; transform: translateX(-50%); border-radius: 2px; background: rgba(255,255,255,.45); }
+    #gate .rot-phone::after { content: ''; position: absolute; left: 5px; right: 5px; bottom: 16px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #38bdf8, #f59e0b); }
+    @keyframes rn-rot { 0%, 18% { transform: rotate(0deg); } 45%, 82% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
+    #gate .wiz { width: 100%; max-width: 380px; text-align: left; padding: 14px; border-radius: 14px; box-sizing: border-box;
+      background: rgba(10, 22, 36, .88); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 14px 36px rgba(0,0,0,.48);
+      font: 400 14px/1.45 system-ui, -apple-system, sans-serif; color: #dbe7f5; }
+    #gate .wiz-hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    #gate .wiz-hd strong { font: italic 700 16px/1.1 "Avenir Next Condensed", "DIN Condensed", "Bahnschrift", "Roboto Condensed", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #fff; }
+    #gate .wiz-pill { font: 600 11px/1 system-ui, sans-serif; padding: 4px 8px; border-radius: 999px; background: rgba(245,158,11,.16); border: 1px solid rgba(245,158,11,.4); color: #fde68a; }
+    #gate .wiz-sub { font-size: 13px; color: #9fb4cc; margin: 0 0 10px; }
+    #gate .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    #gate .cmp-box { padding: 8px; border-radius: 10px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); text-align: center; }
+    #gate .cmp-box.best { background: rgba(56,189,248,.08); border-color: rgba(56,189,248,.38); }
+    #gate .cmp-scr { height: 42px; border-radius: 6px; border: 1.5px solid rgba(255,255,255,.28); overflow: hidden; display: flex; flex-direction: column; margin-bottom: 6px; background: #071320; }
+    #gate .cmp-bar { height: 9px; background: rgba(255,255,255,.18); flex: 0 0 auto; }
+    #gate .cmp-game { flex: 1; background: linear-gradient(135deg, #0ea5e9 0%, #1d4ed8 55%, #f59e0b 100%); opacity: .75; }
+    #gate .cmp-box.best .cmp-game { opacity: 1; }
+    #gate .cmp-lbl { font-size: 11px; color: #9fb4cc; font-weight: 600; }
+    #gate .cmp-box.best .cmp-lbl { color: #e0f2fe; }
+    #gate .wiz-step { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); min-height: 58px; }
+    #gate .wiz-ico { flex: 0 0 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; background: rgba(56,189,248,.14); border: 1px solid rgba(56,189,248,.3); color: #7dd3fc; }
+    #gate .wiz-ico svg { width: 20px; height: 20px; }
+    #gate .wiz-txt { flex: 1; font-size: 13.5px; color: #eff6ff; }
+    #gate .wiz-txt small { display: block; font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums; margin-bottom: 2px; }
+    #gate .wiz-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+    #gate .wiz-dots { display: flex; gap: 6px; }
+    #gate .wiz-dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.22); border: 0; padding: 0; min-height: 0; box-shadow: none; }
+    #gate .wiz-dot.on { width: 20px; background: #38bdf8; }
     body.dbg #gate { display: none; }
-    @media (prefers-reduced-motion: reduce) { #gate button { transition: none; } }`;
+    @media (prefers-reduced-motion: reduce) { #gate button { transition: none; } #gate .rot-phone { animation: none; transform: rotate(-90deg); } }`;
   document.head.appendChild(css);
   const gate = Object.assign(document.createElement('div'), { id: 'gate' });
   gate.setAttribute('role', 'status');
   document.body.appendChild(gate);
   const el = (tag, text, cls) => { const e = Object.assign(document.createElement(tag), { textContent: text }); if (cls) e.className = cls; return e; };
 
-  let note = 'Cargando…', frac = null, why = '', shown = '';
+  let note = 'Cargando…', frac = null, why = '', shown = '', wizStep = 0;
   function render() {
     const s = app.state;
     const view = s === 'stop' ? 'stop' : upright() ? 'turn' : s === 'check' || s === 'load' ? 'load:' + note + (frac === null ? '' : '|' + Math.round(frac * 200)) : '';
@@ -92,8 +132,106 @@ const RN_APP = (() => {
       gate.append(el('h2', 'El juego se detuvo'), el('p', (WHY.find(([re]) => re.test(why)) || [0, 'El juego falló. Recarga para seguir; el reporte dice qué pasó.'])[1]), b, r, el('p', why, 'tech'));
       b.focus();
     } else if (view === 'turn') {
-      gate.innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="20" width="36" height="20" rx="4"/><path d="M14 13a14 14 0 0 1 20 0"/><path d="M34 7v6h-6"/></svg>';
-      gate.append(el('h2', 'Gira el teléfono'), el('p', 'El juego es horizontal y espera en pausa.' + (document.documentElement.requestFullscreen ? ' Toca para pantalla completa.' : ' Si no gira, quita el bloqueo de rotación.')));
+      const wrap = el('div', '', 'rot-wrap');
+      const stage = el('div', '', 'rot-stage');
+      stage.setAttribute('aria-hidden', 'true');
+      stage.append(el('div', '', 'rot-phone'));
+      wrap.append(
+        stage,
+        el('h2', TR('Gira el teléfono')),
+        el('p', TR('El juego es horizontal y espera en pausa.') + ' ' + TR('Si no gira, quita el bloqueo de rotación.'))
+      );
+      if (document.documentElement.requestFullscreen) {
+        const fsBtn = el('button', TR('Pantalla completa ahora'));
+        fsBtn.type = 'button';
+        fsBtn.onclick = e => { e.stopPropagation(); full(); };
+        wrap.append(fsBtn);
+      }
+      gate.append(wrap);
+
+      // Mini wizard: show why Home Screen (standalone) is much better + platform-specific steps. Hidden once already standalone.
+      if (!isStandalone()) {
+        const ICONS = {
+          share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',
+          plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+          menu: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+          play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/></svg>',
+        };
+        const steps = isIOS ? [
+          { ico: ICONS.share, text: TR('Toca el botón Compartir en la barra inferior de Safari.') },
+          { ico: ICONS.plus, text: TR('Desliza y elige "Agregar a inicio".') },
+          { ico: ICONS.play, text: TR('Abre NFS Underground desde tu pantalla de inicio y gira el teléfono.') },
+        ] : [
+          { ico: ICONS.menu, text: TR('Toca el menú (⋮) arriba a la derecha en Chrome.') },
+          { ico: ICONS.plus, text: TR('Elige "Agregar a pantalla principal" o "Instalar app".') },
+          { ico: ICONS.play, text: TR('Ábrelo desde tu inicio para jugar sin barras y gira el teléfono.') },
+        ];
+        wizStep = Math.max(0, Math.min(steps.length - 1, wizStep));
+
+        const wiz = el('section', '', 'wiz');
+        wiz.setAttribute('aria-label', TR('Cómo agregarlo al inicio'));
+        const hd = el('div', '', 'wiz-hd');
+        hd.append(el('strong', TR('Mejor a pantalla completa')), el('span', TR('Recomendado'), 'wiz-pill'));
+        const sub = el('p', TR('Sin barras del navegador, más espacio para los botones táctiles y acceso en un toque.'), 'wiz-sub');
+
+        const cmp = el('div', '', 'cmp');
+        cmp.setAttribute('aria-hidden', 'true');
+        const c1 = el('div', '', 'cmp-box');
+        c1.innerHTML = `<div class="cmp-scr"><div class="cmp-bar"></div><div class="cmp-game"></div><div class="cmp-bar"></div></div><div class="cmp-lbl">${TR('En navegador')}</div>`;
+        const c2 = el('div', '', 'cmp-box best');
+        c2.innerHTML = `<div class="cmp-scr"><div class="cmp-game"></div></div><div class="cmp-lbl">${TR('Desde tu inicio')}</div>`;
+        cmp.append(c1, c2);
+
+        const stepBox = el('div', '', 'wiz-step');
+        const icoEl = el('div', '', 'wiz-ico');
+        const txtEl = el('div', '', 'wiz-txt');
+        const nav = el('div', '', 'wiz-nav');
+        const prev = el('button', TR('Anterior'), 'btn-ghost');
+        const next = el('button', TR('Siguiente'), 'btn-ghost');
+        prev.type = 'button';
+        next.type = 'button';
+        const dots = el('div', '', 'wiz-dots');
+        const dotBtns = steps.map((_, idx) => {
+          const d = el('button', '', 'wiz-dot');
+          d.type = 'button';
+          d.setAttribute('aria-label', `${TR('Paso')} ${idx + 1}`);
+          d.onclick = e => { e.stopPropagation(); wizStep = idx; drawStep(); };
+          dots.append(d);
+          return d;
+        });
+
+        const drawStep = () => {
+          const st = steps[wizStep];
+          icoEl.innerHTML = st.ico;
+          txtEl.replaceChildren();
+          txtEl.append(el('small', `${TR('Paso')} ${wizStep + 1} / ${steps.length}`), document.createTextNode(st.text));
+          prev.disabled = wizStep === 0;
+          prev.style.opacity = wizStep === 0 ? '.35' : '1';
+          next.textContent = wizStep === steps.length - 1 ? TR('Listo') : TR('Siguiente');
+          dotBtns.forEach((d, idx) => d.classList.toggle('on', idx === wizStep));
+        };
+        prev.onclick = e => { e.stopPropagation(); if (wizStep > 0) { wizStep--; drawStep(); } };
+        next.onclick = e => { e.stopPropagation(); wizStep = (wizStep + 1) % steps.length; drawStep(); };
+        stepBox.append(icoEl, txtEl);
+        nav.append(prev, dots, next);
+        drawStep();
+
+        wiz.append(hd, sub, cmp, stepBox);
+        if (deferredInstall) {
+          const inst = el('button', TR('Instalar acceso directo'));
+          inst.type = 'button';
+          inst.style.cssText = 'width:100%;margin-top:10px';
+          inst.onclick = async e => {
+            e.stopPropagation();
+            const ev = deferredInstall; deferredInstall = null;
+            try { await ev.prompt(); } catch {}
+            shown = ''; render();
+          };
+          wiz.append(inst);
+        }
+        wiz.append(nav);
+        gate.append(wiz);
+      }
     } else if (view) {
       gate.textContent = note;
       if (frac !== null) { const b = el('i'); b.style.transform = `scaleX(${Math.max(0, Math.min(1, frac))})`; gate.append(b); }
@@ -120,8 +258,8 @@ const RN_APP = (() => {
     d.requestFullscreen({ navigationUI: 'hide' }).then(() => screen.orientation?.lock?.('landscape')).catch(() => {});
   };
   app.full = full;
-  addEventListener('touchend', full, { capture: true });
-  gate.addEventListener('click', full);
+  addEventListener('touchend', e => { if (!e.target?.closest?.('.wiz')) full(); }, { capture: true });
+  gate.addEventListener('click', e => { if (!e.target?.closest?.('.wiz, button')) full(); });
 
   // Until the game runs it gets no keys or taps (F keys and K, the bindings overlay, stay): a key pressed over the
   // loading screen would land in the first menu.
