@@ -129,10 +129,9 @@ if (bridgeTo !== null) {
 </script>
 <script src="saves.js"></script>
 <script>
-// ?fast=1&go=1 (the launcher's "Jugar"): the launcher's 3D scene (web/launcher_b/index.html?curtain=1, named in full: R2 maps only / to index.html, a folder URL is a 404 page; frozen at the end of its push-in) covers the game while it boots
-// (no intro movies or splash, PATCH 0x4de395). It is only a loading curtain: it fades out in 250 ms
-// when RN_APP leaves 'load' (web/app.js: the player is where the launcher's entry leads: main menu or Go Underground, web/boot.js ?start=; or a stop that must show). Opened without go=1 (set at the top of this page) it never gets here.
-if (RN_Q.get('fast') === '1') {
+// ?fast=1&go=1 (the launcher's "Jugar"): on desktop, the launcher's 3D scene (web/launcher_b/index.html?curtain=1, ~20 MB) covers the game while it boots.
+// On phones / low-tier devices (RN_COARSE || RN_LOW_TIER), skip the second 3D engine so WASM starts immediately at t=0 without competing for 4G bandwidth or RAM.
+if (RN_Q.get('fast') === '1' && !RN_COARSE && !RN_LOW_TIER) {
   const css = document.createElement('style');
   css.textContent = `#ab { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; z-index: 12; background: #05080d; pointer-events: none; transition: opacity .25s ease; }
     @media (prefers-reduced-motion: reduce) { #ab { transition: none; } }`;

@@ -131,6 +131,11 @@ const RN_APP = (() => {
         if (!jumped) location.href = to;
         r.textContent = 'Copiar enlace';
         r.onclick = () => navigator.clipboard?.writeText(location.origin + '/').then(() => { r.textContent = 'Enlace copiado'; }, () => {});
+      } else if (/sin aislamiento/.test(why) && (window.top !== window || (window.RN_PUBLIC && location.hostname !== 'nfsu.cc'))) {
+        b.textContent = 'Abrir nfsu.cc directo';
+        b.onclick = () => { window.open('https://nfsu.cc/', '_top') || (location.href = 'https://nfsu.cc/'); };
+        r.textContent = 'Copiar enlace';
+        r.onclick = () => navigator.clipboard?.writeText('https://nfsu.cc/').then(() => { r.textContent = 'Enlace copiado'; }, () => {});
       }
       gate.append(el('h2', 'El juego se detuvo'), el('p', (WHY.find(([re]) => re.test(why)) || [0, 'El juego falló. Recarga para seguir; el reporte dice qué pasó.'])[1]), b, r, el('p', why, 'tech'));
       b.focus();

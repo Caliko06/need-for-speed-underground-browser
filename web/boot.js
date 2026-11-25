@@ -62,6 +62,19 @@ function crashSend(s) {
     ua: navigator.userAgent, screen: `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, mem: navigator.deviceMemory || 0, perf: window.rnStats?.line() || '', cores: navigator.hardwareConcurrency || 0,
     head: allLog.filter(l => /gpu\.js: (adapter|WebGL)| mode: /.test(l)).slice(0, 4).map(cut), tail: allLog.slice(-40).map(cut) })], { type: 'application/json' }));
 }
+// One anonymous funnel beacon per session (run or stop) -> r2:nfsu-crash/funnel/YYYY-MM-DD/ (tools/crash/worker.js).
+let wasmMs = 0, wasmWarm = false;
+function funnelSend(ev, reason = '') {
+  if (!window.RN_PUBLIC || funnelSend.done || RN_Q.get('crash') === '0') return;
+  funnelSend.done = true;
+  const u = navigator.userAgent;
+  const os = /iPhone|iPad|iPod/.test(u) ? 'iOS' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Macintosh|Mac OS X/.test(u) ? 'macOS' : /CrOS/.test(u) ? 'ChromeOS' : /Linux/.test(u) ? 'Linux' : 'Other';
+  navigator.sendBeacon('/crash', new Blob([JSON.stringify({
+    format: 'rn-funnel-1', v: window.RN_V || '', ev, tier: window.RN_TIER || '', coarse: !!RN_APP.coarse, os,
+    load_ms: Math.round(performance.now() - t0), ab_ms: window.RN_AB_MS || 0, wasm_ms: wasmMs, warm: wasmWarm,
+    reason: reason ? String(reason).slice(0, 120) : '',
+  })], { type: 'application/json' }));
+}
 function line(s, cls) {
   keep(`${secs()} ${s}`);
   if (/^STOP|^JS |abort|Aborted|RuntimeError/.test(s)) setTimeout(flush, 0);
@@ -89,13 +102,17 @@ const START = RN_Q.get('start'), CURTAIN = RN_Q.get('fast') === '1' && !!START;
 const DEST = START === 'career' ? 'career' : 'menu';
 let main = false;
 const arrive = () => { if (RN_APP.state === 'load') RN_APP.set('run'); };
-RN_APP.on((s, from) => {
+RN_APP.on((s, from, detail) => {
   keep(`${secs()} app: ${from} -> ${s}`);
-  if (s === 'stop' && memTick) { clearInterval(memTick); memTick = 0; }
+  if (s === 'run') funnelSend('run');
+  if (s === 'stop') {
+    if (memTick) { clearInterval(memTick); memTick = 0; }
+    if (!/: ExitProcess\(0\)/.test(detail || '')) funnelSend('stop', detail || from);
+  }
 });
-// A download whose bytes are counted on the gate. Compressed transfers have no usable total, so it shows megabytes.
+// Fetch with retries, returning the pristine Response (no synthetic TransformStream wrapper, so V8's URL-keyed WASM code cache stays intact).
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function download(url, what) {
+async function fetchWithRetry(url) {
   const full = url + (window.RN_V ? '?v=' + RN_V : '');   // RN_V: tools/build_public.py, a new address per build
   const waits = [500, 1500];
   let r;
@@ -109,13 +126,7 @@ async function download(url, what) {
     await sleep(waits[i]);
   }
   if (!r.ok) throw new Error(`descarga de ${url}: HTTP ${r.status}`);
-  let n = 0, mb = -1;
-  const count = new TransformStream({ transform(c, ctl) {
-    n += c.byteLength;
-    if (n >> 20 !== mb) { mb = n >> 20; if (RN_APP.state === 'load') RN_APP.say(`${what} ${mb} MB`); }
-    ctl.enqueue(c);
-  } });
-  return new Response(r.body.pipeThrough(count), { headers: { 'Content-Type': r.headers.get('Content-Type') || 'application/octet-stream' } });
+  return r;
 }
 async function loadScript(src) {
   const full = src + (window.RN_V ? '?v=' + RN_V : '');
@@ -167,7 +178,7 @@ async function loadScript(src) {
   }
   window.RN_SAVES?.hook();                       // web/saves.js: seed /save before the game's preRun (else no profile: name screen)
   let exe = null;
-  const exeP = download('pc/Speed.exe', 'Descargando').then(r => r.arrayBuffer()).then(b => new Uint8Array(b));
+  const exeP = fetchWithRetry('pc/Speed.exe').then(r => r.arrayBuffer()).then(b => new Uint8Array(b));
   exeP.catch(() => {});
   // Game files are read on demand by the game thread (host/files.c), not loaded here.
   status.textContent = 'corriendo'; status.className = 'run';
@@ -176,18 +187,29 @@ async function loadScript(src) {
     arguments: ['/pc/Speed.exe', '/game'],
     print: s => line(s), printErr: s => line(s, 'dim'),
     onAbort: what => line('STOP wasm abort: ' + what),
-    // The 70 MB module compiles while it downloads, as Emscripten's own loader does, with the bytes counted on the gate.
+    // Pass the pristine fetch() Response directly to instantiateStreaming so V8 hits its compiled-code cache on repeat visits.
     instantiateWasm: (imports, done) => {
       const loadWasm = async () => {
+        const tW = performance.now();
         const waits = [500, 1500];
+        const fullWasm = wasmUrl + (window.RN_V ? '?v=' + RN_V : '');
+        const finish = w => {
+          wasmMs = Math.round(performance.now() - tW);
+          const ent = performance.getEntriesByType?.('resource').filter(e => e.name.includes(wasmUrl)).pop();
+          wasmWarm = !!(ent && ent.transferSize === 0);
+          return w;
+        };
         for (let i = 0; ; i++) {
+          if (RN_APP.state === 'load') RN_APP.say(i ? `Reintentando motor (${i + 1}/3)…` : 'Cargando motor…');
           try {
-            const r = await download(wasmUrl, 'Descargando');
-            return await WebAssembly.instantiateStreaming(r, imports);
+            const r = await fetch(fullWasm);
+            if (!r.ok) throw new Error(`descarga de ${wasmUrl}: HTTP ${r.status}`);
+            return finish(await WebAssembly.instantiateStreaming(r, imports));
           } catch (e) {
             if (i < waits.length) { await sleep(waits[i]); continue; }
-            const r = await download(wasmUrl, 'Descargando');
-            return await WebAssembly.instantiate(await r.arrayBuffer(), imports);
+            if (RN_APP.state === 'load') RN_APP.say('Reintentando motor…');
+            const r = await fetchWithRetry(wasmUrl);
+            return finish(await WebAssembly.instantiate(await r.arrayBuffer(), imports));
           }
         }
       };
