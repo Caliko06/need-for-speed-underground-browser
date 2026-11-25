@@ -68,7 +68,7 @@ for t in ("index.tsv", "index_v2.tsv", "index_fe_v2.tsv", "index_bc.tsv", "index
         if not os.path.exists(dst):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             clone(os.path.join(R, rel), dst)
-for n in ("speed.js", "speed.wasm", "speed_lite.js", "speed_lite.wasm", "speed_nano.js", "speed_nano.wasm"):
+for n in ("speed.js", "speed.wasm", "speed_lite.js", "speed_lite.wasm"):
     if os.path.exists(os.path.join(W, "out", n)):
         clone(os.path.join(W, "out", n), os.path.join(D, "out", n))
 clone(os.path.join(ROOT, "pc", "Speed.exe"), os.path.join(D, "pc", "Speed.exe"))

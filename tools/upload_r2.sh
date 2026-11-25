@@ -18,7 +18,7 @@ rclone copy dist/game "r2:$B/game" --transfers 16 --checksum --s3-no-check-bucke
   --header-upload "$IMMUTABLE" --progress
 # Everything else except speed.wasm, Speed.exe, and manifest.json as is. The *.gz packs are NOT Content-Encoding: the page
 # unpacks them itself (web/gpu.js:230).
-rclone copy dist "r2:$B" --filter "- /data-chunks/**" --filter "- /game/**" --filter "- out/speed*.wasm" --filter "- out/speed.js" --filter "- out/speed_lite.js" --filter "- out/speed_nano.js" --filter "- pc/Speed.exe" \
+rclone copy dist "r2:$B" --filter "- /data-chunks/**" --filter "- /game/**" --filter "- out/speed.wasm" --filter "- out/speed_lite.wasm" --filter "- out/speed.js" --filter "- out/speed_lite.js" --filter "- pc/Speed.exe" \
   --filter "- /manifest.json" --filter "- _headers" --filter "- /*.{html,js,json,webmanifest}" --transfers 16 \
   --checksum --s3-no-check-bucket --header-upload "$CACHE" --progress
 # Entrypoints & unversioned manifests stay no-cache so browsers always pick up the latest RN_V hash.
@@ -29,7 +29,7 @@ rclone copyto dist/app.webmanifest "r2:$B/app.webmanifest" --ignore-times --s3-n
 rclone copyto dist/favicon.ico "r2:$B/favicon.ico" --ignore-times --s3-no-check-bucket \
   --header-upload "$CACHE" --header-upload "Content-Type: image/x-icon"
 # Versioned scripts (?v=RN_V in index.html, launcher.html, boot.js): immutable so returning browsers skip 304 round-trips.
-rclone copy dist "r2:$B" --filter "+ /*.js" --filter "+ /out/speed.js" --filter "+ /out/speed_lite.js" --filter "+ /out/speed_nano.js" --filter "- **" \
+rclone copy dist "r2:$B" --filter "+ /*.js" --filter "+ /out/speed.js" --filter "+ /out/speed_lite.js" --filter "- **" \
   --ignore-times --transfers 16 --s3-no-check-bucket --header-upload "$IMMUTABLE"
 # speed.wasm and speed_lite.wasm are always fetched with ?v=RN_V: immutable enables V8 disk code caching + zero revalidation.
 T=$(mktemp -d)
@@ -39,12 +39,6 @@ rclone copyto "$T/speed.wasm" "r2:$B/out/speed.wasm" --ignore-times --s3-no-chec
 if [ -f dist/out/speed_lite.wasm ]; then
   brotli -q 11 -w 24 -c dist/out/speed_lite.wasm > "$T/speed_lite.wasm"
   rclone copyto "$T/speed_lite.wasm" "r2:$B/out/speed_lite.wasm" --ignore-times --s3-no-check-bucket --header-upload "$IMMUTABLE" \
-    --header-upload "Content-Encoding: br" --header-upload "Content-Type: application/wasm"
-fi
-# speed_nano.wasm (352 MB link for 2 GB phones): same immutable+br treatment so V8 code-cache applies to it too.
-if [ -f dist/out/speed_nano.wasm ]; then
-  brotli -q 11 -w 24 -c dist/out/speed_nano.wasm > "$T/speed_nano.wasm"
-  rclone copyto "$T/speed_nano.wasm" "r2:$B/out/speed_nano.wasm" --ignore-times --s3-no-check-bucket --header-upload "$IMMUTABLE" \
     --header-upload "Content-Encoding: br" --header-upload "Content-Type: application/wasm"
 fi
 brotli -q 11 -w 24 -c dist/pc/Speed.exe > "$T/Speed.exe"

@@ -131,3 +131,9 @@ Caso unico, ver dump crudo.
 - Duplicados posibles entre descargas parciales y completas: las cifras de este informe salen SOLO de los per-day (sin doble conteo).
 - Lo que el beacon NO ve: visita que abandona antes del primer beacon, pings de red tras cerrar la pestana, y paises sin GeoIP de Cloudflare.
 - UNKNOWN marcado donde el dato no alcanza (origen de la clase B, contenido de la clase I).
+
+## 8. speed_nano retirado (medido 2026-11-25)
+`node tools/webcheck.mjs --route` con `RN_DEVMEM=2` y `?tier=lite`: speed_nano (352 MB) aborta `STOP wasm abort: OOM` al
+arrancar. speed_lite marca `wasm break 351 MB` al arrancar y `363 MB` en carrera, asi que 352 nunca cabia (la cuenta de
+~96 MB de holgura estaba mal: 352-256-32-18 = 46). Nano fuera del deploy; los telefonos de 2 GB siguen en lite (448) y la
+telemetria nueva (`mem`, `sid`) mide cuantos fallan. Un nano futuro necesita > ~364 MB + margen y su propia corrida.

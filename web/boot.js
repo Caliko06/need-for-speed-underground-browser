@@ -190,20 +190,13 @@ async function loadScript(src) {
   }
   RN_APP.set('load');
   if (window.RN_HOLD) await window.RN_HOLD;       // ?fast=1: scene B draws first (web/index.html)
-  // Speed.exe downloads in parallel with speed.wasm (or speed_lite.wasm on lite/ultralite; speed_nano on 2 GB phones,
-  // default-principles 2026-11-25 H3: WebKit bug 269777 / Unity per-platform budgets — deviceMemory is Chrome-only, so
-  // iOS stays on lite until its own budget is measured).
+  // Speed.exe downloads in parallel with speed.wasm (or speed_lite.wasm on lite/ultralite).
   const wantLite = RN_TIER === 'lite' || RN_TIER === 'ultralite';
-  const wantNano = wantLite && (navigator.deviceMemory || 0) > 0 && navigator.deviceMemory <= 2;
   let wasmUrl = 'out/speed.wasm';
-  if (wantNano) {
-    try { await loadScript('out/speed_nano.js'); wasmUrl = 'out/speed_nano.wasm'; line('wasm: speed_nano (352 MB, deviceMemory <= 2)'); }
-    catch { line('wasm: speed_nano missing'); }
-  }
-  if (wasmUrl === 'out/speed.wasm' && wantLite) {
+  if (wantLite) {
     try { await loadScript('out/speed_lite.js'); wasmUrl = 'out/speed_lite.wasm'; line('wasm: speed_lite (448 MB)'); }
     catch { await loadScript('out/speed.js'); line('wasm: speed_lite missing, fallback speed'); }
-  } else if (wasmUrl === 'out/speed.wasm') {
+  } else {
     await loadScript('out/speed.js');
   }
   window.RN_SAVES?.hook();                       // web/saves.js: seed /save before the game's preRun (else no profile: name screen)
@@ -390,6 +383,6 @@ async function loadScript(src) {
   memTick = setInterval(() => {
     if (RN_APP.state === 'stop') { clearInterval(memTick); memTick = 0; return; }
     const v = [0, 1, 2].map(k => M._rn_mem_mb(k)), key = v.map(x => x >> 4).join();
-    if (key !== memLast) { memLast = key; line(`mem: wasm break ${v[0]} MB (guest ${/lite|nano/.test(wasmUrl) ? 256 : 384} untouched until used), guest heap ${v[1]} MB, guest virtual ${v[2]} MB`); }
+    if (key !== memLast) { memLast = key; line(`mem: wasm break ${v[0]} MB (guest ${wasmUrl.includes('lite') ? 256 : 384} untouched until used), guest heap ${v[1]} MB, guest virtual ${v[2]} MB`); }
   }, 2000);
 })();
