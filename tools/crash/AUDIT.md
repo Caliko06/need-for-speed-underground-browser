@@ -1,5 +1,9 @@
 # Auditoria forense de telemetria nfsu.cc (2026-11-25)
 
+CIERRE (mismo dia): H1/H2/H4 y H3 y el shim quedaron implementados y verificados en local (boot check pass,
+shim rescue probado end-to-end en un host sin headers). Secciones 5 y 6: lo marcado ahi es lo PENDIENTE de
+medir en produccion tras el proximo deploy, no de implementar. Ver HANDOFF.md.
+
 Datos: bucket privado R2 `nfsu-crash` (rclone). Dump crudo: `tools/crash/dump/2026-11-25/`
 (`crash.jsonl` 400 reportes, `funnel.jsonl` 864 beacons, cada linea con su dia UTC).
 

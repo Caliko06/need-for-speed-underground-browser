@@ -13,7 +13,9 @@ export default {
     if (j.format === 'rn-funnel-1') {
       if (body.length > 1024) return new Response(null, { status: 413 });
       const out = {
-        format: 'rn-funnel-1', v: String(j.v || '').slice(0, 20), ev: j.ev === 'run' ? 'run' : 'stop',
+        format: 'rn-funnel-1', v: String(j.v || '').slice(0, 20), sid: String(j.sid || '').slice(0, 40),
+        t: Number(j.t) || 0, tr: Number(j.tr) || 0, framed: !!j.framed,
+        ev: j.ev === 'run' ? 'run' : 'stop',
         tier: String(j.tier || '').slice(0, 16), coarse: !!j.coarse, os: String(j.os || '').slice(0, 16),
         load_ms: Number(j.load_ms) || 0, ab_ms: Number(j.ab_ms) || 0, wasm_ms: Number(j.wasm_ms) || 0,
         warm: !!j.warm, reason: String(j.reason || '').slice(0, 120), country: req.cf?.country || '',

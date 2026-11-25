@@ -56,6 +56,7 @@ function rnDetectTier(webgpu = !!navigator.gpu, ignoreStored = false) {
 // boot.js resolves adapter availability before loading either renderer or exporting host ENV,
 // then calls rnSetTier() so RN_TIER, RN_LOW_TIER, RN_MODE and RN_Q stay in sync.
 let RN_TIER = rnDetectTier();
+window.RN_TIER = RN_TIER;                      // telemetry: the funnel beacon reads this (boot.js funnelSend); keep it in sync here
 let RN_LOW_TIER = RN_TIER === 'lite' || RN_TIER === 'ultralite';
 let RN_MODE = (() => {
   const q = new URLSearchParams(RN_SEARCH).get('mode');
@@ -99,6 +100,7 @@ function rnBuildQ() {
 const RN_Q = rnBuildQ();
 function rnSetTier(tier) {
   RN_TIER = tier;
+  window.RN_TIER = tier;                       // telemetry: funnel beacon field (2026-11-25: was always empty)
   RN_LOW_TIER = tier === 'lite' || tier === 'ultralite';
   const explicitMode = new URLSearchParams(RN_SEARCH).get('mode');
   if (explicitMode !== 'original' && explicitMode !== 'remaster' && RN_LOW_TIER) RN_MODE = 'original';

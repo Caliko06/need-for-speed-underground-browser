@@ -204,7 +204,14 @@ def compile_native():
 
 def compile_web():
     lite = os.environ.get("RN_LITE_WASM") == "1"
+    # RN_NANO_MB=<n>: a third, smaller lite link for phones with 2 GB RAM (default-principles 2026-11-25 H3:
+    # WebKit bug 269777 gives only 300-500 MB after a reload, Unity ships per-platform budgets). Objects are shared.
+    # 352 MB: guest flat space is 256 MB (peak measured 118 MB, host/host.h) + lite cache 32 MB (host/files.c) + ~18 MB
+    # pthread stacks + ~96 MB host slack; down from 448 MB, the reservation that fails on deviceMemory=2 phones.
+    nano_mb = int(os.environ.get("RN_NANO_MB", "0") or 0)
     output = "speed_lite" if lite else "speed"
+    if nano_mb:
+        output = f"speed_nano"
     srcs = [f"{GEN}/f{k:03d}.c" for k in range(CHUNKS)] + [f"{GEN}/table.c", f"{GEN}/abk.c"]
     # RN_NOCHK=1: guest bounds checks off (host/rt.h), objects in their own folder. Off by default.
     nochk = os.environ.get("RN_NOCHK") == "1"
@@ -224,7 +231,7 @@ def compile_web():
     # main() runs in a worker (PROXY_TO_PTHREAD) so guest threads and waits may block.
     subprocess.run(["emcc", "-O2", "-pthread", "-Ihost", f"-I{GEN}", *(["-DRN_STW"] if stw else []),
                     *(["-DRN_LITE_WASM"] if lite else []), *HOST, *objs, "-o", f"web/out/{output}.js",
-                    f"-sINITIAL_MEMORY={448 if lite else 896}MB", "-sSTACK_SIZE=4MB",
+                    f"-sINITIAL_MEMORY={nano_mb if nano_mb else (448 if lite else 896)}MB", "-sSTACK_SIZE=4MB",
                     f"-sDEFAULT_PTHREAD_STACK_SIZE={2 if lite else 4}MB",
                     "-sPROXY_TO_PTHREAD=1", f"-sPTHREAD_POOL_SIZE={7 if lite else 9}", "-sEXIT_RUNTIME=1",
                     "-sMODULARIZE=1", "-sEXPORT_NAME=Speed", "-sEXPORTED_RUNTIME_METHODS=FS,ENV,HEAPU8,HEAP32,HEAPU32,HEAPF64",

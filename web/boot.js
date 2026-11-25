@@ -51,6 +51,9 @@ addEventListener('keydown', e => {
 // ?dbg=1: the log panel open from the start (a phone has no F2), to read or screenshot what the page did.
 if (RN_Q.get('dbg') === '1') document.body.classList.add('dbg');
 addEventListener('keydown', e => { if (e.code === 'F2') { document.body.classList.toggle('dbg'); e.preventDefault(); e.stopPropagation(); } }, true);
+// Anonymous session id (GoatCounter's "bring your own session id" pattern, goatcounter.com/help/sessions): one random id
+// per page load, never stored, so the funnel beacon and a later crash beacon of the same visit join in the R2 dump.
+const RN_SID = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random() * 1e9 | 0}`;
 // Crash report (OWNER 2026-11-21: crashes only, anonymous): on nfsu.cc the first stop line sends one small JSON to /crash
 // (tools/crash/worker.js keeps it in the private R2 bucket nfsu-crash; tools/crash/read.sh lists them). No address, no ids,
 // no saves: the build, the browser, the GPU path and the log lines around the stop. ?crash=0 sends nothing.
@@ -58,7 +61,8 @@ function crashSend(s) {
   if (!window.RN_PUBLIC || crashSend.done || RN_Q.get('crash') === '0') return;
   crashSend.done = true;
   const cut = l => l.length > 300 ? l.slice(0, 300) + '...' : l;
-  navigator.sendBeacon('/crash', new Blob([JSON.stringify({ format: 'rn-crash-1', v: window.RN_V || '', stop: cut(s), at: +secs(), state: RN_APP.state,
+  navigator.sendBeacon('/crash', new Blob([JSON.stringify({ format: 'rn-crash-1', v: window.RN_V || '', sid: RN_SID, t: Date.now(), tr: Math.round(performance.now()), framed: window.top !== window,
+    opaque: /^Script error\. at :0/.test(s), stop: cut(s), at: +secs(), state: RN_APP.state,
     ua: navigator.userAgent, screen: `${innerWidth}x${innerHeight} dpr ${devicePixelRatio}`, mem: navigator.deviceMemory || 0, perf: window.rnStats?.line() || '', cores: navigator.hardwareConcurrency || 0,
     head: allLog.filter(l => /gpu\.js: (adapter|WebGL)| mode: /.test(l)).slice(0, 4).map(cut), tail: allLog.slice(-40).map(cut) })], { type: 'application/json' }));
 }
@@ -70,7 +74,7 @@ function funnelSend(ev, reason = '') {
   const u = navigator.userAgent;
   const os = /iPhone|iPad|iPod/.test(u) ? 'iOS' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Macintosh|Mac OS X/.test(u) ? 'macOS' : /CrOS/.test(u) ? 'ChromeOS' : /Linux/.test(u) ? 'Linux' : 'Other';
   navigator.sendBeacon('/crash', new Blob([JSON.stringify({
-    format: 'rn-funnel-1', v: window.RN_V || '', ev, tier: window.RN_TIER || '', coarse: !!RN_APP.coarse, os,
+    format: 'rn-funnel-1', v: window.RN_V || '', sid: RN_SID, t: Date.now(), tr: Math.round(performance.now()), framed: window.top !== window, ev, tier: window.RN_TIER || '', coarse: !!RN_APP.coarse, os,
     load_ms: Math.round(performance.now() - t0), ab_ms: window.RN_AB_MS || 0, wasm_ms: wasmMs, warm: wasmWarm,
     reason: reason ? String(reason).slice(0, 120) : '',
   })], { type: 'application/json' }));
@@ -145,7 +149,26 @@ async function loadScript(src) {
 }
 (async () => {
   // check: what the game cannot run without, before any download (the wasm is 70 MB).
-  if (!crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') { line('sin aislamiento: crossOriginIsolated false (COOP/COEP); WebViews like LineageOS Jelly never isolate', 'stop'); return; }
+  if (!crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') {
+    // default-principles 2026-11-25 (H1/H2): say WHY before stopping. framed=true: embedded in a foreign iframe (the
+    // whole frame chain must be isolated, web.dev coop-coep). Headers absent on our own response: an intermediary
+    // stripped them; the coi-serviceworker shim (gzuidhof, MIT, web/coi-serviceworker.js) re-adds them at a service
+    // worker and reloads once, which rescues exactly that case (no headers missing + no iframe = never shim).
+    const framed = window.top !== window;
+    let selfH = 'self-fetch failed';
+    try {
+      const r = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
+      selfH = `coop=${r.headers.get('cross-origin-opener-policy') || 'null'} coep=${r.headers.get('cross-origin-embedder-policy') || 'null'}`;
+    } catch {}
+    line(`sin aislamiento: crossOriginIsolated false (framed=${framed}; ${selfH}); WebViews like LineageOS Jelly never isolate`, 'stop');
+    let coiFlag = false;
+    try { coiFlag = !!sessionStorage.getItem('coiReloadedBySelf'); } catch {}
+    if (!framed && !/coop=same-origin/.test(selfH) && !coiFlag) {
+      try { await loadScript('coi-serviceworker.js'); line('coi: shim registered, reloading with re-injected headers'); }
+      catch (e) { line(`coi: shim unavailable (${e && e.message || e})`); }
+    }
+    return;
+  }
   // No WebGPU adapter (iOS 18 and older, Firefox on Android/Linux, old Android) or ?gl=1: WebGPU on WebGL 2 (web/webgpu_gl.js). It
   // replaces navigator.gpu and canvas.getContext('webgpu'), so it is loaded only here, never next to a working WebGPU.
   const webgl2 = RN_Q.get('gl') === '1' || !await navigator.gpu?.requestAdapter().catch(() => null);
@@ -167,13 +190,20 @@ async function loadScript(src) {
   }
   RN_APP.set('load');
   if (window.RN_HOLD) await window.RN_HOLD;       // ?fast=1: scene B draws first (web/index.html)
-  // Speed.exe downloads in parallel with speed.wasm (or speed_lite.wasm on lite/ultralite).
+  // Speed.exe downloads in parallel with speed.wasm (or speed_lite.wasm on lite/ultralite; speed_nano on 2 GB phones,
+  // default-principles 2026-11-25 H3: WebKit bug 269777 / Unity per-platform budgets — deviceMemory is Chrome-only, so
+  // iOS stays on lite until its own budget is measured).
   const wantLite = RN_TIER === 'lite' || RN_TIER === 'ultralite';
+  const wantNano = wantLite && (navigator.deviceMemory || 0) > 0 && navigator.deviceMemory <= 2;
   let wasmUrl = 'out/speed.wasm';
-  if (wantLite) {
+  if (wantNano) {
+    try { await loadScript('out/speed_nano.js'); wasmUrl = 'out/speed_nano.wasm'; line('wasm: speed_nano (352 MB, deviceMemory <= 2)'); }
+    catch { line('wasm: speed_nano missing'); }
+  }
+  if (wasmUrl === 'out/speed.wasm' && wantLite) {
     try { await loadScript('out/speed_lite.js'); wasmUrl = 'out/speed_lite.wasm'; line('wasm: speed_lite (448 MB)'); }
     catch { await loadScript('out/speed.js'); line('wasm: speed_lite missing, fallback speed'); }
-  } else {
+  } else if (wasmUrl === 'out/speed.wasm') {
     await loadScript('out/speed.js');
   }
   window.RN_SAVES?.hook();                       // web/saves.js: seed /save before the game's preRun (else no profile: name screen)
