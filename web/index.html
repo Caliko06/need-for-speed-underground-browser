@@ -141,7 +141,7 @@ if (RN_Q.get('fast') === '1') {
   document.body.append(ab);
   // The WASM boot waits (web/boot.js awaits RN_HOLD) until the scene has drawn its first frame (RN_B.ready, same origin) or 1.5 s: the game's boot would starve it (GPU, main thread).
   const t0b = performance.now();
-  window.RN_HOLD = new Promise(res => { const f = () => { if (ab.contentWindow?.RN_B?.ready || performance.now() - t0b > 1500) { window.RN_AB_MS = Math.round(performance.now() - t0b); res(); } else setTimeout(f, 40); }; f(); });
+  window.RN_HOLD = new Promise(res => { const f = () => { let r = false; try { r = !!ab.contentWindow?.RN_B?.ready; } catch { r = true; } if (r || performance.now() - t0b > 1500) { window.RN_AB_MS = Math.round(performance.now() - t0b); res(); } else setTimeout(f, 40); }; f(); });
   RN_APP.on(s => {
     if (s === 'load' || !ab.isConnected || ab.style.opacity === '0') return;
     ab.style.opacity = '0';
