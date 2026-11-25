@@ -103,6 +103,11 @@ with open(os.path.join(D, "_headers"), "a") as headers:
         "/data-chunks/*\n  Content-Encoding: br\n  Content-Type: application/octet-stream\n"
         "  Cache-Control: public, max-age=31536000, immutable\n"
         "/game/*\n  Cache-Control: public, max-age=31536000, immutable\n"
+        "/app.webmanifest\n  Content-Type: application/manifest+json; charset=utf-8\n"
+        "/favicon.ico\n  Cross-Origin-Resource-Policy: cross-origin\n"
+        "/favicon-*.png\n  Cross-Origin-Resource-Policy: cross-origin\n"
+        "/icon-*.png\n  Cross-Origin-Resource-Policy: cross-origin\n"
+        "/og.jpg\n  Cross-Origin-Resource-Policy: cross-origin\n"
     )
 
 

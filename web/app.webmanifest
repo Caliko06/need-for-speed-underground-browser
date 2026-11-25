@@ -1,13 +1,15 @@
 {
-  "name": "Need for Speed Underground",
-  "short_name": "NFS Underground",
+  "name": "NFS Underground Web",
+  "short_name": "NFSU Web",
   "start_url": "/",
   "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "description": "Play Need for Speed Underground (2003) free in your browser: Original 2003 and Remaster modes, full soundtrack, keyboard, gamepad and touch.",
+  "description": "Open-source WebAssembly & WebGPU port of Need for Speed: Underground (2003). Full PC game in your browser with keyboard, gamepad & touch. Fan project.",
   "icons": [
+    { "src": "favicon-48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "favicon-96.png", "sizes": "96x96", "type": "image/png" },
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
