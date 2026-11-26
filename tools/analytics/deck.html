@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nfsu.cc 24 h</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,700;1,700;1,800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Every number on this page comes from data.js, written by tools/analytics/pull.py. Nothing is typed by hand. */
+:root {
+  --night: #0a0e1c; --night-2: #111830; --ink: #eef3ff; --ink-2: #a9b4d0; --ink-3: #6c7797;
+  --run: #14a3d6; --stop: #f0584a; --prev: #5b6484; --line: rgba(170, 190, 255, .14);
+  --hud: linear-gradient(100deg, #14a3d6 0%, #5f6cff 55%, #c04cf0 100%);
+  --display: "Barlow Condensed", system-ui, sans-serif; --body: "Barlow", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; }
+html { scroll-snap-type: y proximity; background: var(--night); }
+body { background: var(--night); color: var(--ink); font: 16px/1.45 var(--body); overflow-x: hidden; }
+section { position: relative; min-height: 100vh; padding: 9vh max(16px, 6vw) 8vh; scroll-snap-align: start; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 4vh; }
+.plate { position: absolute; inset: -6%; z-index: -2; background-size: cover; background-position: center; filter: saturate(1.25) brightness(.55); transform: scale(1.04); }
+.plate.soft { filter: blur(7px) saturate(1.35) brightness(.5); }
+.shade { position: absolute; inset: 0; z-index: -1; background:
+  radial-gradient(120% 80% at 85% 0%, rgba(95, 108, 255, .28), transparent 60%),
+  radial-gradient(90% 70% at 0% 100%, rgba(20, 163, 214, .22), transparent 60%),
+  linear-gradient(180deg, rgba(10, 14, 28, .35) 0%, rgba(10, 14, 28, .82) 55%, var(--night) 100%); }
+.kick { font: 700 15px/1 var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
+.kick b { color: transparent; background: var(--hud); -webkit-background-clip: text; background-clip: text; }
+h1, h2 { font-family: var(--display); font-style: italic; font-weight: 800; line-height: .9; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font-size: clamp(64px, 13vw, 190px); }
+h2 { font-size: clamp(40px, 6.4vw, 96px); max-width: 15ch; }
+.big { color: transparent; background: var(--hud); -webkit-background-clip: text; background-clip: text; padding-right: .06em; }
+.lede { color: var(--ink-2); font-size: clamp(17px, 1.6vw, 21px); max-width: 52ch; }
+.lede strong { color: var(--ink); font-weight: 600; }
+.row { display: flex; flex-wrap: wrap; gap: 5vh 7vw; align-items: flex-end; }
+.stat { min-width: 140px; }
+.stat .n { font: 700 italic clamp(44px, 5.4vw, 80px)/1 var(--display); }
+.stat .l { color: var(--ink-2); font-size: 15px; margin-top: 6px; max-width: 22ch; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 6vw; align-items: center; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } section { padding-top: 7vh; } }
+
+/* ranked bars: thin, rounded data end, label above the bar */
+.bars { display: grid; gap: 14px; width: 100%; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: end; cursor: default; }
+.bar .name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .val { font: 700 20px/1 var(--display); font-variant-numeric: tabular-nums; }
+.bar .val small { font: 500 14px var(--body); color: var(--ink-3); margin-left: 6px; }
+.bar .track { grid-column: 1 / -1; height: 10px; border-radius: 5px; background: rgba(170, 190, 255, .08); position: relative; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; width: 100%; border-radius: 5px; background: var(--hud); transform-origin: left; transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
+.bar .fill.stop { background: var(--stop); }
+.bar .fill.prev { background: var(--prev); }
+.bar:hover .track { background: rgba(170, 190, 255, .16); }
+
+/* horizontal table: items are the columns, scrolls sideways, never stacks */
+.htab { overflow-x: auto; width: 100%; padding-bottom: 6px; }
+.htab table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; min-width: max-content; }
+.htab th, .htab td { padding: 12px 22px; text-align: right; white-space: nowrap; }
+.htab th:first-child, .htab td:first-child { text-align: left; color: var(--ink-3); font-weight: 500; position: sticky; left: 0; background: linear-gradient(90deg, var(--night) 80%, transparent); }
+.htab thead th { font: 700 italic 24px var(--display); color: var(--ink); }
+.htab tbody tr + tr td { border-top: 1px solid var(--line); }
+.htab td.hi { color: var(--ink); font-weight: 600; }
+
+/* split meter (run vs stop, warm vs cold) */
+.meter { display: flex; gap: 3px; height: 54px; width: 100%; border-radius: 27px; overflow: hidden; }
+.meter > div { display: flex; align-items: center; padding: 0 18px; font: 700 italic 22px var(--display); white-space: nowrap; min-width: 0; overflow: hidden; }
+.meter .a { background: var(--hud); }
+.meter .b { background: rgba(240, 88, 74, .9); }
+.meter .c { background: rgba(170, 190, 255, .12); color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; color: var(--ink-2); font-size: 14px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 6px; margin-right: 8px; vertical-align: -1px; }
+
+/* small multiples over 24 h, one axis each */
+.multi { display: grid; gap: 22px; width: 100%; }
+.multi .lab { display: flex; justify-content: space-between; color: var(--ink-2); font-size: 14px; margin-bottom: 6px; }
+.multi .lab b { color: var(--ink); font: 700 italic 20px var(--display); }
+.multi svg { width: 100%; height: 92px; display: block; overflow: visible; }
+.axis { display: flex; justify-content: space-between; color: var(--ink-3); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+.list { display: grid; gap: 18px; }
+.list .it { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: baseline; }
+.list .it .n { font: 800 italic 40px/1 var(--display); text-align: right; }
+.list .it .t { color: var(--ink-2); }
+.list .it .t b { color: var(--ink); font-weight: 600; display: block; }
+.list .it code { font: 13px ui-monospace, Menlo, monospace; color: var(--ink-3); word-break: break-all; }
+
+.flag { font-size: 1.15em; margin-right: 8px; }
+.note { color: var(--ink-3); font-size: 14px; max-width: 70ch; }
+.note b { color: var(--ink-2); font-weight: 600; }
+.tag-unk { color: var(--stop); font-weight: 600; }
+#tip { position: fixed; pointer-events: none; z-index: 9; padding: 8px 12px; border-radius: 10px; background: rgba(17, 24, 48, .95); border: 1px solid var(--line); font-size: 14px; color: var(--ink); opacity: 0; transition: opacity .12s; max-width: 280px; }
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .28s ease-out, transform .28s ease-out; }
+.reveal.on { opacity: 1; transform: none; }
+.reveal .fill { transform: scaleX(0); }
+.reveal.on .fill { transform: scaleX(var(--w)); }
+#empty { display: none; min-height: 100vh; place-content: center; text-align: center; padding: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal .fill, .bar .fill { transition: none; opacity: 1; transform: none; }
+  .reveal .fill, .reveal.on .fill { transform: scaleX(var(--w)); }
+  .plate { transform: none; }
+}
+</style>
+</head>
+<body>
+<div id="empty"><h2>Sin datos</h2><p class="lede">Falta <code>data.js</code>. Corre <code>tools/analytics/pull.py</code>.</p></div>
+<main id="deck"></main>
+<div id="tip" role="tooltip"></div>
+<script src="data.js"></script>
+<script>
+(() => {
+const D = window.NFSU_DATA;
+if (!D) { document.getElementById('empty').style.display = 'grid'; return; }
+const $ = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstElementChild; };
+const fmt = (n) => Math.round(n).toLocaleString('es-MX');
+const pc = (a, b) => b ? Math.round(100 * a / b) : 0;
+const pc1 = (a, b) => b ? (100 * a / b).toLocaleString('es-MX', { maximumFractionDigits: 1 }) : '0';
+const sum = (xs, k) => xs.reduce((s, r) => s + (k ? r[k] : r), 0);
+const sec = (s) => (s / 1000).toLocaleString('es-MX', { maximumFractionDigits: 1 }) + ' s';
+const region = new Intl.DisplayNames(['es'], { type: 'region' });
+const country = (c) => { try { return c && c.length === 2 ? region.of(c) : (c || '?'); } catch { return c; } };
+const flag = (c) => c && /^[A-Z]{2}$/.test(c) ? String.fromCodePoint(...[...c].map((x) => 0x1f1a5 + x.charCodeAt(0))) : '';
+const hhmm = (iso) => new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' });
+const day = (iso) => new Date(iso).toLocaleString('es-MX', { weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' });
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const deck = document.getElementById('deck');
+const PLATES = { og: '../../og.jpg', drive: '../../blog/img/olympic-city-drive.webp', world: '../../blog/img/olympic-city-world.webp', phone: '../../blog/img/phone-touch.webp' };
+const slide = (plate, soft, inner) => {
+  const s = $(`<section>${plate ? `<div class="plate${soft ? ' soft' : ''}" style="background-image:url('${PLATES[plate]}')"></div>` : ''}<div class="shade"></div>${inner}</section>`);
+  deck.append(s); return s;
+};
+const bars = (rows, opt = {}) => {
+  const max = Math.max(1, ...rows.map((r) => r.v));
+  return `<div class="bars">${rows.map((r) => `<div class="bar" data-tip="${esc(r.tip || '')}">
+    <span class="name">${r.name}</span><span class="val">${fmt(r.v)}${r.sub ? `<small>${r.sub}</small>` : ''}</span>
+    <span class="track"><span class="fill ${r.cls || ''}" style="--w:${(r.v / max).toFixed(3)}"></span></span></div>`).join('')}</div>`;
+};
+
+// ---------- derived numbers ----------
+const W = D.web, T = D.tel, C = D.crash, Z = D.zone;
+const visits = sum(W.refererHost, 'visits'), views = sum(W.refererHost, 'views');
+const SEARCH = /google|bing|yandex|^ya\.ru$|duckduckgo|yahoo|baidu|ecosia|brave|naver|seznam/;
+const src = {};
+for (const r of W.refererHost) {
+  const k = r.k === '' ? 'Directo (link copiado, app, marcador)' : /(^|\.)nfsu\.cc$/.test(r.k) ? 'Dentro de nfsu.cc' : SEARCH.test(r.k) ? 'Buscadores' : r.k.replace(/^www\./, '');
+  (src[k] ||= { v: 0, hosts: [] }).v += r.visits; src[k].hosts.push(`${r.k || 'sin referer'} ${r.visits}`);
+}
+const srcRows = Object.entries(src).filter(([, x]) => x.v > 0).sort((a, b) => b[1].v - a[1].v);
+const topSrc = srcRows[0];
+const dev = Object.fromEntries(W.deviceType.map((r) => [r.k, r.visits]));
+const mobileShare = pc((dev.mobile || 0) + (dev.tablet || 0), visits);
+const warmShare = pc(T.warm, T.sessions);
+const conv = pc1(T.runs, T.sessions);
+const live = T.by_build.find((b) => b.k === T.live_build) || { run: 0, stop: 0, warm: 0 };
+const prevB = T.by_build.filter((b) => b.k !== T.live_build);
+const prevRun = sum(prevB, 'run'), prevStop = sum(prevB, 'stop');
+const liveSess = live.run + live.stop, prevSess = prevRun + prevStop;
+const crashLive = C.live, crashPrev = C.total - C.live;
+const gb = (b) => (b / 1e9).toLocaleString('es-MX', { maximumFractionDigits: 1 }) + ' GB';
+const fasterWarm = T.load.warm_wasm_p50 ? (T.load.cold_wasm_p50 / T.load.warm_wasm_p50).toLocaleString('es-MX', { maximumFractionDigits: 1 }) : '?';
+
+// ---------- 0. cover ----------
+slide('og', false, `
+  <div class="kick reveal"><b>nfsu.cc</b> · últimas ${D.hours} horas · ${day(D.since)} → ${day(D.until)} (CDMX)</div>
+  <h1 class="reveal"><span class="big">${fmt(visits)}</span><br>visitas</h1>
+  <p class="lede reveal">${fmt(views)} páginas vistas, <strong>${fmt(T.sessions)} arranques del juego</strong> y <strong>${fmt(T.runs)}</strong> llegaron a correr. Esto es lo que pasó, medido.</p>`);
+
+// ---------- 1. who ----------
+const topCountries = W.countryName.slice(0, 8).map((r) => ({ name: `<span class="flag">${flag(r.k)}</span>${country(r.k)}`, v: r.visits, sub: `${fmt(r.views)} vistas`, tip: `${country(r.k)}: ${r.visits} visitas, ${r.views} páginas vistas` }));
+slide('world', true, `
+  <div class="split">
+    <div class="reveal">
+      <div class="kick"><b>Quién</b> vino</div>
+      <h2>${mobileShare}% <span class="big">desde el teléfono</span></h2>
+      <p class="lede" style="margin-top:3vh">${fmt(dev.mobile || 0)} visitas en móvil, ${fmt(dev.desktop || 0)} en escritorio, ${fmt(dev.tablet || 0)} en tablet. El escritorio ve más páginas por visita: <strong>${((W.deviceType.find((r) => r.k === 'desktop') || {}).views / Math.max(1, dev.desktop || 0)).toFixed(0)}</strong> contra <strong>${((W.deviceType.find((r) => r.k === 'mobile') || {}).views / Math.max(1, dev.mobile || 0)).toFixed(1)}</strong> en móvil.</p>
+    </div>
+    <div class="reveal">${bars(topCountries)}</div>
+  </div>`);
+
+// ---------- 2. how they arrived ----------
+slide('drive', true, `
+  <div class="split">
+    <div class="reveal">
+      <div class="kick"><b>Cómo</b> llegaron</div>
+      <h2>${pc(topSrc[1].v, visits)}% <span class="big">entró por ${esc(topSrc[0].split(' (')[0].toLowerCase())}</span></h2>
+      <p class="lede" style="margin-top:3vh">Visitas por origen (el sitio que mandó al visitante). Buscadores: ${esc([...new Set((src['Buscadores'] || { hosts: [] }).hosts.map((h) => (h.match(/google|bing|yandex|ya\.ru|duckduckgo|yahoo|baidu|ecosia|brave|naver|seznam/) || [''])[0].replace('ya.ru', 'yandex')))].map((b) => b[0].toUpperCase() + b.slice(1)).join(', '))}.</p>
+    </div>
+    <div class="reveal">${bars(srcRows.slice(0, 7).map(([k, x]) => ({ name: esc(k), v: x.v, sub: `${pc(x.v, visits)}%`, tip: x.hosts.join(' · ') })))}</div>
+  </div>
+  <p class="note reveal">Páginas de entrada: ${W.requestPath.slice(0, 4).map((r) => `<b>${esc(decodeURIComponent(r.k).slice(0, 32))}</b> ${fmt(r.visits)}`).join(' · ')}</p>`);
+
+// ---------- 3. returning ----------
+slide('phone', true, `
+  <div class="kick reveal"><b>Recurrentes</b></div>
+  <h2 class="reveal">${warmShare}% <span class="big">ya había jugado antes</span></h2>
+  <div class="meter reveal" data-tip="${fmt(T.warm)} de ${fmt(T.sessions)} arranques con el juego ya en caché">
+    <div class="a" style="flex:${T.warm}">${fmt(T.warm)} vuelven</div><div class="c" style="flex:${T.sessions - T.warm}">${fmt(T.sessions - T.warm)} primera vez (o caché borrada)</div>
+  </div>
+  <div class="row reveal">
+    <div class="stat"><div class="n">${sec(T.load.warm_wasm_p50)}</div><div class="l">compilar el juego al volver (mediana)</div></div>
+    <div class="stat"><div class="n">${sec(T.load.cold_wasm_p50)}</div><div class="l">la primera vez</div></div>
+    <div class="stat"><div class="n"><span class="big">${fasterWarm}×</span></div><div class="l">más rápido para quien regresa</div></div>
+  </div>
+  <p class="note reveal"><b>Cómo se mide:</b> no guardamos ningún id del visitante. "Vuelve" = el navegador ya tenía el juego descargado (el WASM salió de su caché, <code>transferSize 0</code>). Un regreso con caché borrada cuenta como nuevo, así que el ${warmShare}% es un piso.</p>`);
+
+// ---------- 4. funnel ----------
+const osRows = T.os.filter((o) => o.run + o.stop > 0);
+slide(null, false, `
+  <div class="kick reveal"><b>¿Llegan</b> a la carrera?</div>
+  <h2 class="reveal">${conv}% <span class="big">de los arranques corre</span></h2>
+  <div class="meter reveal" data-tip="${fmt(T.runs)} llegaron al juego, ${fmt(T.stops)} se detuvieron antes">
+    <div class="a" style="flex:${T.runs}">${fmt(T.runs)} corren</div><div class="b" style="flex:${Math.max(T.stops, T.sessions * .04)}">${fmt(T.stops)}</div>
+  </div>
+  <div class="htab reveal"><table>
+    <thead><tr><th></th>${osRows.map((o) => `<th>${esc(o.k)}</th>`).join('')}</tr></thead>
+    <tbody>
+      <tr><td>arranques</td>${osRows.map((o) => `<td>${fmt(o.run + o.stop)}</td>`).join('')}</tr>
+      <tr><td>llegan a correr</td>${osRows.map((o) => `<td class="hi">${pc(o.run, o.run + o.stop)}%</td>`).join('')}</tr>
+      <tr><td>carga mediana</td>${osRows.map((o) => `<td>${o.p50 ? sec(o.p50) : '–'}</td>`).join('')}</tr>
+      <tr><td>carga lenta (p90)</td>${osRows.map((o) => `<td>${o.p90 ? sec(o.p90) : '–'}</td>`).join('')}</tr>
+      <tr><td>vuelven</td>${osRows.map((o) => `<td>${pc(o.warm, o.run + o.stop)}%</td>`).join('')}</tr>
+    </tbody></table></div>
+  <p class="note reveal">Carga = de abrir la página a ver el juego. Mediana global ${sec(T.load.p50)}, el 10% más lento pasa de ${sec(T.load.p90)}.</p>`);
+
+// ---------- 5. what went right ----------
+const coopLive = (C.cls.find((c) => c.k.startsWith('B ')) || { n: 0, live: 0 });
+slide('og', true, `
+  <div class="kick reveal"><b>Lo que hicimos bien</b> · build <code>${esc(T.live_build)}</code> desde ${hhmm(T.deploy_at)} CDMX</div>
+  <h2 class="reveal">${pc1(crashLive, liveSess)} <span class="big">crasheos por cada 100 arranques</span>, antes ${pc1(crashPrev, prevSess)}</h2>
+  <div class="split reveal">
+    ${bars([
+      { name: 'Llegan a correr, build nuevo', v: pc(live.run, liveSess), sub: `% · ${fmt(liveSess)} arranques`, tip: `${live.run} de ${liveSess}` },
+      { name: 'Llegan a correr, builds anteriores', v: pc(prevRun, prevSess), sub: `% · ${fmt(prevSess)} arranques`, cls: 'prev', tip: `${prevRun} de ${prevSess}` },
+      { name: 'Sin SharedArrayBuffer, build nuevo', v: coopLive.live, sub: `${pc1(coopLive.live, liveSess)} por 100`, cls: 'stop', tip: 'clase B: navegador sin aislamiento COOP/COEP' },
+      { name: 'Sin SharedArrayBuffer, antes', v: coopLive.n - coopLive.live, sub: `${pc1(coopLive.n - coopLive.live, prevSess)} por 100`, cls: 'prev' },
+    ])}
+    <div class="row">
+      <div class="stat"><div class="n">${gb(Z.total.bytes)}</div><div class="l">servidos en ${D.hours} h (juego, música, datos)</div></div>
+      <div class="stat"><div class="n"><span class="big">${pc1(Z.total.cachedBytes, Z.total.bytes)}%</span></div><div class="l">salió de la caché de Cloudflare, no del origen</div></div>
+      <div class="stat"><div class="n">${fmt(T.crash_after_run)}</div><div class="l">crasheos ya dentro del juego (el resto falla antes de correr)</div></div>
+    </div>
+  </div>
+  <p class="note reveal">El build nuevo lleva poco tiempo (${fmt(liveSess)} arranques): la comparación se afirma con más horas.</p>`);
+
+// ---------- 6. crashes ----------
+const clsName = (k) => k.replace(/^[A-Z] /, '');
+slide(null, false, `
+  <div class="split">
+    <div class="reveal">
+      <div class="kick"><b>Fallas</b> · ${fmt(C.total)} reportes</div>
+      <h2>${fmt(crashLive)} <span class="big">en el build vivo</span></h2>
+      <div class="legend" style="margin-top:3vh"><span><i style="background:var(--stop)"></i>aún pasa en el build vivo</span><span><i style="background:var(--prev)"></i>ya no pasa</span></div>
+    </div>
+    <div class="reveal">${bars(C.cls.slice(0, 8).flatMap((c) => [
+      { name: esc(clsName(c.k)), v: c.n, sub: c.live ? `${c.live} vivo` : 'ya no en vivo', cls: c.live ? 'stop' : 'prev', tip: `${c.n} reportes, ${c.live} en el build vivo` }]))}</div>
+  </div>
+  <div class="list reveal">${C.live_top.slice(0, 4).map(([[k, msg], n]) => `<div class="it"><div class="n">${n}×</div><div class="t"><b>${esc(clsName(k))}</b><code>${esc(msg)}</code></div></div>`).join('')}</div>`);
+
+// ---------- 7. hour by hour ----------
+const hours = W.hour.map((r) => r.k.slice(0, 13));
+const series = [
+  { name: 'visitas', color: 'var(--run)', v: Object.fromEntries(W.hour.map((r) => [r.k.slice(0, 13), r.visits])) },
+  { name: 'arranques del juego', color: 'var(--run)', v: Object.fromEntries(T.hour.map((r) => [r.k, r.run + r.stop])) },
+  { name: 'crasheos', color: 'var(--stop)', v: Object.fromEntries(C.hour) },
+];
+const spark = (s) => {
+  const ys = hours.map((h) => s.v[h] || 0), max = Math.max(1, ...ys), n = ys.length, w = 1000, h = 92;
+  const x = (i) => (i / (n - 1)) * w, y = (v) => h - 4 - (v / max) * (h - 10);
+  const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const dep = hours.indexOf(T.deploy_at.slice(0, 13));
+  const first = ys.findIndex((v) => v > 0);
+  return `<div><div class="lab"><span>${s.name}${first > 1 ? ` · medido desde ${hhmm(hours[first] + ':00:00Z')}` : ''}</span><span>pico <b>${fmt(max)}</b>/h · total <b>${fmt(sum(ys))}</b></span></div>
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="${s.name} por hora">
+      <line x1="0" x2="${w}" y1="${h - 4}" y2="${h - 4}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+      ${dep >= 0 ? `<line x1="${x(dep)}" x2="${x(dep)}" y1="0" y2="${h}" stroke="var(--ink-3)" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>` : ''}
+      <polygon points="0,${h - 4} ${pts} ${w},${h - 4}" fill="${s.color}" opacity=".18"/>
+      <polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+      ${ys.map((v, i) => `<rect x="${x(i) - w / n / 2}" y="0" width="${w / n}" height="${h}" fill="transparent" data-tip="${hhmm(hours[i] + ':00:00Z')} CDMX · ${fmt(v)} ${s.name}"/>`).join('')}
+    </svg></div>`;
+};
+slide('world', true, `
+  <div class="kick reveal"><b>Hora</b> por hora (CDMX)</div>
+  <div class="multi reveal">${series.map(spark).join('')}
+    <div class="axis"><span>${hhmm(D.since)}</span><span>línea punteada: entra el build nuevo</span><span>${hhmm(D.until)}</span></div></div>`);
+
+// ---------- 8. sources + unknowns ----------
+slide(null, false, `
+  <div class="kick reveal"><b>De dónde sale</b> cada número</div>
+  <div class="list reveal">
+    ${Object.entries({ 'Visitas, origen, países, dispositivos': D.sources.web, 'Bytes, caché, peticiones': D.sources.zone, 'Arranques y recurrentes': D.sources.tel, 'Crasheos': D.sources.crash }).map(([k, v], i) => `<div class="it"><div class="n">${i + 1}</div><div class="t"><b>${k}</b><code>${esc(v)}</code></div></div>`).join('')}
+  </div>
+  <p class="note reveal"><span class="tag-unk">Sin saber:</span> visitantes únicos reales (no hay id persistente, a propósito) · recurrentes que borraron caché · qué pasa después de que la carrera arranca, salvo crasheos. "Visitas" de Cloudflare = entradas desde otro sitio o directas; las recargas cuentan como vistas.</p>
+  <p class="note reveal">Generado ${day(D.generated)} con <code>tools/analytics/pull.py</code>. Correrlo otra vez rehace todo.</p>`);
+
+// ---------- motion + tooltip ----------
+const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && e.target.classList.add('on')), { threshold: .15 });
+document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+const tip = document.getElementById('tip');
+document.addEventListener('pointermove', (e) => {
+  const t = e.target.closest('[data-tip]'), s = t && t.dataset.tip;
+  if (!s) { tip.style.opacity = 0; return; }
+  tip.textContent = s; tip.style.opacity = 1;
+  const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 16, innerHeight - tip.offsetHeight - 8);
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+});
+})();
+</script>
+</body>
+</html>
