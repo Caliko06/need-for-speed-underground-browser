@@ -83,8 +83,9 @@ Los cambios al juego son parches pequeños en [`tools/recomp/patches_*.py`](tool
 
 | Jugar | [Jugar online](https://nfsu.cc/blog/es/jugar-need-for-speed-underground-online.html) | [Controles](https://nfsu.cc/blog/es/controles-need-for-speed-underground-teclado-mando-celular.html) | [Navegadores, celulares, ajustes](https://nfsu.cc/blog/es/navegadores-celulares-ajustes-rendimiento.html) |
 |---|---|---|---|
+| **Datos del juego** | [Lista de 20 Autos](https://nfsu.cc/blog/es/lista-autos-need-for-speed-underground.html) | [Soundtrack (26 canciones)](https://nfsu.cc/blog/es/soundtrack-need-for-speed-underground.html) | [33 Trucos PC](https://nfsu.cc/blog/es/trucos-need-for-speed-underground-pc.html) · [Guía Carrera](https://nfsu.cc/blog/es/guia-modo-carrera-need-for-speed-underground.html) |
 | **Cómo corre** | [Cómo corre en el navegador](https://nfsu.cc/blog/es/como-corre-need-for-speed-underground-en-el-navegador-webassembly.html) | [Recompilación estática](https://nfsu.cc/blog/es/recompilacion-estatica-x86-a-webassembly.html) | [DirectX 9 y Windows sobre WebGPU](https://nfsu.cc/blog/es/directx-9-y-windows-sobre-webgpu.html) |
-| **Dentro del juego** | [Atlas RE (44 subsistemas)](https://nfsu.cc/re/es/index.html) | [Bitácora técnica](https://nfsu.cc/devlog/es/index.html) | [Todas las guías](https://nfsu.cc/blog/es/index.html) |
+| **Dentro y prensa** | [Atlas RE (49 subsistemas)](https://nfsu.cc/re/es/index.html) | [Bitácora técnica](https://nfsu.cc/devlog/es/index.html) | [Kit de Prensa](https://nfsu.cc/press/es/index.html) · [Todas las guías](https://nfsu.cc/blog/es/index.html) |
 
 ## Preguntas frecuentes
 

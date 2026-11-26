@@ -10,7 +10,7 @@ import hashlib, json, os, re, shutil, subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 W, D = os.path.join(ROOT, "web"), os.path.join(ROOT, "dist")
-LINK_DIRS = ["launcher", "launcher_b", "blog", "re", "devlog", "reverse-engineering"]   # launcher_b = 3D street; blog = guides; re = RE atlas; devlog = engineering updates; reverse-engineering = global RE hub
+LINK_DIRS = ["launcher", "launcher_b", "blog", "re", "devlog", "reverse-engineering", "press"]   # launcher_b = 3D street; blog = guides; re = RE atlas; devlog = engineering updates; reverse-engineering = global RE hub; press = press kit
 PAGES = ["index.html", "launcher.html"]
 FLAG = "<script>window.RN_PUBLIC=1;window.RN_V='%s'</script>\n"
 

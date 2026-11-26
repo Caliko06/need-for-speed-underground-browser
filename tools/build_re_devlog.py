@@ -1302,10 +1302,15 @@ Primary production evidence: `Speed.exe` (3.18 MB, md5 `b6b9232c55376b3c38c56aac
 - [Reverse Engineering Atlas Index (EN)]({SITE}/re/index.html) · [Resumen (ES)]({SITE}/re/es/index.html)
 - Key starting notes: [physics]({SITE}/re/physics.md), [camera]({SITE}/re/camera.md), [rivals]({SITE}/re/rivals.md), [traffic]({SITE}/re/traffic.md), [track]({SITE}/re/track.md), [render]({SITE}/re/render.md), [sound]({SITE}/re/sound.md), [gameflow]({SITE}/re/gameflow.md), [assets]({SITE}/re/assets.md)
 
-## Play & Player Guides
+## Play, Player Reference & Press Kit
 
 - [Play Need for Speed Underground Online]({SITE}/): Main entry point (desktop launcher + mobile touch direct boot).
+- [Press Kit & Fact Sheet (EN)]({SITE}/press/index.html) · [Kit de Prensa (ES)]({SITE}/press/es/index.html): Verified engineering metrics, quotable summaries, and press screenshots.
 - [All English Guides]({SITE}/blog/en/index.html) · [Todas las guías en Español]({SITE}/blog/es/index.html)
+- [Complete 20-Car List & Unlocks (EN)]({SITE}/blog/en/need-for-speed-underground-car-list.html) · [Lista de 20 Autos (ES)]({SITE}/blog/es/lista-autos-need-for-speed-underground.html): Binary-verified from `GLOBALB.BUN` (`0x34600`) & `FrontB.lzc` (`0x34a02`).
+- [Complete 26-Track 2003 Soundtrack (EN)]({SITE}/blog/en/need-for-speed-underground-soundtrack.html) · [Soundtrack Completo (ES)]({SITE}/blog/es/soundtrack-need-for-speed-underground.html): Binary-verified from `Speed.exe` EA TRAX (`0x6f4d08`).
+- [All 33 PC Cheat Codes (EN)]({SITE}/blog/en/need-for-speed-underground-cheat-codes.html) · [33 Trucos PC (ES)]({SITE}/blog/es/trucos-need-for-speed-underground-pc.html): Binary-verified from `Speed.exe` `EasterEggs` (`0x706918`).
+- [Go Underground Career Guide (EN)]({SITE}/blog/en/need-for-speed-underground-career-events-guide.html) · [Guía Modo Carrera (ES)]({SITE}/blog/es/guia-modo-carrera-need-for-speed-underground.html): 111 main events + bosses (`FrontB.lzc`).
 - [Static Recompilation: x86 to WebAssembly]({SITE}/blog/en/static-recompilation-x86-to-webassembly.html)
 - [DirectX 9 and Windows on WebGPU]({SITE}/blog/en/directx-9-and-windows-on-webgpu.html)
 - [Reverse Engineering Tools: Ghidra, Hopper, REA]({SITE}/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html)

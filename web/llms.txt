@@ -29,10 +29,15 @@ Primary production evidence: `Speed.exe` (3.18 MB, md5 `b6b9232c55376b3c38c56aac
 - [Reverse Engineering Atlas Index (EN)](https://nfsu.cc/re/index.html) · [Resumen (ES)](https://nfsu.cc/re/es/index.html)
 - Key starting notes: [physics](https://nfsu.cc/re/physics.md), [camera](https://nfsu.cc/re/camera.md), [rivals](https://nfsu.cc/re/rivals.md), [traffic](https://nfsu.cc/re/traffic.md), [track](https://nfsu.cc/re/track.md), [render](https://nfsu.cc/re/render.md), [sound](https://nfsu.cc/re/sound.md), [gameflow](https://nfsu.cc/re/gameflow.md), [assets](https://nfsu.cc/re/assets.md)
 
-## Play & Player Guides
+## Play, Player Reference & Press Kit
 
 - [Play Need for Speed Underground Online](https://nfsu.cc/): Main entry point (desktop launcher + mobile touch direct boot).
+- [Press Kit & Fact Sheet (EN)](https://nfsu.cc/press/index.html) · [Kit de Prensa (ES)](https://nfsu.cc/press/es/index.html): Verified engineering metrics, quotable summaries, and press screenshots.
 - [All English Guides](https://nfsu.cc/blog/en/index.html) · [Todas las guías en Español](https://nfsu.cc/blog/es/index.html)
+- [Complete 20-Car List & Unlocks (EN)](https://nfsu.cc/blog/en/need-for-speed-underground-car-list.html) · [Lista de 20 Autos (ES)](https://nfsu.cc/blog/es/lista-autos-need-for-speed-underground.html): Binary-verified from `GLOBALB.BUN` (`0x34600`) & `FrontB.lzc` (`0x34a02`).
+- [Complete 26-Track 2003 Soundtrack (EN)](https://nfsu.cc/blog/en/need-for-speed-underground-soundtrack.html) · [Soundtrack Completo (ES)](https://nfsu.cc/blog/es/soundtrack-need-for-speed-underground.html): Binary-verified from `Speed.exe` EA TRAX (`0x6f4d08`).
+- [All 33 PC Cheat Codes (EN)](https://nfsu.cc/blog/en/need-for-speed-underground-cheat-codes.html) · [33 Trucos PC (ES)](https://nfsu.cc/blog/es/trucos-need-for-speed-underground-pc.html): Binary-verified from `Speed.exe` `EasterEggs` (`0x706918`).
+- [Go Underground Career Guide (EN)](https://nfsu.cc/blog/en/need-for-speed-underground-career-events-guide.html) · [Guía Modo Carrera (ES)](https://nfsu.cc/blog/es/guia-modo-carrera-need-for-speed-underground.html): 111 main events + bosses (`FrontB.lzc`).
 - [Static Recompilation: x86 to WebAssembly](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html)
 - [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html)
 - [Reverse Engineering Tools: Ghidra, Hopper, REA](https://nfsu.cc/blog/en/reverse-engineering-tools-ghidra-hopper-rea.html)

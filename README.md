@@ -83,8 +83,9 @@ Changes to the game are small patches in [`tools/recomp/patches_*.py`](tools/rec
 
 | Play | [Play online](https://nfsu.cc/blog/en/play-need-for-speed-underground-online.html) | [Controls](https://nfsu.cc/blog/en/need-for-speed-underground-controls-keyboard-gamepad-phone.html) | [Browsers, phones, settings](https://nfsu.cc/blog/en/browsers-phones-performance-settings.html) |
 |---|---|---|---|
+| **Game data** | [20-Car List](https://nfsu.cc/blog/en/need-for-speed-underground-car-list.html) | [26-Track Soundtrack](https://nfsu.cc/blog/en/need-for-speed-underground-soundtrack.html) | [33 PC Cheats](https://nfsu.cc/blog/en/need-for-speed-underground-cheat-codes.html) · [Career Guide](https://nfsu.cc/blog/en/need-for-speed-underground-career-events-guide.html) |
 | **How it runs** | [How it runs in a browser](https://nfsu.cc/blog/en/how-need-for-speed-underground-runs-in-a-browser-webassembly.html) | [Static recompilation](https://nfsu.cc/blog/en/static-recompilation-x86-to-webassembly.html) | [DirectX 9 and Windows on WebGPU](https://nfsu.cc/blog/en/directx-9-and-windows-on-webgpu.html) |
-| **Inside the game** | [RE Atlas (44 subsystems)](https://nfsu.cc/re/index.html) | [Engineering Devlog](https://nfsu.cc/devlog/index.html) | [All guides](https://nfsu.cc/blog/en/index.html) |
+| **Inside & press** | [RE Atlas (49 subsystems)](https://nfsu.cc/re/index.html) | [Engineering Devlog](https://nfsu.cc/devlog/index.html) | [Press Kit](https://nfsu.cc/press/index.html) · [All guides](https://nfsu.cc/blog/en/index.html) |
 
 ## FAQ
 

@@ -192,3 +192,20 @@ When dropping a brief, helpful reply in existing threads asking how to play NFSU
 | **3DJuegos (ES)** | [Need for Speed: Underground (Ficha 3DJuegos)](https://www.3djuegos.com/juegos/need-for-speed-underground/) | Top Spanish gaming portal ranking for NFSU1 searches. | Hola equipo de 3DJuegos, ya que *Need for Speed: Underground* (2003) no se vende en tiendas digitales, muchos jugadores buscan cómo volver a jugarlo sin lidiar con parches en Windows 11.<br>Acaba de publicarse una recompilación estática de código abierto que permite jugar el título completo directamente en cualquier navegador (PC, Mac o móvil) en `https://nfsu.cc/`.<br>Usa WebAssembly y WebGPU con la banda sonora de 2003 completa y guardado local.<br>Si os interesa hacer una noticia sobre preservación clásica en navegador, aquí tenéis el proyecto: `https://nfsu.cc/reverse-engineering/index.html`. |
 | **VOGONS** | [Need for Speed Underground Windows setup thread (t=103147)](https://www.vogons.org/viewtopic.php?t=103147) | Deep retro-PC troubleshooting forum for getting 2003 `Speed.exe` running. | Posting a helpful preservation note for anyone hitting SafeDisc/DirectPlay headaches on modern Windows or macOS in this thread:<br>There's now an open-source static recompilation of the 2003 `Speed.exe` running in-browser via WebAssembly + WebGPU at `https://nfsu.cc/`.<br>It lifts all 13,766 x86 functions ahead of time (no CPU emulation), preserves the full 2003 soundtrack, and lets you toggle Original 2003 vs. Remaster with F4.<br>Technical write-up and source are here if anyone wants to inspect the D3D9 wrapper: `https://nfsu.cc/reverse-engineering/index.html`. |
 | **NFSU2.org Guides** | [PC installation on Windows - NFSU2](https://nfsu2.org/guides/browser-support/) | Dedicated NFSU guide hub that documents PC installation & browser support. | Hi NFSU2.org maintainers, noticed your guide hub covers browser support and Windows setup.<br>If you also reference the first game, the 2003 *Need for Speed: Underground* is now playable directly in-browser at `https://nfsu.cc/` via open-source static recompilation (WebAssembly + WebGPU/WebGL 2).<br>It runs full career mode, controller/keyboard/touch, and the complete 2003 soundtrack with zero Windows 11 SafeDisc setup.<br>Would be awesome to see `https://nfsu.cc/` listed alongside your browser resources! |
+
+---
+
+## D. Live Press Kit & 7-Day Launch Sequence
+
+Include the live Press Kit link in every outreach email so journalists and YouTubers get verified stats and screenshots in one click:
+- **English Press Kit:** `https://nfsu.cc/press/index.html`
+- **Kit de Prensa (Español):** `https://nfsu.cc/press/es/index.html`
+
+### 7-Day Rollout (15 min/day)
+1. **Day 1 (Tier 3 + Tier 2):** Publish 60s YouTube demo video (Section A) + post on `r/needforspeed` (Section B.1).
+2. **Day 2 (Tier 2 Tech):** Post `Show HN` (Section B.4, best at 9-11 AM EST) + `r/WebAssembly` (Section B.3).
+3. **Day 3 (Tier 2 Casual + Helpful Replies):** Post on `r/webgames` (Section B.2) + leave helpful replies in the 6 active Reddit threads (Section B.5).
+4. **Day 4 (Tier 1 EN Press):** Send 4-line pitches with `https://nfsu.cc/press/index.html` to TechPowerUp, Tech Bytes, Softonic EN, GameSeal, and daily.dev.
+5. **Day 5 (Tier 1 ES Press):** Send 4-line pitches with `https://nfsu.cc/press/es/index.html` to HardZone, Tarreo, Pisapapeles, ClicClick, VidaExtra, Vandal, and 3DJuegos.
+6. **Day 6 (Outdated Compatibility Hubs):** Send update notes to Fusion Fix, Fusion-Fix.net, WSGF, VOGONS, and NFSU2.org.
+7. **Day 7 (Measure):** Check Cloudflare Analytics referrers, Google Search Console impressions, and re-run `search_web` for `"jugar need for speed underground online"` and `"play need for speed underground browser"`.

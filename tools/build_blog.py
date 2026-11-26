@@ -470,6 +470,8 @@ for lang, name, names in pages:
 
 import build_re_devlog
 extra_urls = build_re_devlog.build_all()
+import build_press
+extra_urls = list(extra_urls) + build_press.build_press()
 for loc, lm, alts in extra_urls:
     links = ""
     if alts:
