@@ -7,7 +7,6 @@ Disallow: /remaster/
 Disallow: /world/
 Disallow: /out/
 Disallow: /diag.html
-Disallow: /launcher_b/index.html
 Disallow: /game-files.json
 Disallow: /data-chunks.json
 Disallow: /manifest.json

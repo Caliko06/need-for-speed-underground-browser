@@ -125,7 +125,10 @@ kbd + kbd { margin-left: .5rem; }
 body.touch .keys .nb { display: none; }
 
 /* ---------- sound and animation: two more hints, bottom left of the picture ---------- */
-.tools { position: absolute; left: 4.4rem; bottom: 3rem; display: flex; gap: 3rem; align-items: center; font-size: max(12px, 1.9rem); font-weight: 500; text-shadow: 0 .1rem .6rem #000; }
+.tools { position: absolute; left: 4.4rem; bottom: 4.6rem; display: flex; gap: 3rem; align-items: center; font-size: max(12px, 1.9rem); font-weight: 500; text-shadow: 0 .1rem .6rem #000; }
+.hublinks { position: absolute; left: 4.4rem; bottom: 1.4rem; max-width: calc(100vw - 88rem); display: flex; flex-wrap: wrap; gap: .6rem 1.6rem; font-size: max(11px, 1.35rem); font-style: normal; font-weight: 500; letter-spacing: .04em; text-shadow: 0 .1rem .5rem #000; }
+.hublinks a { color: var(--dim); text-decoration: none; transition: color .12s; }
+.hublinks a:hover, .hublinks a:focus-visible { color: var(--hi); outline: none; text-decoration: underline; }
 .tool { display: inline-flex; align-items: center; gap: .9rem; min-height: max(3.4rem, 28px); color: var(--blue); transition: color .12s, transform .1s; }
 .tool:hover { color: var(--hi); } .tool:active { transform: scale(.96); }
 .tool[aria-pressed="false"] { color: var(--dim); }
@@ -151,5 +154,5 @@ body #binds .foot { margin-top: 2.4rem; color: var(--blue); max-width: 90rem; }
 @media (max-aspect-ratio: 5/4) {
   html { font-size: max(5.6px, min(1.35vw, 1vh)); }
   .panel { right: 0; left: 0; width: auto; }
-  .tools { display: none; }
+  .tools, .hublinks { display: none; }
 }

@@ -402,17 +402,32 @@ PLAY_FAQ = {
 pages = []          # (lang, name, names) for the sitemap
 for lang in LANGS:
     os.makedirs(os.path.join(W, "blog", lang), exist_ok=True)
-    u = UI[lang]
     for old in os.listdir(os.path.join(W, "blog", lang)):
         os.remove(os.path.join(W, "blog", lang, old))
+
+import build_player_hub
+hub_entries = build_player_hub.build_player_hub()   # [(lang, slug, twin_slug, title, desc), ...]
+HUB_BY_LANG = {l: [r for r in hub_entries if r[0] == l] for l in LANGS}
+
+for lang in LANGS:
+    u = UI[lang]
     # hub
     names = {l: "index" for l in LANGS}
-    inner = f'<h1>{u["hub_h1"]}</h1>\n<p class="lead">{e(u["hub_lead"])}</p>\n{rows(lang, only=False)}\n<h2 class="more">{u["dev"]}</h2>\n{rows(lang, only=True)}\n<p><a href="{REPO}" rel="noopener">{u["code"]}</a></p>\n<div class="cta"><a href="/">{u["cta"]}</a></div>'
+    hub_extra_li = "".join(
+        '<li><a href="%s.html"><b>%s</b><span>%s</span></a></li>' % (slug, e(title), e(desc))
+        for _, slug, _, title, desc in HUB_BY_LANG[lang]
+    )
+    player_list = rows(lang, only=False).replace("</ul>", hub_extra_li + "</ul>", 1)
+    inner = f'<h1>{u["hub_h1"]}</h1>\n<p class="lead">{e(u["hub_lead"])}</p>\n{player_list}\n<h2 class="more">{u["dev"]}</h2>\n{rows(lang, only=True)}\n<p><a href="{REPO}" rel="noopener">{u["code"]}</a></p>\n<div class="cta"><a href="/">{u["cta"]}</a></div>'
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": u["hub_title"], "description": u["hub_desc"], "url": url(lang, "index"), "inLanguage": lang,
           "isPartOf": {"@type": "WebSite", "name": "NFS Underground Web", "url": SITE + "/"},
-          "hasPart": [{"@type": "Article", "headline": a["title"][lang], "url": url(lang, a["slug"][lang])} for a in ARTICLES]}
+          "hasPart": [{"@type": "Article", "headline": a["title"][lang], "url": url(lang, a["slug"][lang])} for a in ARTICLES]
+                   + [{"@type": "Article", "headline": title, "url": url(lang, slug)} for _, slug, _, title, _ in HUB_BY_LANG[lang]]}
     open(os.path.join(W, "blog", lang, "index.html"), "w", encoding="utf-8").write(page(lang, "index", names, u["hub_title"], u["hub_desc"], BACK[1], u["hub_h1"], inner, ld))
     pages.append((lang, "index", names))
+    for _, slug, twin_slug, _, _ in HUB_BY_LANG[lang]:
+        pnames = {lang: slug, ("es" if lang == "en" else "en"): twin_slug}
+        pages.append((lang, slug, pnames))
     for a in ARTICLES:
         names = a["slug"]
         date = DEV_DATE if a.get("dev") else DATE
@@ -448,7 +463,7 @@ BY_SLUG = {a["slug"][l]: a for a in ARTICLES for l in LANGS}
 sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
       "<url><loc>%s/</loc><lastmod>%s</lastmod></url>" % (SITE, DATE)]
 for lang, name, names in pages:
-    lm = DEV_DATE if name != "index" and BY_SLUG[name].get("dev") else DATE
+    lm = DEV_DATE if name in BY_SLUG and BY_SLUG[name].get("dev") else DATE
     links = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, names[l])) for l in LANGS)
     links += '<xhtml:link rel="alternate" hreflang="x-default" href="%s"/>' % url("en", names["en"])
     sm.append("<url><loc>%s</loc><lastmod>%s</lastmod>%s</url>" % (url(lang, name), lm, links))
@@ -475,7 +490,6 @@ Disallow: /remaster/
 Disallow: /world/
 Disallow: /out/
 Disallow: /diag.html
-Disallow: /launcher_b/index.html
 Disallow: /game-files.json
 Disallow: /data-chunks.json
 Disallow: /manifest.json

@@ -37,7 +37,20 @@ h1 { margin: 14px 0 0; padding: 16px var(--pad) 16px 12%; text-align: right; fon
   background: linear-gradient(90deg, transparent, var(--bar) 30%); }
 .lead { margin: 22px var(--pad) 0; font-size: 19px; line-height: 1.55; color: var(--hi); text-wrap: pretty; }
 .date { margin: 10px var(--pad) 0; font-size: 14px; color: var(--dim); }
-article > p, article > ul, article > ol, article > h2, article > figure, article > .keys, article > .cta { margin-left: var(--pad); margin-right: var(--pad); }
+article > p, article > ul, article > ol, article > h2, article > figure, article > .keys, article > .cta, article > .filter-bar, article > .table-wrap { margin-left: var(--pad); margin-right: var(--pad); }
+.filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.filter-bar input, .filter-bar select { background: var(--bar2); border: 1px solid var(--bar); color: var(--hi); font: 500 15px/1.4 var(--f); padding: 9px 12px; min-width: 180px; flex: 1 1 180px; }
+.filter-bar input:focus, .filter-bar select:focus { outline: 2px solid var(--key); outline-offset: 1px; }
+.table-wrap { overflow-x: auto; margin-top: 16px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.data-table th { text-align: left; padding: 10px 12px; background: var(--bar); color: var(--hi); font: italic 600 14px/1.2 var(--f); text-transform: uppercase; letter-spacing: .04em; }
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--bar2); color: var(--hi); vertical-align: middle; }
+.data-table tr:hover td { background: rgba(92, 150, 184, .09); }
+.data-table code { background: var(--bar2); padding: 2px 7px; border: 1px solid var(--bar); color: var(--key); font-size: 14px; }
+.copy-btn { background: var(--bar); border: 1px solid var(--key); color: var(--hi); font: 600 12px/1 var(--f); text-transform: uppercase; letter-spacing: .05em; padding: 6px 10px; cursor: pointer; transition: transform .12s, background-color .12s; }
+.copy-btn:hover { background: rgba(92, 150, 184, .28); }
+.copy-btn:active { transform: scale(.97); }
+.copy-btn[data-copied="1"] { background: var(--key); color: #04121a; }
 article p { text-wrap: pretty; margin-top: 16px; margin-bottom: 0; }
 article h2 { margin-top: 44px; margin-bottom: 0; padding-bottom: 8px; border-bottom: 3px solid var(--bar); font: italic 600 24px/1.2 var(--f); color: var(--blue); text-wrap: balance; }
 article ul, article ol { padding-left: 1.2em; margin-top: 14px; margin-bottom: 0; }
