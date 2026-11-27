@@ -1,7 +1,7 @@
 """How-it-works posts for tools/build_blog.py: what runs today and why, for people who search RE and decomp, not only the game.
 Present tense, current numbers, no history. Same rule as the guides: every number names its source above the post."""
 
-REPO = "https://github.com/Caliko06/need-for-speed-underground-browser"
+from site_common import REPO
 # Repo folders and files each post explains: shown as "In the repo" links under the post.
 CODE = dict(play=["web", "web/launcher.js", "web/saves.js"], controls=["web/input.js", "web/pad.js", "web/touch.js", "host/dinput8.c"],
             devices=["web/gpu.js", "web/audio.js", "web/webgpu_gl.js"], tech=["tools/recomp", "host", "web", "census"],

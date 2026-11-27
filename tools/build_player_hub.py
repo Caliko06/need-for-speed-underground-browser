@@ -20,20 +20,10 @@ import html
 import json
 import os
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-W = os.path.join(ROOT, "web")
-SITE = "https://nfsu.cc"
-REPO = "https://github.com/Caliko06/need-for-speed-underground-browser"
 DATE = "2026-11-26"
-LANGS = ("en", "es")
-e = html.escape
-
-ORG = {
-    "@type": "Organization",
-    "name": "NFS Underground Web",
-    "url": SITE + "/",
-    "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"},
-}
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from site_common import ROOT, W, SITE, REPO, LANGS, ORG, e, url
 
 UI = {
     "en": dict(
@@ -271,10 +261,6 @@ PAGES_META = [
         cta=dict(en="Start Go Underground in your browser", es="Empieza Go Underground en tu navegador"),
     ),
 ]
-
-
-def url(lang, name):
-    return "%s/blog/%s/%s.html" % (SITE, lang, name)
 
 
 def build_cars_body(lang):
