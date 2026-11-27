@@ -4,6 +4,6 @@ Scripts that drive the Hopper disassembler in the background to decompile **Need
 
 | File | [`export.sh`](export.sh) | [`hpar.sh`](hpar.sh) | [`mkq.py`](mkq.py) | `q_*.py` |
 |---|---|---|---|---|
-| Does | Export every procedure to `decomp.c` + `funcs.tsv` | Run chunks on up to 6 windows | Batch spec (addresses, data, strings) to a query script | One query per topic |
+| Does | Export every procedure to `decomp.c` + `funcs.tsv` | Run chunks on up to 6 windows (renders a missing `q_<topic>.py` itself) | Spec (`queries.json`: addresses, data, strings) to `build/hopper/q_<topic>.py` | Hand-made queries only; the rest live in `queries.json` |
 
 Back to the [repo](../../README.md).

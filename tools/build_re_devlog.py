@@ -14,19 +14,12 @@ import json
 import os
 import re
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-W = os.path.join(ROOT, "web")
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from site_common import ROOT, W, SITE, REPO, ORG
 DOCS_RE = os.path.join(ROOT, "docs", "re")
-SITE = "https://nfsu.cc"
-REPO = "https://github.com/Caliko06/need-for-speed-underground-browser"
 DATE = "2026-11-25"
 EXTRA_RE_DOCS = ["flare_re", "night_re", "re_audio_default", "re_minimap", "traffic_placement"]
-ORG = {
-    "@type": "Organization",
-    "name": "NFS Underground Web",
-    "url": SITE + "/",
-    "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"},
-}
 
 RE_CATEGORIES = [
     ("Driving & Physics", "Física y manejo", ["physics", "accel", "tuning", "feel_patch_plan", "feel_probe_fix"]),

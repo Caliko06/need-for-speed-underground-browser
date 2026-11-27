@@ -211,7 +211,7 @@ Picker `0x53c3a0` (V, G). It reads `p = player`, `order = 0x758b58[pos*2]`, wher
    | `0x513780` (called by 0x513610) | ids from `0x6f88f8` (27 entries) -> `0x6f872c[id*2]` -> `+0x98(0x59, line)` | 0x59 | same 15 |
    - Union of the event sets (events overlap between callers): 90 events, 244 streams. Plus 15 lines of event 0x59 = 259.
    - Screen meaning is I (names from `census/names*.tsv`: 0x4c3db0 garage main, 0x4c6cb0 Junkman, 0x50a5d0 perf tuner;
-     0x4c5320 / 0x4c5fa0 are career map openers per `tools/hopper/q_hub.py`). Race start, rival taunts: no caller found.
+     0x4c5320 / 0x4c5fa0 are career map openers per `tools/hopper/queries.json` topic `hub`). Race start, rival taunts: no caller found.
 4. Event 0x59 table `0x6f8728[id*2+v]` (id 1..26): id2 -> 0,1; id5 -> v1 2; id6 -> v1 3; id7 -> v1 4; id11 -> 5,6;
    id12 -> 7,8; id13 -> 9,10; id15 -> v1 11; id16 -> v1 12; id17 -> 13,14; all else -1 = stop (`+0x90(0x59)`). Entry 0
    holds two string pointers ("Fabolous" ...), skipped because the caller tests `id >= 1`. V (D)

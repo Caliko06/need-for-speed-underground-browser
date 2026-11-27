@@ -1,6 +1,5 @@
 """Patches: car lights, horn flash, neon. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES, _rel
 
 # PATCH: 0x5693b7 (jne +3 -> jmp +3 in Car::LightsOnForDraw 0x5693b0, only caller 0x56da42 = the head flare of DrawLampFlares 0x56d8d0): a traffic
 # car (driver kind 3) no longer answers "lights on" at once, it reads car+0x855 like every car, so the flash of 0x429190 can be seen.

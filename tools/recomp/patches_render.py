@@ -1,6 +1,5 @@
 """Patches: widescreen, blur, car look, flares, road reflection. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES, _rel
 
 # PATCH: 0x40bf09.., widescreen 2D: the sprite quad code (0x40beef) turns a position of the 640x480 screen into clip
 # space as x/320 - 1 and 1 - y/240 for each of its four corners. The 4:3 layout was stretched over the whole

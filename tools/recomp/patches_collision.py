@@ -1,6 +1,5 @@
 """Patches: collision pools. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES, _rel
 
 # PATCH: 0x4412be, OWNER 2026-10-30 (WORLD stops at 85 s of Free Run: int3 0x441b82 in TrackPolyBody::ReleaseUnused 0x441b20). The track polygon
 # collision body pool 0x4412b0 (0x566dc0, 0x80 B slots, flags 0xb & ~3: it never grows) holds 0x400 bodies; each car's ground cache pins up to 160

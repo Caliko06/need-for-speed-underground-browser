@@ -1,5 +1,4 @@
 """Patches: the player's reset placement (GOAL 2026-11-05 Block 2). Split out of the collision file; imported last by patches.py."""
-import struct
 from patches import PATCHES
 
 # PATCH: 0x4317ac + 0x431724, Player::ResetToRoute 0x4314a0, branch with no route path (Free Run / WORLD): it scans every route node (0x14 B rows, xy only),

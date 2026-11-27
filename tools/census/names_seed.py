@@ -19,6 +19,9 @@ import ast
 import bisect
 import collections
 import io
+import os
+import subprocess
+import sys
 import re
 import tokenize
 import warnings
@@ -125,12 +128,14 @@ def main():
             end = starts[i + 1] if i + 1 < len(starts) else HI + 1
         return ('inside' if a < end else 'no'), s
 
+    # tools/hopper/queries.json topics are rendered into build/hopper/q_*.py (what hpar.sh runs), so they are scanned too
+    subprocess.run([sys.executable, str(ROOT / 'tools/hopper/mkq.py')], check=True, stdout=subprocess.DEVNULL, env=dict(os.environ, HOP_REPO=str(ROOT)))
     # PC table: docs, openworld docs, patches, hopper q-scripts, HANDOFF, ghidra headers
     groups = [
         ('docs', sorted((ROOT / 'docs').glob('*.md')), 'lines'),
         ('docs/openworld', sorted((ROOT / 'docs/openworld').glob('*.md')), 'lines'),
         ('patches', [ROOT / 'tools/recomp/patches.py'], 'lines'),
-        ('hopper_q', sorted((ROOT / 'tools/hopper').glob('q_*.py')), 'code_notes'),
+        ('hopper_q', sorted((ROOT / 'tools/hopper').glob('q_*.py')) + sorted((ROOT / 'build/hopper').glob('q_*.py')), 'code_notes'),
         ('handoff', [ROOT / 'HANDOFF.md'], 'lines'),
         ('ghidra_headers', sorted((ROOT / 'census/ghidra').glob('*.txt')), 'headers'),
     ]

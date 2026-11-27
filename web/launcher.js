@@ -6,7 +6,6 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
-  const eq = (a, b) => String(a) === String(b);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const root = document.documentElement, body = document.body;
   // Display copy: noun phrases, neutral Mexican Spanish. The catalog (launcher_opts.js) keeps its own strings; these win when present.
@@ -87,7 +86,6 @@
     return g;
   })();
   const T = text => { const s = el('span', 't', text); s._text = text; GF.apply(s); return s; };
-  const setT = (s, text) => { s._text = text; s.textContent = text; s.classList.remove('gf'); GF.apply(s); };
 
   // ---------- state ----------
   const opts = L.opts, byId = Object.fromEntries(opts.map(o => [o.id, o]));

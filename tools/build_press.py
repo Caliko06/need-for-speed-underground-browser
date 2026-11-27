@@ -4,23 +4,13 @@ Zero JS, zero extra image assets (reuses /og.jpg and /blog/img/*.webp), zero imp
 Usage: python3 tools/build_press.py
 Import: from build_press import build_press  # returns [(loc, lastmod, alts_dict), ...]
 """
-import html
 import json
 import os
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-W = os.path.join(ROOT, "web")
-SITE = "https://nfsu.cc"
-REPO = "https://github.com/Caliko06/need-for-speed-underground-browser"
 DATE = "2026-11-26"
-e = html.escape
-
-ORG = {
-    "@type": "Organization",
-    "name": "NFS Underground Web",
-    "url": SITE + "/",
-    "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"},
-}
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from site_common import ROOT, W, SITE, REPO, ORG, e
 
 DATA = {
     "en": {

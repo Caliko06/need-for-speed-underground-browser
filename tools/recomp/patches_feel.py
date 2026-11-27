@@ -1,6 +1,5 @@
 """Patches: feel candidates and feel defaults. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES
 
 # ---- FEEL CANDIDATES (docs/re/feel_patch_plan.md): one patch per OWNER complaint, ALL OFF ----------------------------------
 # Not one of these is in PATCHES: active(), c_table() and the loader never see them until Main flips a candidate. To flip, change

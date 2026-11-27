@@ -4,15 +4,12 @@ Writes web/blog/<lang>/*.html, web/sitemap.xml and web/robots.txt from the texts
 Every game fact in the texts names its source in the comment above the article; change the text when the source changes.
 URLs end in .html on purpose: the R2 host serves no directory index (docs/re/hosting.md, only "/" is rewritten).
 Usage: python3 tools/build_blog.py   (then tools/build_public.py ships web/blog/ with the rest)"""
-import html, json, os, re, sys
+import json, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from blog_dev import CODE, DEV, DEV_DATE, REPO
+from blog_dev import CODE, DEV, DEV_DATE
+from site_common import ROOT, W, SITE, REPO, LANGS, ORG, e, url
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-W = os.path.join(ROOT, "web")
-SITE = "https://nfsu.cc"
 DATE = "2026-11-24"          # last updated
-LANGS = ("en", "es")
 UI = {
     "en": dict(guides="Guides", play="Play", other="Español", home="NFSU.cc", more="More guides", cta="Play now", updated="Updated %s", dev="How it works", code="Code on GitHub", inrepo="In the repo:",
                hub_title="Need for Speed Underground in the browser: guides", hub_h1="Guides",
@@ -298,11 +295,6 @@ GUIDES = list(ARTICLES)
 ARTICLES += DEV
 BY = {a["key"]: a for a in ARTICLES}
 WHEN = {"en": lambda d: "November %d, 2026" % int(d[-2:]), "es": lambda d: "%d de noviembre de 2026" % int(d[-2:])}
-e = html.escape
-
-
-def url(lang, name):
-    return "%s/blog/%s/%s.html" % (SITE, lang, name)
 
 
 def page(lang, name, names, title, desc, pic, h1, inner, ld, date=None, og_img=None, og_alt=None):
@@ -384,7 +376,6 @@ def figure(a, lang, n=""):
 
 HEIGHT = {"olympic-city-world.webp": 700, "bayview-palms.webp": 703, "bayview-race.webp": 703, "world-map.webp": 850, "phone-touch.webp": 462, "olympic-city-drive.webp": 703}
 BACK = ["olympic-city-drive.webp", "olympic-city-world.webp"]   # behind the sheet: a street picture that is not the one shown in the text
-ORG = {"@type": "Organization", "name": "NFS Underground Web", "url": SITE + "/", "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"}}
 PLAY_FAQ = {
     "en": [
         ("Is NFSU.cc an emulator or a remake?", "Neither. It is a static recompilation of the original 2003 PC executable (Speed.exe) to WebAssembly, so the physics, AI rivals, menus and career progression are the original game's own code."),

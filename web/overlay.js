@@ -4,7 +4,6 @@
   const L = window.RN_LAUNCH;
   if (!L) return;
   const sel = L.load(), defs = Object.fromEntries(L.opts.map(o => [o.id, o.def]));
-  const modeNow = () => sel.mode === 'remaster' ? 'remaster' : 'original';
   const stateOf = p => Object.assign({ ...defs }, p.set);
   const active = () => L.presets.find(p => { const s = stateOf(p); return Object.keys(s).every(k => s[k] === sel[k]); });
   // mode is not sent: L.save stores it for web/mode.js, and a ?mode= in the URL would pin it and break F4 (same as web/launcher.js)

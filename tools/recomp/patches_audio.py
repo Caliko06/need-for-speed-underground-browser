@@ -1,6 +1,5 @@
 """Patches: engine audio. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES, _rel
 
 # PATCH: 0x52536a (+ cave 0x5256e8, 8 CC bytes of padding after the ret of the EAXTunerCar helpers, no reference), OWNER 2026-11-04
 # (lane 3, horns): the honk branch of EAXTrafficCar::Update 0x5251e0 calls StartHorn 0x524f30 here, the only such call in the image

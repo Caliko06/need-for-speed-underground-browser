@@ -1,6 +1,5 @@
 """Patches: the widened road graph. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES, _imm, _j32, _jcc32, ROAD_ADDR, ROAD_RB
 
 # ---- WIDEN the road graph (OWNER 2026-10-30; docs/openworld/re_widen.md): the game's own AI/traffic on a whole-city net ----
 # Stage 1, PATCH 0x77af20 users: the road-section manager (0x210 B in .bss: list heads +0 +8, 128 section pointers at +0x10;
