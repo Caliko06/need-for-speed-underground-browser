@@ -1,6 +1,5 @@
 """Patches: test-only seed and autopilot. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES
 
 # PATCH: 0x4470f0 (+ cave 0x408814), TEST-ONLY seed for the A/B against the original (off unless RN_SEED is set): 0x4470d0,
 # called once from the boot 0x4471b0, seeds the game RNG [0x6f227c] from (QPC >> [0x7349c8]) + 0x12345678. The step is

@@ -1,6 +1,5 @@
 """Patches: rivals, Free Run, traffic. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES, _rel
 
 # PATCH: 0x4b4321 (+ cave 0x6736b1, CC padding after the ret of 0x673690, no reference), OWNER 2026-10-27 (rivals with a
 # soul): the race setup 0x4b4040 registers each opponent with 0x5809c0(id, 2, ride, record, skill, ?, index), esi = the

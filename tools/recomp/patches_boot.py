@@ -1,6 +1,5 @@
 """Patches: frame limiter during loads. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES
 
 # PATCH: 0x585b94 (+ mask 0x707fc8), OWNER 2026-10-24 (faster loads): the frame limiter 0x585b40 (main loop 0x447600) spins on
 # QPC until a frame lasts 1/60 s ([0x6f0890], never written). The loads are synchronous job loops paced one job per frame

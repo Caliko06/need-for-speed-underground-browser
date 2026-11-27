@@ -1,6 +1,5 @@
 """Patches: steering input. Split from patches.py (GOAL 2026-11-05); patches.py imports this file in a fixed order."""
-import struct
-from patches import PATCHES, _rel, _imm, _j32, _jcc32, ROAD_ADDR, EBASE_ADDR, ROAD_RB, CODE_AREA
+from patches import PATCHES
 
 # PATCH: 0x4609e3/0x460a80/0x460b4f/0x460c02, OWNER choice 2026-10-26 (?steer=pad, "the car responds late, I can't hold the angle"):
 # the steering model 0x460a80 reads [0x736514], 0 = keyboard (0x4070a0 clears it on the steer actions 3/4), 1 = gamepad
