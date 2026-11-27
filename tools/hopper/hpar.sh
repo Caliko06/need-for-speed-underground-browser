@@ -1,10 +1,10 @@
 #!/bin/sh
 # Hopper in parallel, no click: HOP_DIR=<scratchpad> [HOP_WIN=n] hpar.sh <topic> ...
-# (tools/hopper/q_<topic>.py writes build/hopper/<topic>.txt ending in "DONE", then closes its document).
+# (q_<topic>.py, rendered from queries.json by mkq.py into build/hopper/ when it is not in HOP_QDIR, writes build/hopper/<topic>.txt ending in "DONE", then closes its document).
 # Any PE, not just Speed.exe (OWNER 2026-11-08: Mafia's game/Game.exe needs the same fan-out):
 #   HOP_EXE=<path to the .exe>   what every window opens (default pc/Speed.exe, relative to HOP_REPO)
 #   HOP_REPO=<repo root>         where build/hopper/ lives and where the script cds (default: this repo, ../../)
-#   HOP_QDIR=<dir>               where q_<topic>.py lives (default $HOP_REPO/tools/hopper)
+#   HOP_QDIR=<dir>               where a hand-made q_<topic>.py lives (default $HOP_REPO/tools/hopper); else mkq.py renders it
 # FACT 2026-10-25 (Hopper 6.6.0-demo, PID 20369): an instance opened in the background (open -g -n, persistence off)
 # keeps its license panel (697x335, "Try the Demo") off screen and still runs the open event + script (DONE in ~45 s,
 # focus untouched). So nobody clicks; never bring a window to the front (the panel then blocks until a click).
@@ -24,7 +24,8 @@ exe=${HOP_EXE:-pc/Speed.exe}; qdir=${HOP_QDIR:-$B/tools/hopper}; name=$(basename
 APP="/Applications/Hopper Disassembler.app"; LIFE=1800; MINLEFT=480
 
 prep() {    # topic -> exe copy + wrapper script that checks the document
-  t=$1; q=$qdir/q_$t.py; [ -f "$q" ] || { echo "hpar: no $q"; return 1; }
+  t=$1; q=$qdir/q_$t.py
+  [ -f "$q" ] || { q=$B/build/hopper/q_$t.py; HOP_REPO=$B python3 "$S/mkq.py" "$S/queries.json" "$t" >/dev/null 2>&1 && [ -f "$q" ] || { echo "hpar: no query for $t"; return 1; }; }
   cp -c "$exe" "$dir/${name}_$t.exe"; [ -n "$HOP_KEEP" ] || rm -f "build/hopper/$t.txt"; rm -f "build/hopper/$t.wrong"
   cat > "$dir/w_$t.py" <<EOF
 import os

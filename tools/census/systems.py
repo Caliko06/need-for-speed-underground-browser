@@ -8,7 +8,7 @@ Method (docs/re/systems_method.md): evidence per function from (1) strings and s
 global and address-neighbour propagation with a confidence that decays; seeds are never overridden by propagation.
 Rules live in tools/census/sys_rules.py. Inputs: pc/Speed.exe, census/hopper/{funcs.tsv,decomp.c},
 census/ghidra/decomp_*.c, census/imports_sites.tsv, build/gen/f*.c (only for the lifted list), docs/, tools/hopper/q_*.py."""
-import bisect, collections, glob, math, os, random, re, struct, sys
+import bisect, collections, glob, json, math, os, random, re, struct, sys
 import pefile, capstone
 from capstone.x86 import X86_OP_IMM, X86_OP_MEM
 
@@ -248,11 +248,12 @@ def doc_evidence(ev, sw, starts, cont, strs_by_addr):
         for a in {int(x, 16) for x in pat.findall(head)}:
             for f in funcs_of(a): ev.add(f, sysm, 3, 'patch', 'patches.py PATCH %s (%s)' % (pat.findall(t)[0], H(a)))
     # q_*.py: ADDRS and DATA lists are the functions a question was about
-    for p in sorted(glob.glob(R + '/tools/hopper/q_*.py')):
-        topic = os.path.basename(p)[:-3]
+    qs = [(os.path.basename(p)[:-3], open(p, errors='replace').read()) for p in sorted(glob.glob(R + '/tools/hopper/q_*.py'))]
+    for t, s in json.load(open(R + '/tools/hopper/queries.json')).items():   # the topics mkq.py renders for hpar.sh
+        qs.append(('q_' + t, 'ADDRS = [%s]\nDATA = [%s]' % (', '.join(s.get('addrs', [])), ', '.join(s.get('data', [])))))
+    for topic, t in qs:
         sysm = next((s for rx, s in RU.Q_SYSTEM if re.match(rx + r'\b', topic) or re.match(rx, topic)), None)
         if not sysm: continue
-        t = open(p, errors='replace').read()
         m = re.findall(r'^(?:ADDRS|DATA) = \[([^\]]*)\]', t, re.M)
         for blob in m:
             for a in {int(x, 16) for x in re.findall(r'0x([0-9a-f]+)', blob)}:
